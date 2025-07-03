@@ -302,7 +302,7 @@ const CompanyDetailPage: React.FC = () => {
             )}
 
             <h2 className="text-2xl sm:text-3xl font-semibold mb-4 text-white rounded-md">
-              {company.contactTitle || "Null"}
+              {company.contactTitle || ""}
             </h2>
             <div className="space-y-3 text-gray-300">
               {company.contactInfo && company.contactInfo.contact_detail ? (

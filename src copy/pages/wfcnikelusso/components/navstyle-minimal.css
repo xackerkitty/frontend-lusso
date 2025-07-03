@@ -1,0 +1,271 @@
+/* Lusso Nike - Navbar Styles */
+
+:root {
+  --lusso-primary: #0e4e25;
+  --lusso-secondary: #4CAF50;
+  --lusso-accent: #ffb300;
+  --lusso-bg-dark: #000000;
+  --lusso-bg-gray: #111827;
+  --lusso-bg-slate: #0f172a;
+  --lusso-text: #d1d5db;
+  --lusso-text-light: #ffffff;
+}
+
+/* No extra space needed as it's handled in the layout */
+
+/* Header Structure */
+.wfc-header {
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  background-color: #000000;
+  border-bottom: none;
+  height: 64px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.wfc-navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2rem;
+  margin: 0 auto;
+  max-width: 1400px;
+  height: 64px;
+}
+
+/* Logo Styles */
+.logo-container {
+  display: flex;
+  align-items: center;
+}
+
+.logo-link {
+  text-decoration: none;
+}
+
+.logo-text {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--lusso-text-light);
+  letter-spacing: 1.2px;
+}
+
+/* Navigation Menu */
+.nav-container {
+  display: flex;
+  align-items: center;
+}
+
+.nav-menu {
+  display: flex;
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  gap: 1.5rem;
+}
+
+.nav-item {
+  position: relative;
+  padding: 0.5rem 0;
+}
+
+.nav-link {
+  color: #999999;
+  text-decoration: none;
+  padding: 0 0.8rem;
+  font-weight: 500;
+  transition: color 0.2s ease;
+  font-size: 0.65rem;
+  display: block;
+  height: 64px;
+  line-height: 64px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.nav-link:hover,
+.nav-link.active {
+  color: var(--lusso-text-light);
+}
+
+/* Dropdown Menu */
+.dropdown-content {
+  position: absolute;
+  top: 64px;
+  left: 0;
+  width: 220px;
+  background-color: #111111;
+  border: none;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+  display: none;
+  opacity: 1;
+  visibility: visible;
+  overflow: hidden;
+  z-index: 100;
+}
+
+.nav-item:hover > .dropdown-content {
+  display: block;
+}
+
+.dropdown-title {
+  padding: 12px 15px 10px;
+  font-weight: 600;
+  color: #999999;
+  background-color: #111111;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 0.6rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.dropdown-cards {
+  max-height: 200px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #333333 rgba(255, 255, 255, 0.1);
+}
+
+.dropdown-cards::-webkit-scrollbar {
+  width: 4px;
+}
+
+.dropdown-cards::-webkit-scrollbar-track {
+  background: #111111;
+}
+
+.dropdown-cards::-webkit-scrollbar-thumb {
+  background-color: #333333;
+  border-radius: 10px;
+}
+
+/* Dropdown Items */
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 15px;
+  text-decoration: none;
+  border-bottom: none;
+  transition: background-color 0.2s ease;
+  gap: 10px;
+}
+
+.dropdown-item:hover {
+  background-color: rgba(14, 78, 37, 0.1);
+}
+
+.dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.dropdown-item-image {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid var(--lusso-primary);
+  background-color: rgba(14, 78, 37, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--lusso-text-light);
+  font-weight: 600;
+  font-size: 0.7rem;
+}
+
+.dropdown-item:hover .dropdown-item-image {
+  border-color: var(--lusso-primary);
+  transform: scale(1.05);
+}
+
+.dropdown-item-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.dropdown-item-content {
+  flex: 1;
+  min-width: 0;
+  padding-left: 0;
+}
+
+.dropdown-item-header {
+  font-weight: 500;
+  color: white;
+  margin-bottom: 2px;
+  font-size: 0.7rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dropdown-item-text {
+  font-size: 0.65rem;
+  color: #999999;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  opacity: 0.9;
+}
+
+/* Fallback for missing images */
+.dropdown-item-image::before {
+  content: attr(data-initials);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+/* Player image fallbacks */
+.dropdown-item-image[data-initials="DY"]::before { content: "DY"; }
+.dropdown-item-image[data-initials="AK"]::before { content: "AK"; }
+.dropdown-item-image[data-initials="ZD"]::before { content: "ZD"; }
+.dropdown-item-image[data-initials="EY"]::before { content: "EY"; }
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .wfc-navbar {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 0.75rem;
+  }
+  
+  .nav-container {
+    width: 100%;
+    margin-top: 1rem;
+  }
+  
+  .nav-menu {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .nav-item {
+    width: 100%;
+  }
+  
+  .nav-link {
+    width: 100%;
+    padding: 0.5rem 0;
+  }
+  
+  .dropdown-content {
+    position: static;
+    width: 100%;
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    box-shadow: none;
+    border-left: 2px solid var(--lusso-primary);
+    border-top: none;
+    margin-left: 1rem;
+    margin-top: 0.5rem;
+  }
+}

@@ -1,0 +1,102 @@
+/* Nike sayfalarında header ve navbar temizleme için düzeltilmiş CSS */
+
+/* ÖNEMLİ -- SADECE ANA HEADER'I (main-header) GİZLE, LUSSO-HEADER'I TUTMAK İÇİN */
+
+/* 1. Ana header'ı gizle */
+.nike-page #main-header, 
+.nike-page header:not(.lusso-header):not(.lusso-man-header):not(#lusso-man-navbar), 
+.nike-page header.fixed {
+  display: none !important;
+  height: 0 !important;
+  overflow: hidden !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  position: absolute !important;
+  pointer-events: none !important;
+  z-index: -9999 !important;
+}
+
+/* 2. Ana navbar'ı gizle, ama lusso-navbar'ı ASLA gizleme! */
+.nike-page nav:not(.lusso-navbar):not(#lusso-man-navbar) {
+  display: none !important;
+  height: 0 !important;
+  overflow: hidden !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  position: absolute !important;
+  pointer-events: none !important;
+  z-index: -9999 !important;
+}
+
+.nike-page .lusso-navbar,
+.nike-route-container .lusso-navbar {
+  display: flex !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  z-index: 9999 !important;
+  height: auto !important;
+  pointer-events: auto !important;
+}
+
+/* 3. FreshNavbar'ı (lusso-header) GÖSTER ve GÜÇLENDİR */
+.nike-page .lusso-header {
+  width: 100vw !important;
+  max-width: 100% !important;
+  position: fixed !important;
+  left: 0 !important;
+  top: 0 !important;
+  z-index: 9999 !important;
+  display: flex !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+
+/* 4. FreshNavbar içindeki düğmeleri ve navi göster */
+.nike-page .lusso-header * {
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+
+/* 5. Header ve nav element'i içeren div'leri gizle */
+.nike-page div[id="main-header"],
+.nike-page div[class*="header"]:not(.lusso-header),
+.nike-page div[class*="nav"]:not(.lusso-navbar),
+.nike-page div.flex.items-center.justify-between.flex-col.lg\:flex-row {
+  display: none !important;
+}
+
+/* 6. İçerik için padding - FreshNavbar altında içeriği doğru göster */
+.nike-page #root {
+  padding-top: 64px !important;
+}
+
+/* 7. Başka sınıflara sahip navbarları da gizle */
+.nike-page .fixed.w-full.z-50,
+.nike-page .bg-white.shadow-md {
+  display: none !important;
+}
+
+/* 8. En agresif seçici - lusso-header dışındaki tüm sabit konumlu elementleri gizle */
+.nike-page body > *:not(.lusso-header):not(#root):not(script) {
+  display: none !important;
+}
+
+/* 9. FreshNavbar (lusso-header) için son çare - `!important` ile görünürlük zorla */
+.nike-page .lusso-navbar,
+.nike-page .lusso-header {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  height: auto !important;
+}
+
+/* 10. WfcNikeLussoLayout render edilen header/navbar'ı zorla göster */
+.nike-route-container .lusso-header,
+.nike-route-container .lusso-navbar {
+  display: flex !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  z-index: 9999 !important;
+}

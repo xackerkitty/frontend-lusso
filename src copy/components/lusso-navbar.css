@@ -1,0 +1,53 @@
+.lusso-navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background-color: #0e4e25;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  z-index: 9999;
+  font-family: Arial, sans-serif;
+}
+.lusso-navbar .navbar-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  height: 60px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.lusso-navbar .navbar-brand {
+  color: #fff;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 24px;
+}
+.lusso-navbar .navbar-links {
+  display: flex;
+  gap: 25px;
+}
+.lusso-navbar .navbar-link {
+  color: white;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 15px;
+  transition: color 0.3s ease;
+}
+.lusso-navbar .navbar-link:hover {
+  color: #D4AF37;
+}
+@media (max-width: 700px) {
+  .lusso-navbar .navbar-container {
+    flex-direction: column;
+    height: auto;
+    padding: 10px;
+  }
+  .lusso-navbar .navbar-links {
+    gap: 15px;
+    flex-wrap: wrap;
+  }
+  .lusso-navbar .navbar-brand {
+    font-size: 20px;
+  }
+}

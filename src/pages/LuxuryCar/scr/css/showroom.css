@@ -1,0 +1,13 @@
+body{
+    background-color: rgb(12, 12, 12) !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    height: 100vh !important;
+    
+}
+
+.showroom {
+    height: 100vh !important;
+    width: 100% !important;
+    background-color: rgb(40, 40, 40) !important;
+}

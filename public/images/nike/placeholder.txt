@@ -1,0 +1,9 @@
+Bu klasör, Nike sayfasında kullanılacak görseller için oluşturulmuştur.
+
+Önerilen görseller:
+1. nike-hero.jpg - Ana sayfa banner görseli
+2. nike-shoes.jpg - Ayakkabı kategorisi görseli
+3. nike-clothing.jpg - Giyim kategorisi görseli
+4. nike-collection.jpg - Özel koleksiyonlar görseli
+5. nike-store.jpg - Mağaza hizmetleri görseli
+6. nike-membership.jpg - Üyelik görseli

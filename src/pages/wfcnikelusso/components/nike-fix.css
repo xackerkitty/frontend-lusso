@@ -1,0 +1,27 @@
+/* Nike sayfaları için ikinci navbar sorununu kökten çözen CSS */
+
+body.nike-page header:not(.lusso-header), 
+body.nike-page nav:not(.lusso-navbar),
+body.nike-page div[class*="header"]:not(.lusso-header),
+body.nike-page div[class*="navbar"]:not(.lusso-navbar) {
+  display: none !important;
+  opacity: 0 !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  max-height: 0 !important;
+  visibility: hidden !important;
+  overflow: hidden !important;
+  position: absolute !important;
+  pointer-events: none !important;
+  z-index: -999 !important;
+}
+
+/* React LussoNavbar için özel stil */
+.lusso-navbar {
+  display: block !important;
+}
+
+/* Body padding ayarı */
+body.nike-page {
+  padding-top: 64px !important; /* Navbar yüksekliği kadar padding */
+}

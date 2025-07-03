@@ -1,0 +1,722 @@
+
+
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%; /* Ensures html and body fill the viewport */
+    overflow-x: hidden; /* Prevents horizontal scrollbar if elements slightly exceed width */
+}
+
+section{
+    height: 100vh !important;
+}
+
+@font-face {
+  font-family:'EngravingCC';
+    src: url("./fonts/EngravingCC.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+/* ////////////////////////////////////////////////////////////////////////////////*/
+/* ---------------------------|| About us Section  || ---------------------------|| */
+
+.section-aboutus {
+  position: relative;
+  width: 100%;
+  min-height: 100vh; /* Use min-height for flexibility */
+  background-color: white !important;
+  font-family: 'EngravingCC', sans-serif;
+  overflow: hidden; /* Prevent content overflow issues */
+  /* No flexbox here for desktop; relying on absolute positioning for children */
+}
+
+.aboutUs_backgroundImg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 86vh; /* As specified by you */
+  object-fit: cover;
+  z-index: 1; /* Ensure background image is behind other elements */
+}
+
+/* Redundant rule, consider removing if .aboutUs_backgroundImg is applied to the first image. */
+/* .section-aboutus img:first-of-type {
+  position: absolute;
+  top: 0;
+  width: 100%;
+  height: 90%;
+  z-index: 1;
+} */
+
+.section-aboutus img:last-of-type {
+  position: absolute;
+  bottom: 0; /* Aligned to the bottom for desktop */
+  left: 3%;
+  z-index: 2; /* Car image above background */
+  max-width: 50%; /* Controls the size of the car image on large screens */
+  height: auto; /* Maintains the image's aspect ratio */
+  transition: all 0.3s ease-in-out; /* Smooth transition for responsiveness */
+}
+
+/* Media Queries for the second image (car image) on larger screens */
+@media (max-width: 1024px) {
+  .section-aboutus img:last-of-type {
+    max-width: 55%;
+    left: 2%;
+  }
+}
+
+/* Desktop layout for text content (maintains right alignment and vertical centering) */
+.textAboutUs {
+  position: absolute; /* Default for desktop */
+  top: 50%;
+  transform: translateY(-50%);
+  right: 10%; /* Text block on the right for desktop */
+  color: white;
+  max-width: 600px;
+  z-index: 3;
+  text-align: right; /* Text aligned right within the block for desktop */
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 400;
+  padding: 1.5rem;
+  box-sizing: border-box;
+}
+
+.textAboutUs h1 {
+  font-size: 2.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-family: 'EngravingCC', sans-serif;
+  margin-bottom: 1.25rem;
+  padding: 0.9375rem;
+  background: linear-gradient(90deg, #9a9a9a, #ffffff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.textAboutUs p {
+  font-size: 1rem;
+  line-height: 1.6;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+  margin-bottom: 1rem;
+}
+
+/* Specific media query for larger tablets/smaller desktops to refine desktop-like layout */
+@media (max-width: 1024px) {
+  .textAboutUs {
+    right: 5%; /* Adjust right for larger tablets */
+    max-width: 550px;
+  }
+  .textAboutUs h1 {
+    font-size: 2.4rem;
+  }
+  .textAboutUs p {
+    font-size: 0.95rem;
+  }
+}
+
+/* ---------------- MOBILE LAYOUT ADJUSTMENTS (768px and below) ---------------- */
+@media (max-width: 768px) {
+  .section-aboutus {
+    display: flex; /* Activate flexbox for mobile to stack content */
+    flex-direction: column; /* Stack content vertically */
+    justify-content: flex-start; /* Align content to the top */
+    align-items: center; /* Center items horizontally */
+    padding-top: 4rem; /* Add padding at the top to push content down */
+    min-height: auto; /* Allow height to adjust to content */
+    height: auto; /* Ensure height is determined by content */
+    text-align: center; 
+   
+  }
+
+  .aboutUs_backgroundImg {
+    /* If the section height is auto, background should also be auto or cover the whole thing.
+       We'll ensure it covers the current section height for mobile. */
+    height: 100%; /* Ensure background covers the full (auto) height of the section */
+  }
+
+  .textAboutUs {
+    position: static; /* Remove absolute positioning on mobile to allow flex flow */
+    transform: none; /* Remove transform property */
+    margin-top: 0; /* Let flexbox handle vertical spacing */
+    text-align: center; /* Center text content */
+    max-width: 90%; /* Allow text to take more width */
+    order: 1; /* Place text block first in the flex order */
+    padding: 1rem; /* Adjust padding for mobile */
+  }
+
+  .textAboutUs h1 {
+    font-size: 2.2rem;
+    margin-bottom: 0.8rem;
+  }
+
+  .textAboutUs p {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin-bottom: 1rem; /* Add margin below paragraphs */
+    padding: 0 0.5rem;
+  }
+
+  .aboutus-button {
+    margin-top: 0.5rem; /* Reduce margin for mobile spacing */
+    margin-bottom: 1.5rem; /* Space between button and car image */
+    display: block; /* Make button a block element to take full width of flex item and center */
+    width: fit-content; /* Allow button width to fit content */
+    /* Remove padding to let flexbox center it and adjust margins */
+  }
+
+  .section-aboutus img:last-of-type {
+    position: static; /* Make car image participate in flex flow */
+    transform: none; /* Remove transform property */
+    max-width: 85%; /* Adjust size for mobile */
+    margin-top: 0; /* No specific top margin, will be spaced by other elements */
+    margin-bottom: 2rem; /* Add space below the car image */
+    order: 2; /* Place car image after the text and button */
+    left: auto; /* Reset left property */
+    bottom: auto; /* Reset bottom property */
+    /* Make sure the image itself is centered within its flex container */
+    align-self: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .section-aboutus {
+    padding-top: 3rem; /* Slightly less padding for very small screens */
+  }
+  .textAboutUs {
+    max-width: 95%; /* Even more width on very small screens */
+    padding: 0.8rem;
+  }
+  .textAboutUs h1 {
+    font-size: 1.6rem;
+    padding: 0.5rem;
+  }
+  .textAboutUs p {
+    font-size: 0.85rem;
+    line-height: 1.4;
+  }
+  .aboutus-button {
+    margin-top: 0.5rem;
+    margin-bottom: 1rem; /* Smaller margin for very tight screens */
+  }
+  .section-aboutus img:last-of-type {
+    max-width: 90%; /* Adjust car size for very small screens */
+    margin-bottom: 1.5rem; /* Smaller bottom margin */
+  }
+}
+
+/* Default button styling (remains mostly the same for desktop) */
+.aboutus-button {
+  outline: none;
+  cursor: pointer;
+  border: none;
+  padding: 0.9rem 1.5rem;
+  font-size: inherit;
+  position: relative;
+  display: inline-block; /* Default for desktop to allow text-align: right on parent */
+  font-weight: 300;
+  font-size: 15px;
+  border-radius: 500px;
+  overflow: hidden;
+  background: #21332B;
+  color: rgb(0, 0, 0);
+  border: 1.5px solid black;
+  text-transform: uppercase;
+  margin-top: 1rem; /* Spacing below text on desktop */
+}
+
+.aboutus-button span {
+  position: relative;
+  z-index: 10;
+  transition: color 0.4s;
+}
+
+.aboutus-button:hover span {
+  color: white;
+}
+
+.aboutus-button::before,
+.aboutus-button::after {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
+.aboutus-button::before {
+  content: "";
+  background: #e4e4e4;
+  width: 120%;
+  left: -10%;
+  transform: skew(30deg);
+  transition: transform 0.4s cubic-bezier(0.3, 1, 0.8, 1);
+}
+
+.aboutus-button:hover::before {
+  transform: translate3d(100%, 0, 0);
+}
+
+/* ---------------------------|| About us END || ---------------------------|| */
+/*////////////////////////////////////////////////////////////////////////////*/
+
+
+
+
+
+
+
+
+/*////////////////////////////////////////////////////////////////////////////*/
+/* ---------------------------|| Cars we ofer Section || ---------------------------|| */
+/*////////////////////////////////////////////////////////////////////////////*/
+
+/* Base styles for the entire section */
+.section_cars_we_offer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    width: 100%;
+    background-color: #141414; /* This should be set by JS or a dynamic class */
+    text-align: center;
+    overflow: hidden;
+    box-sizing: border-box;
+    box-shadow: inset 0 0 20rem rgba(0, 0, 0, 0.7);
+    transition: background-color 0.5s ease;
+    padding-top: 2rem; /* Reduced top padding */
+    padding-bottom: 2rem; /* Reduced bottom padding */
+}
+
+.gradient-text-title, .cwo_title {
+    background: linear-gradient(to bottom, white, rgba(255, 255, 255, 0.2)) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+    text-fill-color: transparent !important;
+    
+    text-transform: uppercase !important;
+}
+
+/* Title styling */
+.cwo_title {
+    font-size: clamp(2.2rem, 8vw, 3\\rem) !important;
+    margin-bottom: 1rem;
+    padding: 0 1rem;
+    font-weight: 100 !important;
+    font-family:Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+}
+
+/* Main content wrapper (text and buttons) */
+.cwo-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center; /* Center items horizontally in column layout for mobile */
+    width: 100%;
+    max-width: 1100px;
+    gap: 1.5rem; /* Further reduced gap for phone mode */
+    padding: 0 1rem;
+}
+
+/* Text container styling */
+.cwo-text {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center text elements horizontally for mobile */
+    text-align: center; /* Center text content for mobile */
+    margin-bottom: 1rem; /* Further reduced margin-bottom for phone mode */
+    width: 100%;
+}
+
+.carTitle {
+    font-size: clamp(1.8rem, 6vw, 2rem) !important;
+    font-weight: 400 !important;
+    font-family: "EngravingCC", serif !important;
+    margin-bottom: 0.5rem;
+    text-align: center; /* Ensure car title is centered */
+    width: 100%;
+}
+
+.gradient-text-desc {
+    font-size: clamp(0.85rem, 3.5vw, 1.1rem) !important;
+    color: rgb(178, 178, 178) !important;
+    font-family: "poppins" !important;
+    font-weight: 100 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.1rem !important;
+    max-width: 700px !important;
+    line-height: 1.5 !important;
+    text-align: center; /* Ensure description is centered */
+    width: 100%;
+}
+
+/* Buttons container */
+.cwo-buttons {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px; /* Reduced gap between buttons for mobile */
+    width: 100%;
+    max-width: 300px; /* Slightly reduced max-width for stacked buttons */
+    margin-top: 1.5rem; /* Reduced space above buttons */
+}
+
+/* Individual button styling */
+.button_elegant {
+    padding: 0.8rem 3rem !important; /* Slightly reduced button padding */
+    border: 2px solid #b2b2b2;
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    font-size: 0.8rem;
+    cursor: pointer;
+    border-radius: 30px;
+    transition: all 0.4s ease;
+    outline: none;
+    position: relative;
+    overflow: hidden;
+    text-align: center;
+    flex-shrink: 0;
+    min-width: 160px; /* Slightly reduced min-width to prevent overflow */
+}
+
+/* General hover effects for buttons */
+.button_elegant::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(
+        circle,
+        rgba(199, 199, 199, 0.1) 0%,
+        rgba(196, 196, 196, 0) 70%
+    );
+    transform: scale(0);
+    transition: transform 0.5s ease;
+    z-index: 0;
+}
+
+.button_elegant:hover::after {
+    transform: scale(4);
+}
+
+.button_elegant:hover {
+    border-color: #666666;
+    background: #292929;
+}
+
+/* Specific button variations */
+.button_v1:hover {
+    border-color: #b8b8b8;
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.button_v1::after {
+    background: radial-gradient(
+        circle,
+        rgba(25, 25, 25, 0.1) 0%,
+        rgba(0, 0, 0, 0) 70%
+    );
+}
+
+.button_v2 {
+    background: none;
+}
+
+.button_v2:hover {
+    border-color: #b8b2b2;
+    background: rgba(0, 0, 0, 0.1);
+}
+
+/* Car image container */
+.cwo-car-image-container {
+    position: relative;
+    width: 100%;
+    max-width: 600px !important;
+    margin-top: 1rem; /* Further reduced margin-top */
+    /* Adjust min-height if needed to ensure the car always has space */
+    min-height: 200px; /* Example: ensure some minimum space for the car */
+}
+
+.cwo-car-image {
+    position: relative; /* Keep relative for mobile */
+    width: 100%;
+    height: auto;
+    display: block;
+    transform: translateX(-50%);
+    left: 50%;
+    bottom: 0; /* Align to the bottom of its container */
+}
+
+/* SVG styling */
+.cwo-svg {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 859px;
+    bottom: -30px !important; /* Adjusted for mobile - fine-tune as needed */
+    pointer-events: none;
+}
+
+/* Specific SVG button styling (for arrow buttons in SVG) */
+#moveToNextCar_button_group,
+#moveToPrevCar_button_group {
+    cursor: pointer;
+    pointer-events: all;
+}
+
+/* Utility to ensure text within buttons is above the pseudo-element */
+.button_elegant span {
+    position: relative;
+    z-index: 1;
+}
+
+/* === Media Queries for Responsiveness === */
+
+/* Tablets and larger screens (min-width: 768px) */
+@media (min-width: 768px) {
+    .section_cars_we_offer {
+        padding-top: 3rem;
+        padding-bottom: 3rem;
+    }
+    .cwo-content {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: flex-start; /* Revert to flex-start for text/buttons alignment */
+        margin-bottom: 3.5rem;
+        gap: 7rem; /* Restore gap for larger screens */
+        padding: 0 2rem;
+    }
+
+    .cwo-text {
+        align-items: flex-start; /* Revert to flex-start for text/buttons alignment */
+        text-align: left; /* Revert to left alignment for text content */
+        margin-bottom: 6rem;
+        width: auto;
+    }
+
+    .carTitle {
+        text-align: left; /* Revert car title to left alignment */
+    }
+
+    .gradient-text-desc {
+        text-align: left; /* Revert description to left alignment */
+    }
+
+    .cwo-buttons {
+        flex-direction: row;
+        justify-content: flex-end;
+        width: auto;
+        max-width: none;
+        gap: 10px;
+        margin-top: 0;
+    }
+
+    .button_elegant {
+        padding: 1rem 3rem;
+        font-size: 1rem;
+        min-width: 140px;
+    }
+
+    .cwo-car-image-container {
+        width: 80%;
+        margin-top: 0;
+        min-height: auto; /* Revert min-height for larger screens */
+    }
+
+    .cwo-car-image {
+        position: absolute; /* Restore absolute positioning for larger screens */
+        bottom: -100px;
+    }
+
+    .cwo-svg {
+        bottom: -140px !important;
+    }
+}
+
+/* Laptops and larger screens (min-width: 1024px) */
+@media (min-width: 1024px) {
+    .section_cars_we_offer {
+        padding: 3rem 2rem;
+    }
+
+    .cwo_title {
+        font-size: clamp(2.5rem, 5vw, 3.5rem);
+    }
+
+    .carTitle {
+        font-size: clamp(2rem, 4vw, 2.5rem);
+    }
+
+    .gradient-text-desc {
+        font-size: clamp(0.9rem, 1.8vw, 1.1rem);
+    }
+
+    .button_elegant {
+        padding: 1.1rem 3.5rem;
+        font-size: 1.05rem;
+    }
+
+    .cwo-car-image-container {
+        max-width: 850px;
+    }
+}
+
+/* Desktops and larger screens (min-width: 1440px) */
+@media (min-width: 1440px) {
+    .section_cars_we_offer {
+        padding: 4rem 3rem;
+    }
+    .cwo_title {
+        font-size: clamp(3rem, 6vw, 4rem);
+    }
+    .carTitle {
+        font-size: clamp(2.2rem, 4.5vw, 3rem);
+    }
+    .gradient-text-desc {
+        font-size: clamp(1rem, 2vw, 1.2rem);
+    }
+    .button_elegant {
+        padding: 1.2rem 4rem;
+        font-size: 1.1rem;
+    }
+}
+
+
+/* ---------------------------|| cars we Offer END || ---------------------------|| */
+/*////////////////////////////////////////////////////////////////////////////*/
+
+
+
+
+
+
+
+
+/*////////////////////////////////////////////////////////////////////////////*/
+/* ---------------------------|| location Section || ---------------------------|| */
+/*////////////////////////////////////////////////////////////////////////////*/
+
+.location_section{
+  position: relative;
+   background-color: white;
+  background-image: 
+    linear-gradient(rgba(231, 231, 231, 0.3) 2px, transparent 2px),
+    linear-gradient(90deg, rgba(231, 231, 231, 0.3) 2px, transparent 2px);
+  background-size: 220px 110px;
+  background-position: 0 0;
+  background-repeat: repeat;
+  display: flex;
+}
+.car-test {
+          position: absolute !important;
+          width: 600px;
+          height: auto;
+          bottom: -20px; /* Adjusted to make it pop out from the bottom */
+          right: 90px; /* Adjusted to make it pop out from the right */
+          transform: rotate(-6deg); /* Keeping the subtle rotation */
+          z-index: 20; /* Ensuring it's above other elements */
+          
+        }
+
+
+/* ---------------------------|| location END || ---------------------------|| */
+/*////////////////////////////////////////////////////////////////////////////*/
+
+
+
+
+/*////////////////////////////////////////////////////////////////////////////*/
+/* ---------------------------|| Our cars Section || ---------------------------|| */
+/*////////////////////////////////////////////////////////////////////////////*/
+#our_cars{
+  background-color: #202020;
+   box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+}
+.blurry-background {
+                    /* Using a placeholder image for the background, adjust as needed */
+                    background-image: url('https://placehold.co/12000x600/333333/FFFFFF?text=Lusso');
+                    
+                     background-color: #292929;
+                  
+                    background-size:contain;
+                    background-repeat: no-repeat;
+                    background-position: center;
+                    filter: blur(4px); /* Apply blur effect to the background image */
+                    -webkit-filter: blur(4px); /* For Safari */
+                }
+                /* Custom class for a subtle inner shadow on the main card to match the image */
+                .card-inner-shadow {
+                    box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+                }
+
+                /* Custom styles for subtle hover effects */
+                .logo-item {
+                    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+                }
+                .logo-item:hover {
+                    transform: scale(1.1); /* Slightly enlarge on hover */
+                    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3); /* Add a more pronounced shadow */
+                }
+
+                .explore-button {
+                    transition: background-color 0.3s ease-in-out, transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+                }
+                .explore-button:hover {
+                    background-color: #e5e7eb; /* Slightly darker white */
+                    transform: translateY(-2px) scale(1.02); /* Slight lift and scale */
+                    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2); /* More prominent shadow */
+                }
+
+                /* .main-card-effect {
+                    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out, border 0.3s ease-in-out; 
+                    border: 2px solid transparent; 
+                }
+                .main-card-effect:hover {
+                    transform: translateY(-5px) scale(1.01); 
+                    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3); 
+                    border: 2px solid #22c55e;
+                }  */
+
+
+/* ---------------------------|| our cars END || ---------------------------|| */
+/*////////////////////////////////////////////////////////////////////////////*/
+
+
+#showroom {
+  background-color: black !important;
+}
+
+
+.footer{
+  width: 100% !important;
+}
+
+.beforeFooter{
+  height: 50vh !important;
+}
+
+.beforefooter_text{
+  color: white !important;
+}
+
+.mainCard, .ourValues, .aboutUsSec{
+  height: 100% !important;
+}
+

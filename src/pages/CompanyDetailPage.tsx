@@ -88,7 +88,7 @@ const CompanyDetailPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const BASE_API_URL = 'https://lussogroupgeo.com';
+  const BASE_API_URL = 'https://lovely-basket-c9e8008024.strapiapp.com';
 
   useEffect(() => {
     if (!slug) {

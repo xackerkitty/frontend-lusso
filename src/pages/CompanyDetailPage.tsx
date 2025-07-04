@@ -88,7 +88,7 @@ const CompanyDetailPage: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    const BASE_API_URL = 'https://api.lussogroupgeo.com';
+    const BASE_API_URL = import.meta.env.VITE_API_URL;
 
     useEffect(() => {
         if (!slug) {

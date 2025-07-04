@@ -102,7 +102,7 @@ function LussoMainPage() {
   const [logosError, setLogosError] = useState<string | null>(null);
 
   // Define the base URL for your API
-  const BASE_API_URL = 'https://api.lussogroupgeo.com';
+  const BASE_API_URL = import.meta.env.VITE_API_URL;
   // Changed populate parameter to '*' to fetch all relations and nested components
   const API_COMPANIES_URL = `${BASE_API_URL}/api/companies?populate=*`;
 

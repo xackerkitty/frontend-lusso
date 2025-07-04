@@ -102,7 +102,7 @@ function LussoMainPage() {
   const [logosError, setLogosError] = useState<string | null>(null);
 
   // Define the base URL for your API
-  const BASE_API_URL = 'https://lovely-basket-c9e8008024.strapiapp.com';
+  const BASE_API_URL = 'https://api.lussogroupgeo.com';
   // Changed populate parameter to '*' to fetch all relations and nested components
   const API_COMPANIES_URL = `${BASE_API_URL}/api/companies?populate=*`;
 

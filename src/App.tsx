@@ -281,27 +281,6 @@ function LussoMainPage() {
   return (
     <div className="min-h-screen bg-white text-gray-800 font-inter flex flex-col items-center p-4 relative overflow-hidden">
       {/* Hamburger Menu Icon */}
-      <button
-        className="absolute top-4 left-4 z-50 p-2 rounded-lg bg-gray-100 shadow-md focus:outline-none focus:ring-2 focus:ring-blue-300 group"
-        onClick={() => setIsMenuOpen(!isMenuOpen)}
-        aria-label="Toggle menu"
-      >
-        <div className={`
-            w-8 h-1 bg-gray-700 mb-1.5 rounded-full transition-all duration-300 ease-in-out
-            ${isMenuOpen ? 'rotate-45 translate-y-2' : ''}
-            group-hover:bg-blue-500
-          `}></div>
-        <div className={`
-            w-8 h-1 bg-gray-700 mb-1.5 rounded-full transition-all duration-300 ease-in-out
-            ${isMenuOpen ? 'opacity-0' : ''}
-            group-hover:bg-blue-500
-          `}></div>
-        <div className={`
-            w-8 h-1 bg-gray-700 rounded-full transition-all duration-300 ease-in-out
-            ${isMenuOpen ? '-rotate-45 -translate-y-2' : ''}
-            group-hover:bg-blue-500
-          `}></div>
-      </button>
 
       {/* Full-screen Overlay Menu */}
       <div

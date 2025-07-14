@@ -705,7 +705,7 @@ const ShowroomPage: React.FC = () => {
 
     const heroVideoUrl = showroomData?.mainBG?.url
         ? getMediaUrl(showroomData.mainBG)
-        : 'https://www.w3schools.com/html/mov_bbb.mp4'; // Fallback video URL
+        : ''; // Fallback video URL
 
     // Your provided JSON does not have a 'videoPoster' directly in 'luxurycars-showroom'.
     // If you need a poster, it should be added to your Strapi schema for 'luxurycars-showroom'

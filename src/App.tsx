@@ -274,89 +274,51 @@ function LussoMainPage() {
           </div>
         ) : companies && companies.length > 0 ? (
           <>
-            <div
-              className={`
-                grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 mb-6
-                transition-opacity duration-1000 ease-in-out
-                ${contentReady ? 'opacity-100' : 'opacity-0'}
-                z-10
-              `}
-            >
+            <div className="flex flex-wrap justify-center gap-6 z-10 mb-6">
               {companies.slice(0, 6).map((company, index) => (
                 <div
                   key={company.id}
                   onClick={() => handleCardClick(company.slug)}
-                  className={`
-                    w-28 h-28 md:w-36 md:h-36 lg:w-40 lg:h-40
-                    rounded-xl flex flex-col items-center justify-center p-0
-                    shadow-lg
-                    transform-gpu transition-all duration-200 ease-out
-                    hover:scale-105 hover:shadow-2xl hover:-translate-y-1 cursor-pointer
-                    ${contentReady ? 'scale-100 opacity-100 translate-y-0' : 'scale-50 opacity-0 translate-y-10'}
-                  `}
+                  className={
+                    `w-28 h-28 md:w-36 md:h-36 lg:w-40 lg:h-40 rounded-xl flex items-center justify-center p-0 shadow-lg transform-gpu transition-all duration-200 ease-out hover:scale-105 hover:shadow-2xl hover:-translate-y-1 cursor-pointer bg-transparent` +
+                    ` ${contentReady ? 'scale-100 opacity-100 translate-y-0' : 'scale-50 opacity-0 translate-y-10'}`
+                  }
                   style={{ transitionDelay: contentReady ? `${index * 150}ms` : '0ms' }}
                 >
-                  {company.companyLogo && company.companyLogo.url ? (
-                    <img
-                      src={company.companyLogo.url}
-                      alt={company.companyName || 'Company Logo'}
-                      className="company-logo-img"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.onerror = null;
-                        target.src = "https://placehold.co/100x100/E0E0E0/000000?text=Error";
-                      }}
-                    />
-                  ) : (
-                    <img
-                      src={`https://placehold.co/200x200/CCCCCC/333333?text=No+Logo`}
-                      alt="No Logo Available"
-                      className="company-logo-img"
-                    />
-                  )}
+                  <img
+                    src={company.companyLogo?.url || `https://placehold.co/200x200/CCCCCC/333333?text=No+Logo`}
+                    alt={company.companyName || 'Company Logo'}
+                    className="w-[90%] h-[90%] object-contain"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.onerror = null;
+                      target.src = "https://placehold.co/100x100/E0E0E0/000000?text=Error";
+                    }}
+                  />
                 </div>
               ))}
             </div>
-            <div
-              className={`
-                grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6
-                transition-opacity duration-1000 ease-in-out
-                ${contentReady ? 'opacity-100' : 'opacity-0'}
-                z-10
-              `}
-            >
+            <div className="flex flex-wrap justify-center gap-6 z-10">
               {companies.slice(6, 12).map((company, index) => (
                 <div
                   key={company.id}
                   onClick={() => handleCardClick(company.slug)}
-                  className={`
-                    w-28 h-28 md:w-36 md:h-36 lg:w-40 lg:h-40
-                    rounded-xl flex flex-col items-center justify-center p-0
-                    shadow-lg
-                    transform-gpu transition-all duration-200 ease-in-out
-                    hover:scale-105 hover:shadow-2xl hover:-translate-y-1 cursor-pointer
-                    ${contentReady ? 'scale-100 opacity-100 translate-y-0' : 'scale-50 opacity-0 translate-y-10'}
-                  `}
+                  className={
+                    `w-28 h-28 md:w-36 md:h-36 lg:w-40 lg:h-40 rounded-xl flex items-center justify-center p-0 shadow-lg transform-gpu transition-all duration-200 ease-out hover:scale-105 hover:shadow-2xl hover:-translate-y-1 cursor-pointer bg-transparent` +
+                    ` ${contentReady ? 'scale-100 opacity-100 translate-y-0' : 'scale-50 opacity-0 translate-y-10'}`
+                  }
                   style={{ transitionDelay: contentReady ? `${(index + 6) * 150}ms` : '0ms' }}
                 >
-                  {company.companyLogo && company.companyLogo.url ? (
-                    <img
-                      src={company.companyLogo.url}
-                      alt={company.companyName || 'Company Logo'}
-                      className="company-logo-img"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.onerror = null;
-                        target.src = "https://placehold.co/100x100/E0E0E0/000000?text=Error";
-                      }}
-                    />
-                  ) : (
-                    <img
-                      src={`https://placehold.co/200x200/CCCCCC/333333?text=No+Logo`}
-                      alt="No Logo Available"
-                      className="company-logo-img"
-                    />
-                  )}
+                  <img
+                    src={company.companyLogo?.url || `https://placehold.co/200x200/CCCCCC/333333?text=No+Logo`}
+                    alt={company.companyName || 'Company Logo'}
+                    className="w-[90%] h-[90%] object-contain"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.onerror = null;
+                      target.src = "https://placehold.co/100x100/E0E0E0/000000?text=Error";
+                    }}
+                  />
                 </div>
               ))}
             </div>

@@ -325,7 +325,7 @@ function LussoMainPage() {
           </>
         ) : (
           <div className="flex items-center justify-center w-full h-full min-h-[200px] bg-gray-100 font-inter">
-            <p className="text-lg text-gray-700">No companies found.</p>
+            <p className="text-lg text-gray-700">The server right now is deactivated. needs to be restart by developer for testing.</p>
           </div>
         )}
 

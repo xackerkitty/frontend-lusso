@@ -720,3 +720,14 @@ section{
   height: 100% !important;
 }
 
+
+/* luxury-bg and main-logo styles (optional, for further customization) */
+.luxury-bg {
+  background-image: url('/images/car/background.png');
+  background-size: cover;
+  background-position: center;
+}
+.main-logo {
+  width: 200px;
+  height: auto;
+}

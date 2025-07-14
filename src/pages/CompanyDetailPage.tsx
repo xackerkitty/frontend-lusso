@@ -5,11 +5,11 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
     faMapMarkerAlt, // For Location/Address
-    faPhone,        // For Phone
-    faEnvelope      // For Email
+    faPhone,         // For Phone
+    faEnvelope       // For Email
 } from '@fortawesome/free-solid-svg-icons';
 import {
-    faInstagram,    // For Instagram
+    faInstagram,     // For Instagram
     faFacebookF,    // For Facebook (using faFacebookF for consistency)
     faTiktok        // For TikTok
 } from '@fortawesome/free-brands-svg-icons'; // Social media icons are in free-brands-svg-icons
@@ -87,6 +87,7 @@ interface Company {
     publishedAt: string;
     buttonTxt: string | null;
     websiteUrl?: string | null;
+    mainWebLink?: string | null;
     companyLogo: CompanyLogo | null;
     mainBanner: MainBanner | null;
     contactInfo: ContactInfo[];
@@ -197,6 +198,7 @@ const CompanyDetailPage: React.FC = () => {
                         publishedAt: companyItem.publishedAt,
                         buttonTxt: companyItem.buttonTxt,
                         websiteUrl: companyItem.websiteUrl || null,
+                        mainWebLink: companyItem.mainWebLink || null,
                         companyLogo: companyLogo,
                         mainBanner: mainBannerImage,
                         contactInfo: processedContactInfo,
@@ -217,11 +219,12 @@ const CompanyDetailPage: React.FC = () => {
     }, [slug]);
 
     const handleDiscoverWebsite = () => {
-        if (company?.websiteUrl) {
-            window.open(company.websiteUrl, '_blank');
-        } else {
-            navigate('/');
-            console.warn("No specific website URL provided for this company. Navigating back.");
+        if (!company?.mainWebLink || company.mainWebLink === "choose here" || company.mainWebLink === "mainWebLink" || company.mainWebLink.trim() === "") return;
+        switch (company.mainWebLink) {
+            case "luxurycars":
+                navigate("/luxurycars/");
+                break;
+            // Add more cases as needed
         }
     };
 
@@ -262,7 +265,7 @@ const CompanyDetailPage: React.FC = () => {
     }
 
     return (
-        <div className="min-h-screen bg-[#0A260A] text-gray-100 font-sans">
+        <div className="min-h-screen bg-black text-gray-100 font-sans">
             <nav className="fixed w-full z-10 bg-black bg-opacity-30 backdrop-filter backdrop-blur-lg shadow-md">
                 <div className="mx-auto py-4 flex items-center" style={{ paddingLeft: '5.5rem', paddingRight: '5.5rem' }}>
                     <div className="text-2xl font-bold text-white rounded-md">
@@ -287,7 +290,8 @@ const CompanyDetailPage: React.FC = () => {
                             {company.mainDesc || "Null"}
                         </p>
 
-                        {company.buttonTxt && (
+                        {/* Show button only if mainWebLink is valid, not a placeholder, and not 'nothing' */}
+                        {company.mainWebLink && company.mainWebLink !== "choose here" && company.mainWebLink !== "mainWebLink" && company.mainWebLink.trim() !== "" && company.mainWebLink !== "nothing" && company.buttonTxt && (
                             <button
                                 onClick={handleDiscoverWebsite}
                                 className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-300 ease-in-out transform hover:scale-105 mb-8"
@@ -326,7 +330,7 @@ const CompanyDetailPage: React.FC = () => {
                                         {(!['Location', 'Phone', 'Email', 'Instagram', 'Facebook', 'TikTok'].includes(contact.contact_type)) && (
                                             <span className="mr-3">🔗</span>
                                         )}
-                                        {contact.contact_type ? `${contact.contact_type}: ` : ''}
+                                        {/* Removed the contact.contact_type text here */}
                                         {contact.contact_detail}
                                     </p>
                                 ))
@@ -339,7 +343,8 @@ const CompanyDetailPage: React.FC = () => {
                     </div>
                     </div>
 
-                    <div className="w-full md:w-1/2 flex items-center justify-center bg-gray-800 rounded-md">
+                    <div className="w-full md:w-1/2 flex items-center justify-center rounded-md"
+                         style={{ backgroundColor: '#1f2937', minHeight: '400px', minWidth: '400px', background: '#1f2937 !important' }}>
                         {company.mainBanner && company.mainBanner.url ? (
                             <img
                                 src={company.mainBanner.url}
@@ -355,7 +360,8 @@ const CompanyDetailPage: React.FC = () => {
                             <img
                                 src={company.companyLogo.url}
                                 alt={company.companyName || "Company Logo"}
-                                className="w-full h-full object-cover rounded-lg shadow-lg"
+                                className="w-[80%] h-[80%] object-contain rounded-lg shadow-lg"
+                                style={{ backgroundColor: '#1f2937', background: '#1f2937 !important' }}
                                 onError={(e) => {
                                     const target = e.target as HTMLImageElement;
                                     target.onerror = null;

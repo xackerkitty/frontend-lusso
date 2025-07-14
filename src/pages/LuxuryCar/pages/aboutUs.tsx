@@ -1,294 +1,150 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import '../scr/css/aboutus.css'; // Ensure this CSS file is used for global styles or specific overrides if needed
+import '../scr/css/aboutus.css';
 
-// --- Type Definitions (As provided, assuming they are in a types.ts or similar shared file) ---
-interface MediaAttributes {
+// --- Type Definitions for new API ---
+interface Value {
+    id: number;
+    valueTitle: string | null;
+    valueDesc: string | null;
+}
+
+interface WhyUsItem {
+    id: number;
+    whyUsTitle: string | null;
+    whyUsDesc: string | null;
+}
+
+interface Media {
     url: string;
-    mime?: string; // Added mime type for video detection
-    name?: string;
-    alternativeText?: string;
-    caption?: string;
-    width?: number;
-    height?: number;
+    formats?: {
+        large?: { url: string };
+        medium?: { url: string };
+        small?: { url: string };
+        thumbnail?: { url: string };
+    };
 }
 
-interface MediaDataItem {
+interface AboutUsData {
     id: number;
-    attributes: MediaAttributes;
+    documentId: string;
+    mainTitle: string;
+    mainDesc: string;
+    buttonTxt: string;
+    JourneyTitleTxt: string;
+    JourneyDesc: string;
+    CTA_title: string;
+    CTA_Desc: string;
+    CTA_buttonTxt: string;
+    ourValues?: Value[];
+    whyUs?: WhyUsItem[];
+    whyUsImg?: Media | null;
+    JourneyIMG?: Media | null;
+    mainBGImg?: Media | null; // Optional, as it may not be available in the new API
+    // Add image fields here if/when available, e.g. heroImage, journeyImage, etc.
 }
 
-interface SingleMediaData {
-    data: MediaDataItem | null;
-}
+const STRAPI_BASE_URL = import.meta.env.VITE_API_URL;
+const API_URL = `${STRAPI_BASE_URL}/api/luxurycars-aboutus?populate=*`;
 
-interface BasicInfoAttributes {
-    companyName?: string;
-    companyLogo?: SingleMediaData;
-}
-
-interface LuxuryHeroAttributes {
-    basicinfo?: BasicInfoAttributes;
-    videoPoster?: SingleMediaData;
-    videoUrl?: SingleMediaData; // This will still be fetched but not directly used for hero background now
-    aboutUsBackground?: SingleMediaData; // This will still be fetched but used as a general fallback if AU_mainBG fails
-    porscheImage?: SingleMediaData;
-    ourStoryTitle?: string;
-    aboutUsTextP1?: string;
-    aboutUsTextP2?: string;
-    heroSection?: {};
-    featuredCar?: {};
-    aboutUsSection?: {};
-    locationSection?: {};
-    ourCars?: {};
-}
-
-interface LCMainSectionAttributes {
-    id: number;
-    AU_TitleText?: string;
-    AU_mainDesc?: string;
-    buttonTxt?: string;
-    AU_mainBG?: SingleMediaData; // This is the source for our hero background
-}
-
-interface LCAUJourneySectionAttributes {
-    id: number;
-    Au_JourneyTitleTxt?: string;
-    AU_JourneyDesc?: string;
-    AU_journeyBG?: SingleMediaData;
-}
-
-interface LCAUValueItemAttributes {
-    id: number;
-    AU_valueTxt?: string;
-    AU_valueDesc?: string;
-    iconIdentifier?: string;
-}
-
-interface LCAUWhyChooseUsItemAttributes {
-    id: number;
-    AU_whyUsTitle?: string;
-    whyUsText?: string;
-}
-
-interface AUMainSectionAttributes {
-    AU_mainBG?: SingleMediaData; // This is for the root AU_mainSection, kept for robustness but LC_mainSection.AU_mainBG is priority
-    LC_mainSection?: LCMainSectionAttributes;
-    LC_AU_JourneySection?: LCAUJourneySectionAttributes;
-    LC_AU_Values?: LCAUValueItemAttributes[];
-    LC_AU_WhyChooseUs?: LCAUWhyChooseUsItemAttributes[];
-    WCU_IMG?: SingleMediaData;
-}
-
-interface StrapiDataItem<T> {
-    id: number;
-    attributes: T;
-}
-
-interface StrapiSingleResponse<T> {
-    data: StrapiDataItem<T> | null;
-    meta: any;
-}
-
-interface StrapiCollectionResponse<T> {
-    data: StrapiDataItem<T>[];
-    meta: any;
-}
-
-// --- Constants and Utility Functions ---
-const iconMap: { [key: string]: React.ReactNode } = {
-    quality: (
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-14 w-14 sm:h-16 sm:w-16 mx-auto mb-4 sm:mb-6 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c1.657 0 3 .895 3 2s-1.343 2-3 2-3-.895-3-2 1.343-2 3-2z" />
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 18s-2.5-3-4-5c-1.5-2-2-4-2-6 0-3.314 2.686-6 6-6s6 2.686 6 6c0 2-1 4-2.5 6-1.5 2-4 5-4 5z" />
-        </svg>
-    ),
-    client: (
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-14 w-14 sm:h-16 sm:w-16 mx-auto mb-4 sm:mb-6 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4h2a1 1 0 001-1v-3a1 0 00-1-1h-2a1 1 0 00-1 1v3a1 1 0 001 1z" />
-        </svg>
-    ),
-    innovation: (
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-14 w-14 sm:h-16 sm:w-16 mx-auto mb-4 sm:mb-6 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-    ),
-    default: (
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-14 w-14 sm:h-16 sm:w-16 mx-auto mb-4 sm:mb-6 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-        </svg>
-    ),
+// Helper for images (future-proof)
+const getMediaUrl = (media: any): string => {
+    if (!media) return '';
+    if (typeof media === 'string') return media;
+    if (media.url) return media.url.startsWith('http') ? media.url : `${STRAPI_BASE_URL}${media.url}`;
+    if (media.data && media.data.attributes && media.data.attributes.url) {
+        const url = media.data.attributes.url;
+        return url.startsWith('http') ? url : `${STRAPI_BASE_URL}${url}`;
+    }
+    return '';
 };
 
-const STRAPI_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:1337";
-
-const getMediaUrl = (
-    mediaDataContent: SingleMediaData['data'] | string | undefined
-): string => {
-    let relativePath: string | undefined;
-
-    if (typeof mediaDataContent === "string") {
-        relativePath = mediaDataContent;
-    } else if (mediaDataContent && 'attributes' in mediaDataContent) {
-        relativePath = mediaDataContent.attributes?.url;
-    } else {
-        return "";
-    }
-
-    if (!relativePath) {
-        return "";
-    }
-
-    if (relativePath.startsWith("http://") || relativePath.startsWith("https://")) {
-        return relativePath;
-    } else {
-        return `${STRAPI_BASE_URL}${relativePath.startsWith("/") ? "" : "/"}${relativePath}`;
-    }
-};
-
-// --- React Component ---
 const Aboutus: React.FC = () => {
-    const [heroData, setHeroData] = useState<LuxuryHeroAttributes | null>(null);
-    const [auMainSectionData, setAuMainSectionData] = useState<AUMainSectionAttributes | null>(null);
+    const [data, setData] = useState<AboutUsData | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [scrollY, setScrollY] = useState(0);
 
-    const handleScroll = () => {
-        setScrollY(window.scrollY);
-    };
-
     useEffect(() => {
-        window.addEventListener('scroll', handleScroll);
-        return () => {
-            window.removeEventListener('scroll', handleScroll);
-        };
+        window.addEventListener('scroll', () => setScrollY(window.scrollY));
+        return () => window.removeEventListener('scroll', () => setScrollY(window.scrollY));
     }, []);
 
-    const fetchData = useCallback(async () => {
+    useEffect(() => {
         setLoading(true);
         setError(null);
-
-        try {
-            const heroApiUrl = `${STRAPI_BASE_URL}/api/luxury-heroes?populate[basicinfo][populate]=companyLogo&populate[heroSection][populate]=*&populate[videoPoster]=*&populate[videoUrl]=*&populate[aboutUsBackground]=*&populate[porscheImage]=*&populate[featuredCar][populate]=*&populate[aboutUsSection][populate]=*&populate[locationSection][populate]=*&populate[ourCars][populate]=*&populate[aboutUsTextP1]=*&populate[aboutUsTextP2]=*&populate[ourStoryTitle]=*`;
-
-            // Populate AU_mainBG and its attributes to get mime type
-            const auMainSectionPopulate = [
-                "populate[LC_mainSection][populate]=AU_TitleText,AU_mainDesc,buttonTxt,AU_mainBG",
-                "populate[AU_mainBG]=*", // Fallback if AU_mainBG is directly on main section
-                "populate[LC_AU_JourneySection][populate]=AU_JourneyTitleTxt,AU_JourneyDesc,AU_journeyBG", // Explicitly populate for journey section
-                "populate[LC_AU_Values]=AU_valueTxt,AU_valueDesc,iconIdentifier", // Explicitly populate for values
-                "populate[LC_AU_WhyChooseUs]=AU_whyUsTitle,whyUsText", // Explicitly populate for why choose us
-                "populate[WCU_IMG]=*",
-            ].join('&');
-
-            const auMainSectionApiUrl = `${STRAPI_BASE_URL}/api/au-main-section?${auMainSectionPopulate}`;
-
-            const [heroResponse, auMainSectionResponse] = await Promise.all([
-                fetch(heroApiUrl),
-                fetch(auMainSectionApiUrl)
-            ]);
-
-            if (!heroResponse.ok) {
-                throw new Error(`HTTP error fetching hero data! Status: ${heroResponse.status}`);
-            }
-            const heroJson: StrapiCollectionResponse<LuxuryHeroAttributes> = await heroResponse.json();
-            setHeroData(heroJson.data?.[0]?.attributes || null);
-
-            if (!auMainSectionResponse.ok) {
-                throw new Error(`HTTP error fetching AU_mainSection data! Status: ${auMainSectionResponse.status}. Check Strapi server logs.`);
-            }
-            const auMainSectionJson: StrapiSingleResponse<AUMainSectionAttributes> = await auMainSectionResponse.json();
-            setAuMainSectionData(auMainSectionJson.data?.attributes || null);
-
-        } catch (err: any) {
-            setError(`Failed to load content: ${err.message}`);
-            console.error("Fetch error:", err);
-        } finally {
-            setLoading(false);
-        }
+        fetch(API_URL)
+            .then(res => {
+                if (!res.ok) throw new Error('Failed to fetch');
+                return res.json();
+            })
+            .then(json => setData(json.data))
+            .catch(err => setError(err.message))
+            .finally(() => setLoading(false));
     }, []);
 
+    // --- Fetch logo from API (like Shoowroom.tsx) ---
+    const [logoData, setLogoData] = useState<any | null>(null);
+
     useEffect(() => {
-        fetchData();
-    }, [fetchData]);
+        const fetchLogo = async () => {
+            try {
+                const STRAPI_BASE_URL = import.meta.env.VITE_API_URL;
+                const luxuryCarApiUrl = `${STRAPI_BASE_URL}/api/luxurycar?populate=*`;
+                const luxuryCarResponse = await fetch(luxuryCarApiUrl);
+                if (!luxuryCarResponse.ok) throw new Error('Failed to fetch logo');
+                const luxuryCarJson = await luxuryCarResponse.json();
+                setLogoData(luxuryCarJson?.data || null);
+            } catch (e) {
+                setLogoData(null);
+            }
+        };
+        fetchLogo();
+    }, []);
 
-    const logoUrl = getMediaUrl(heroData?.basicinfo?.companyLogo?.data);
+    // Get logo URL using getMediaUrl
+    const logoUrl = logoData?.logo?.url ? getMediaUrl(logoData.logo) : '';
 
-    // --- Data Destructuring & Fallbacks ---
-    const mainSection = auMainSectionData?.LC_mainSection;
-    const journeySection = auMainSectionData?.LC_AU_JourneySection;
-    const valuesSection = auMainSectionData?.LC_AU_Values;
-    const whyChooseUsSection = auMainSectionData?.LC_AU_WhyChooseUs;
+    if (loading) return <div className="text-center p-8 text-gray-700">Loading showroom data...</div>;
+    if (error) return <div className="text-center p-8 text-red-600 font-bold">Error: {error}</div>;
+    if (!data) return <div className="text-center p-8 text-gray-700">No data found.</div>;
 
-    // Dynamic Hero Background Media (Image or Video from AU_mainBG)
-    const auMainBgMedia = mainSection?.AU_mainBG?.data || auMainSectionData?.AU_mainBG?.data;
-    const heroBgUrl = getMediaUrl(auMainBgMedia);
-    const isHeroBgVideo = auMainBgMedia?.attributes?.mime?.startsWith('video/');
-
-    // Fallback image if AU_mainBG is not set or fails
-    const fallbackHeroImage = getMediaUrl(heroData?.aboutUsBackground?.data) || 'https://placehold.co/1920x1080/0A1C0D/ffffff?text=Luxury+Car+Hero';
-
-    // Other section background images
-    const journeyBackgroundImage = getMediaUrl(journeySection?.AU_journeyBG?.data) || 'https://placehold.co/600x400/1e3a24/ffffff?text=Our+Story';
-    const whyChooseUsImage = getMediaUrl(auMainSectionData?.WCU_IMG?.data) || 'https://placehold.co/600x400/1e3a24/ffffff?text=Why+Choose+Us';
-
-    if (loading) {
-        return <div className="text-center p-8 text-gray-700">Loading showroom data...</div>;
-    }
-
-    if (error) {
-        return <div className="text-center p-8 text-red-600 font-bold">Error: {error}</div>;
-    }
-
-    // Calculate parallax effect for the hero text/button
-    const parallaxOffset = scrollY * 0.2; // Adjust multiplier for desired speed
-
-    // Split title for word-by-word animation
-    const titleWords = (mainSection?.AU_TitleText || "Driving Excellence, Defining Luxury").split(' ');
+    // Parallax effect for hero text/button
+    const parallaxOffset = scrollY * 0.2;
+    const titleWords = (data.mainTitle || '').split(' ');
 
     return (
         <div className="min-h-screen bg-[#f0f2f5] text-[#1a202c] overflow-x-hidden font-inter antialiased">
             <Navbar largeLogoSrc={logoUrl} smallLogoSrc={logoUrl} />
-
-            {/* Hero Section - Reworked for Cinematic Luxury with Dynamic BG */}
+            {/* Hero Section */}
             <section
-                className="relative py-24 sm:py-32 lg:py-48 flex items-center justify-center text-white overflow-hidden min-h-screen hero-background-container"
+                className="relative min-h-screen flex items-center justify-center text-white overflow-hidden hero-background-container py-24 sm:py-32 lg:py-48"
                 aria-label="About Us Hero Section"
             >
-                {/* Dynamic Background Media from AU_mainBG */}
-                {isHeroBgVideo && heroBgUrl ? (
-                    <video
-                        className="absolute inset-0 w-full h-full object-cover object-center hero-background-media"
-                        autoPlay
-                        loop
-                        muted
-                        playsInline
-                        poster={getMediaUrl(auMainBgMedia?.attributes?.alternativeText) || fallbackHeroImage}
-                    >
-                        <source src={heroBgUrl} type={auMainBgMedia?.attributes?.mime || 'video/mp4'} />
-                        Your browser does not support the video tag.
-                    </video>
-                ) : (
+                {/* Dynamic Background Image from mainBGImg */}
+                {data.mainBGImg ? (
                     <div
                         className="absolute inset-0 w-full h-full bg-cover bg-center hero-background-media"
-                        style={{ backgroundImage: `url('${heroBgUrl || fallbackHeroImage}')` }}
+                        style={{
+                            backgroundImage: `url('${getMediaUrl(data.mainBGImg.formats?.large?.url || data.mainBGImg.url)}')`,
+                        }}
                     ></div>
+                ) : (
+                    <div className="absolute inset-0 w-full h-full bg-cover bg-center hero-background-media bg-[#1e3a24] opacity-80"></div>
                 )}
-
-                {/* Stronger, Dynamic Dark Green Gradient Overlay */}
+                {/* Glassmorphism overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#1e3a24cc] via-[#1e3a24b3] to-transparent backdrop-blur-md" aria-hidden="true"></div>
+                {/* Floating blurred logo/watermark */}
+                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-0 opacity-10 select-none">
+                    <span className="text-[15vw] font-extrabold tracking-widest" style={{textShadow:'0 8px 32px #000'}}>LUSSO</span>
+                </div>
+                {/* Main Content */}
                 <div
-                    className="absolute inset-0 bg-gradient-to-t from-dark-green-overlay-start via-dark-green-overlay-mid to-transparent animate-gradient-reveal"
-                    aria-hidden="true"
-                ></div>
-
-                {/* Main Content - Centered and impactful */}
-                <div
-                    className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center hero-content-wrapper"
-                    style={{ transform: `translateY(${parallaxOffset}px)` }} // Parallax effect
+                    className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center flex flex-col items-center hero-content-wrapper"
+                    style={{ transform: `translateY(${parallaxOffset}px)` }}
                 >
-                    <h1 className="text-5xl sm:text-7xl lg:text-8xl font-extrabold leading-tight mb-4 sm:mb-6 tracking-tight text-white hero-title">
+                    <h1 className="text-5xl sm:text-7xl lg:text-8xl font-extrabold leading-tight mb-4 sm:mb-6 tracking-tight text-white hero-title animate-fade-in-up drop-shadow-[0_4px_32px_rgba(30,58,36,0.5)]">
                         {titleWords.map((word, index) => (
                             <span
                                 key={index}
@@ -300,164 +156,93 @@ const Aboutus: React.FC = () => {
                         ))}
                     </h1>
                     <p className="text-xl sm:text-2xl lg:text-3xl font-light mb-8 sm:mb-10 opacity-90 text-gray-200 animate-fade-in-up delay-700 hero-description">
-                        {mainSection?.AU_mainDesc || "Experience the pinnacle of automotive luxury and performance."}
+                        {data.mainDesc}
                     </p>
                     <a
                         href="#"
                         className="inline-block bg-emerald-600 text-white font-bold py-4 px-12 sm:py-5 sm:px-16 rounded-full shadow-xl hover:bg-emerald-700 transition-all duration-300 transform hover:scale-105 animate-button-slide-up hero-button"
-                        aria-label={mainSection?.buttonTxt || "Explore Our Legacy"}
+                        aria-label={data.buttonTxt}
                     >
-                        {mainSection?.buttonTxt || "Explore Our Legacy"}
+                        {data.buttonTxt}
                     </a>
                 </div>
+                {/* Animated scroll-down indicator */}
+                <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center animate-bounce">
+                    <span className="block w-2 h-2 rounded-full bg-white mb-1"></span>
+                    <span className="block w-1 h-8 rounded-full bg-gradient-to-b from-white/80 to-transparent"></span>
+                </div>
             </section>
-
             {/* Our Story Section */}
-            <section
-                className="aboutUsSec bg-white py-16 sm:py-24"
-                aria-labelledby="our-story-heading"
-            >
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 items-center">
+            <section className="aboutUsSec bg-white min-h-screen flex items-center py-16 sm:py-24" aria-labelledby="our-story-heading">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 items-center">
                     <div className="order-2 lg:order-1 text-center lg:text-left">
-                        <h2
-                            id="our-story-heading"
-                            className="text-3xl sm:text-4xl font-extrabold text-[#1e3a24] mb-4 sm:mb-6"
-                        >
-                            {journeySection?.Au_JourneyTitleTxt ||
-                                "Our Journey of Passion and Precision"}
+                        <h2 id="our-story-heading" className="text-3xl sm:text-4xl font-extrabold text-[#1e3a24] mb-4 sm:mb-6">
+                            {data.JourneyTitleTxt}
                         </h2>
                         <p className="text-base sm:text-lg leading-relaxed mb-4 sm:mb-6 text-gray-700">
-                            {journeySection?.AU_JourneyDesc?.split("\n\n")[0] ||
-                                "At Lusso Luxury Car, we are committed to delivering high-quality, reliable, and eco-friendly luxury vehicles that combine elegance with advanced performance. Since our launch in 2023, we’ve focused on redefining automotive passion through innovative design and modern technology. Each Lusso model is crafted to offer a refined driving experience that reflects both style and functionality."}
+                            {data.JourneyDesc?.split("\n\n")[0]}
                         </p>
                         <p className="text-base sm:text-lg leading-relaxed text-gray-700">
-                            {journeySection?.AU_JourneyDesc?.split("\n\n")[1] ||
-                                "Sustainability and customer satisfaction are at the heart of everything we do. From development to delivery, we take an eco-conscious approach while maintaining the highest standards of excellence. At Lusso, we believe true luxury means driving with purpose—where performance, innovation, and responsibility come together seamlessly."}
+                            {data.JourneyDesc?.split("\n\n")[1]}
                         </p>
                     </div>
                     <div className="order-1 lg:order-2 flex justify-center">
-                        <img
-                            src={journeyBackgroundImage}
-                            alt={
-                                journeySection?.Au_JourneyTitleTxt ||
-                                "Our Story Image depicting luxury car journey"
-                            }
-                            className="rounded-xl shadow-xl w-full max-w-lg object-cover h-auto"
-                            loading="lazy"
-                        />
-                    </div>
-                </div>
-            </section>
-
-            {/* Our Values Section - Dark Green Background with White Cards */}
-            <section
-                className="ourValues bg-[#1e3a24] text-white py-20 sm:py-32 relative overflow-hidden" // Added relative & overflow-hidden for absolute positioning
-                aria-labelledby="our-values-heading"
-            >
-                {/* Blurry Lusso Text */}
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <span className="lusso-blurry-text">LUSSO</span>
-                </div>
-
-                <div className="max-w-7xl mx-auto px-6 lg:px-8 text-center relative z-10"> {/* Added relative z-10 for content over Lusso text */}
-                    <h2
-                        id="our-values-heading"
-                        className="text-4xl sm:text-5xl font-extrabold mb-16 text-white"
-                    >
-                        Our Core Values
-                    </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-                        {valuesSection?.length ? (
-                            valuesSection.map((valueItem) => (
-                                <div
-                                    key={valueItem.id}
-                                    className="bg-white p-8 rounded-2xl shadow-xl flex flex-col items-center justify-center text-center transform hover:scale-105 transition-all duration-500 hover:shadow-emerald-500/40 group border border-gray-200"
-                                >
-                                    <div className="mb-6">
-                                        {React.cloneElement(
-                                            iconMap[
-                                                valueItem.iconIdentifier || "default"
-                                            ] as React.ReactElement,
-                                            {
-                                                className:
-                                                    "h-14 w-14 sm:h-16 sm:w-16 mx-auto mb-4 sm:mb-6 text-emerald-600",
-                                            }
-                                        )}
-                                    </div>
-                                    <h3 className="text-2xl font-bold mb-3 text-[#1e3a24] group-hover:text-emerald-700 transition-colors duration-300">
-                                        {valueItem.AU_valueTxt || "Value Title"}
-                                    </h3>
-                                    <p className="text-base text-gray-700 leading-relaxed">
-                                        {valueItem.AU_valueDesc ||
-                                            "Description of this core value."}
-                                    </p>
-                                </div>
-                            ))
-                        ) : (
-                            // Default values if data not loaded
-                            <>
-                                <div className="bg-white p-8 rounded-2xl shadow-xl flex flex-col items-center justify-center text-center transform hover:scale-105 transition-all duration-500 hover:shadow-emerald-500/40 group border border-gray-200">
-                                    <div className="mb-6">{iconMap["quality"]}</div>
-                                    <h3 className="text-2xl font-bold mb-3 text-[#1e3a24] group-hover:text-emerald-700">
-                                        Unrivaled Quality
-                                    </h3>
-                                    <p className="text-base text-gray-700 leading-relaxed">
-                                        Every vehicle and service meets the highest standards of
-                                        excellence and meticulous attention to detail.
-                                    </p>
-                                </div>
-                                <div className="bg-white p-8 rounded-2xl shadow-xl flex flex-col items-center justify-center text-center transform hover:scale-105 transition-all duration-500 hover:shadow-emerald-500/40 group border border-gray-200">
-                                    <div className="mb-6">{iconMap["client"]}</div>
-                                    <h3 className="text-2xl font-bold mb-3 text-[#1e3a24] group-hover:text-emerald-700">
-                                        Client-Centric Approach
-                                    </h3>
-                                    <p className="text-base text-gray-700 leading-relaxed">
-                                        We prioritize our clients' desires, delivering tailored
-                                        experiences and fostering lasting relationships.
-                                    </p>
-                                </div>
-                                <div className="bg-white p-8 rounded-2xl shadow-xl flex flex-col items-center justify-center text-center transform hover:scale-105 transition-all duration-500 hover:shadow-emerald-500/40 group border border-gray-200">
-                                    <div className="mb-6">{iconMap["innovation"]}</div>
-                                    <h3 className="text-2xl font-bold mb-3 text-[#1e3a24] group-hover:text-emerald-700">
-                                        Innovation & Integrity
-                                    </h3>
-                                    <p className="text-base text-gray-700 leading-relaxed">
-                                        Continuously embracing advancements while upholding the
-                                        highest ethical standards in every interaction.
-                                    </p>
-                                </div>
-                            </>
+                        {data.JourneyIMG && (
+                            <img
+                                src={getMediaUrl(data.JourneyIMG.formats?.large?.url || data.JourneyIMG.url)}
+                                alt="Our Journey image"
+                                className="rounded-xl shadow-xl w-full max-w-lg object-cover h-auto"
+                                loading="lazy"
+                            />
                         )}
                     </div>
                 </div>
             </section>
-
+            {/* Our Values Section - Placeholder, as new API does not provide values */}
+            <section className="ourValues bg-[#1e3a24] text-white min-h-screen flex items-center relative overflow-hidden py-20 sm:py-32" aria-labelledby="our-values-heading">
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <span className="lusso-blurry-text">LUSSO</span>
+                </div>
+                <div className="max-w-7xl mx-auto px-6 lg:px-8 text-center relative z-10 w-full">
+                    <h2 id="our-values-heading" className="text-4xl sm:text-5xl font-extrabold mb-16 text-white">
+                        Our Core Values
+                    </h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                        {Array.isArray(data.ourValues) && data.ourValues.filter(v => v.valueTitle && v.valueDesc).length > 0 ? (
+                            data.ourValues.filter(v => v.valueTitle && v.valueDesc).map((value) => (
+                                <div key={value.id} className="bg-white p-8 rounded-2xl shadow-xl flex flex-col items-center justify-center text-center transform hover:scale-105 transition-all duration-500 hover:shadow-emerald-500/40 group border border-gray-200">
+                                    <h3 className="text-2xl font-bold mb-3 text-[#1e3a24] group-hover:text-emerald-700 transition-colors duration-300">{value.valueTitle}</h3>
+                                    <p className="text-base text-gray-700 leading-relaxed">{value.valueDesc}</p>
+                                </div>
+                            ))
+                        ) : (
+                            <div className="col-span-full text-gray-300">No values found.</div>
+                        )}
+                    </div>
+                </div>
+            </section>
             {/* Why Choose Us Section */}
-            <section
-                className="aboutUsSec bg-white py-16 sm:py-24"
-                aria-labelledby="why-choose-us-heading"
-            >
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <h2
-                        id="why-choose-us-heading"
-                        className="text-3xl sm:text-4xl font-extrabold text-[#1e3a24] text-center mb-8 sm:mb-12"
-                    >
+            <section className="aboutUsSec bg-white min-h-screen flex items-center py-16 sm:py-24" aria-labelledby="why-choose-us-heading">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+                    <h2 id="why-choose-us-heading" className="text-3xl sm:text-4xl font-extrabold text-[#1e3a24] text-center mb-8 sm:mb-12">
                         Why Choose Lusso?
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-12 items-center">
                         <div className="flex justify-center">
-                            <img
-                                src={whyChooseUsImage}
-                                alt="Why Choose Us image, showcasing luxury and trust"
-                                className="rounded-xl shadow-xl w-full max-w-lg object-cover h-auto"
-                                loading="lazy"
-                            />
+                            {data.whyUsImg && (
+                                <img
+                                    src={getMediaUrl(data.whyUsImg.formats?.large?.url || data.whyUsImg.url)}
+                                    alt="Why Choose Us image"
+                                    className="rounded-xl shadow-xl w-full max-w-lg object-cover h-auto"
+                                    loading="lazy"
+                                />
+                            )}
                         </div>
                         <div>
                             <ul className="space-y-4 sm:space-y-6 text-base sm:text-lg text-gray-700">
-                                {whyChooseUsSection?.length ? (
-                                    whyChooseUsSection.map((whyUsItem) => (
-                                        <li key={whyUsItem.id} className="flex items-start">
+                                {Array.isArray(data.whyUs) && data.whyUs.filter(w => w.whyUsTitle && w.whyUsDesc).length > 0 ? (
+                                    data.whyUs.filter(w => w.whyUsTitle && w.whyUsDesc).map((item) => (
+                                        <li key={item.id} className="flex items-start">
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
                                                 className="h-6 w-6 sm:h-8 sm:w-8 text-emerald-600 mr-3 sm:mr-4 flex-shrink-0"
@@ -467,156 +252,37 @@ const Aboutus: React.FC = () => {
                                                 strokeWidth="2"
                                                 aria-hidden="true"
                                             >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    d="M5 13l4 4L19 7"
-                                                />
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                                             </svg>
                                             <div>
-                                                <h3 className="font-semibold text-lg sm:text-xl text-[#1e3a24] mb-1">
-                                                    {whyUsItem.AU_whyUsTitle ||
-                                                        "Default Why Choose Us Title"}
-                                                </h3>
-                                                <p className="text-sm sm:text-base text-gray-700 leading-relaxed">
-                                                    {whyUsItem.whyUsText ||
-                                                        "Default why choose us description."}
-                                                </p>
+                                                <h3 className="font-semibold text-lg sm:text-xl text-[#1e3a24] mb-1">{item.whyUsTitle}</h3>
+                                                <p className="text-sm sm:text-base text-gray-700 leading-relaxed">{item.whyUsDesc}</p>
                                             </div>
                                         </li>
                                     ))
                                 ) : (
-                                    // Default values if data not loaded
-                                    <>
-                                        <li className="flex items-start">
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                className="h-6 w-6 sm:h-8 sm:w-8 text-emerald-600 mr-3 sm:mr-4 flex-shrink-0"
-                                                fill="none"
-                                                viewBox="0 0 24 24"
-                                                stroke="currentColor"
-                                                strokeWidth="2"
-                                                aria-hidden="true"
-                                            >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    d="M5 13l4 4L19 7"
-                                                />
-                                            </svg>
-                                            <div>
-                                                <h3 className="font-semibold text-lg sm:text-xl text-[#1e3a24] mb-1">
-                                                    Exclusive Selection
-                                                </h3>
-                                                <p className="text-sm sm:text-base text-gray-700 leading-relaxed">
-                                                    Access to a meticulously curated inventory of rare and
-                                                    sought-after luxury vehicles.
-                                                </p>
-                                            </div>
-                                        </li>
-                                        <li className="flex items-start">
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                className="h-6 w-6 sm:h-8 sm:w-8 text-emerald-600 mr-3 sm:mr-4 flex-shrink-0"
-                                                fill="none"
-                                                viewBox="0 0 24 24"
-                                                stroke="currentColor"
-                                                strokeWidth="2"
-                                                aria-hidden="true"
-                                            >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    d="M5 13l4 4L19 7"
-                                                />
-                                            </svg>
-                                            <div>
-                                                <h3 className="font-semibold text-lg sm:text-xl text-[#1e3a24] mb-1">
-                                                    Personalized Concierge Service
-                                                </h3>
-                                                <p className="text-sm sm:text-base text-gray-700 leading-relaxed">
-                                                    Dedicated advisors providing bespoke services from
-                                                    selection to after-sales care.
-                                                </p>
-                                            </div>
-                                        </li>
-                                        <li className="flex items-start">
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                className="h-6 w-6 sm:h-8 sm:w-8 text-emerald-600 mr-3 sm:mr-4 flex-shrink-0"
-                                                fill="none"
-                                                viewBox="0 0 24 24"
-                                                stroke="currentColor"
-                                                strokeWidth="2"
-                                                aria-hidden="true"
-                                            >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    d="M5 13l4 4L19 7"
-                                                />
-                                            </svg>
-                                            <div>
-                                                <h3 className="font-semibold text-lg sm:text-xl text-[#1e3a24] mb-1">
-                                                    Uncompromising Standards
-                                                </h3>
-                                                <p className="text-sm sm:text-base text-gray-700 leading-relaxed">
-                                                    Every vehicle undergoes rigorous inspection to ensure
-                                                    peak condition and authenticity.
-                                                </p>
-                                            </div>
-                                        </li>
-                                        <li className="flex items-start">
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                className="h-6 w-6 sm:h-8 sm:w-8 text-emerald-600 mr-3 sm:mr-4 flex-shrink-0"
-                                                fill="none"
-                                                viewBox="0 0 24 24"
-                                                stroke="currentColor"
-                                                strokeWidth="2"
-                                                aria-hidden="true"
-                                            >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    d="M5 13l4 4L19 7"
-                                                />
-                                            </svg>
-                                            <div>
-                                                <h3 className="font-semibold text-lg sm:text-xl text-[#1e3a24] mb-1">
-                                                    Legacy of Trust
-                                                </h3>
-                                                <p className="text-sm sm:text-base text-gray-700 leading-relaxed">
-                                                    Decades of experience building a reputation for
-                                                    integrity and client satisfaction.
-                                                </p>
-                                            </div>
-                                        </li>
-                                    </>
+                                    <li className="text-gray-300">No reasons found.</li>
                                 )}
                             </ul>
                         </div>
                     </div>
                 </div>
             </section>
-
-            <section
-                className="beforeFooter bg-[#1e3a24] text-white py-16 sm:py-24 text-center"
-                aria-label="Call to action to contact specialists"
-            >
-                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            {/* CTA Section */}
+            <section className="size-50vh beforeFooter bg-[#1e3a24] text-white  flex items-center text-center py-16 sm:py-24" aria-label="Call to action to contact specialists">
+                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
                     <h2 className="beforefooter_text text-3xl sm:text-4xl font-extrabold mb-4 sm:mb-6">
-                        Ready to Experience True Luxury?
+                        {data.CTA_title}
                     </h2>
                     <p className="text-base sm:text-lg mb-8 sm:mb-10 opacity-90 text-gray">
-                        Connect with our team today to begin your journey with Luxury Lanes.
+                        {data.CTA_Desc}
                     </p>
                     <a
                         href="/luxurycars/contact"
                         className="inline-block bg-white text-[#1e3a24] font-semibold py-2 px-6 sm:py-3 sm:px-8 rounded-full shadow-lg hover:bg-gray-100 transition-all duration-300 transform hover:scale-105"
-                        aria-label="Contact Our Specialists"
+                        aria-label={data.CTA_buttonTxt}
                     >
-                        Contact Our Specialists
+                        {data.CTA_buttonTxt}
                     </a>
                 </div>
             </section>

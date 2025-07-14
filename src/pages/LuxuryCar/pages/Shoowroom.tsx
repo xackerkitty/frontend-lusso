@@ -1,4 +1,3 @@
-// src/pages/ShowroomPage.tsx
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 
 // --- ABSOLUTELY CRITICAL: IMPORT LOCAL PLACEHOLDER IMAGES ---
@@ -13,25 +12,56 @@ import Footer from '../components/Footer';
 
 // Represents a single media item's attributes (URL, dimensions, etc.)
 interface MediaAttributes {
-    url: string;
+     url: string;
     mime?: string;
     name?: string;
     alternativeText?: string;
     caption?: string;
     width?: number;
     height?: number;
+    // Add documentId, hash, ext, size, previewUrl, provider, provider_metadata, createdAt, updatedAt, publishedAt if needed
 }
 
 // Represents the data wrapper for a single media item
+// This interface is adjusted to match the flat structure for media from your luxurycars-showroom endpoint
 interface MediaDataItem {
     id: number;
-    attributes: MediaAttributes;
+    documentId: string;
+    name: string;
+    alternativeText: string | null;
+    caption: string | null;
+    width: number | null;
+    height: number | null;
+    formats: {
+        large?: MediaAttributes;
+        small?: MediaAttributes;
+        medium?: MediaAttributes;
+        thumbnail?: MediaAttributes;
+    } | null;
+    hash: string;
+    ext: string;
+    mime: string;
+    size: number;
+    url: string; // Direct URL for the media item
+    previewUrl: string | null;
+    provider: string;
+    provider_metadata: any | null;
+    createdAt: string;
+    updatedAt: string;
+    publishedAt: string;
 }
 
 // Represents a field in Strapi that holds a single media item (e.g., an image, a video file)
+// This is for cases where media is nested under 'data.attributes' as per Strapi's default populate
 interface SingleMediaData {
     data: MediaDataItem | null; // 'data' can be null if no media is uploaded
 }
+
+interface MediaDataItemWithUrl {
+    url: string;
+    // ... other properties if any
+}
+
 
 // Attributes for the 'BasicInfo' component (assuming it holds company logo)
 interface BasicInfoAttributes {
@@ -39,7 +69,7 @@ interface BasicInfoAttributes {
     companyLogo?: SingleMediaData;
 }
 
-// Attributes for the 'LuxuryHero' single type/component
+// Attributes for the 'LuxuryHero' single type/component (assuming this is from a different endpoint/structure)
 interface LuxuryHeroAttributes {
     basicinfo?: BasicInfoAttributes;
     videoPoster?: SingleMediaData; // Poster image for the video
@@ -63,17 +93,36 @@ interface GalleryImageCard {
     spanColumns?: number; // Field added in Strapi to control grid spanning (1 or 2)
 }
 
-// Interface for the 'ShowroomPage' Single Type's main attributes
-interface ShowroomPageAttributes {
-    mainTitle?: string;
-    mainDesc?: string;
-    SR_mainCards?: SRMainCard[];
-    discoverTitle?: string;
-    discoverP1?: string;
-    discoverp2?: string; // Corrected casing to 'discoverp2' based on your API response
-    descriptionIMG?: SingleMediaData; // Image for the 'AboutSection'
-    GalleryImageCard?: GalleryImageCard[]; // The array of gallery items
+// Interface for the 'luxurycars-showroom' Single Type's main attributes
+interface LuxuryCarsShowroomAttributes {
+    mainTitle: string;
+    mainDesc: string;
+    discoverTitle: string;
+    discoverP1: string;
+    discoverp2: string;
+    mainBG: MediaDataItem; // The main background video
+    descriptionIMG: MediaDataItem; // Image for the 'AboutSection'
+    cards: SRMainCard[]; // Your 'SR_mainCards' from your original code are 'cards' here
+    galleryCards: { // This structure is simpler in your provided JSON, still not an array of images
+        id: number;
+        title: string;
+        description: string;
+        Image: SingleMediaData;
+        spanColums: number;
+    } | null;
 }
+
+// NEW INTERFACE for the /api/luxurycar endpoint for the logo
+interface LuxuryCarAttributes {
+    logo: MediaDataItem; // The logo data
+    bigLogo: MediaDataItem | null; // Assuming this could be another logo size
+}
+
+interface StrapiLuxuryCarResponse {
+    data: LuxuryCarAttributes | null;
+    meta: any;
+}
+
 
 // Generic Strapi Response Structures
 
@@ -82,16 +131,22 @@ interface StrapiDataItem<T> {
     id: number;
     attributes: T;
 }
-interface StrapiSingleResponse<T> {
-    data: StrapiDataItem<T> | null;
+
+// THIS IS THE STRUCTURE FOR THE `luxurycars-showroom` ENDPOINT!
+interface StrapiLuxuryCarsShowroomResponse {
+    data: LuxuryCarsShowroomAttributes | null; // Direct attributes, no nested 'id' or 'attributes' layer for the main type
     meta: any;
 }
+
 
 // For a collection of entries (e.g., if LuxuryHero was a Collection Type)
 interface StrapiCollectionResponse<T> {
     data: StrapiDataItem<T>[];
     meta: any;
 }
+
+
+
 
 // --- Tailwind CSS Color Utility Classes (unchanged) ---
 const COLORS = {
@@ -105,18 +160,40 @@ const COLORS = {
     grayTextLighter: 'text-gray-400',
 };
 
-// --- Helper function to construct full media URL from Strapi data (unchanged) ---
+// --- Helper function to construct full media URL from Strapi data (unchanged logic) ---
 const getMediaUrl = (
-    mediaDataContent: MediaDataItem | MediaDataItem[] | string | null | undefined
+    mediaDataContent: MediaDataContent
 ): string => {
     let relativePath: string | undefined;
 
     if (typeof mediaDataContent === "string") {
         relativePath = mediaDataContent;
     } else if (mediaDataContent && !Array.isArray(mediaDataContent)) {
-        relativePath = mediaDataContent.attributes?.url;
+        // Handle SingleMediaData['data'] case where data itself might be null
+        if ('data' in mediaDataContent && mediaDataContent.data !== null) {
+            // Check for the new structure (direct 'url')
+            if ('url' in mediaDataContent.data) {
+                relativePath = mediaDataContent.data.url;
+            }
+            // Then check for the old structure (nested 'attributes.url')
+            else if ('attributes' in mediaDataContent.data && mediaDataContent.data.attributes?.url) {
+                relativePath = mediaDataContent.data.attributes.url;
+            }
+        }
+        // Handle MediaDataItemWithUrl or MediaDataItemWithAttributes directly
+        else if ('url' in mediaDataContent) {
+            relativePath = mediaDataContent.url;
+        } else if ('attributes' in mediaDataContent && mediaDataContent.attributes?.url) {
+            relativePath = mediaDataContent.attributes.url;
+        }
     } else if (Array.isArray(mediaDataContent) && mediaDataContent.length > 0) {
-        relativePath = mediaDataContent[0].attributes?.url;
+        const firstItem = mediaDataContent[0];
+        // Use type guards to safely access properties on array items
+        if (firstItem && 'url' in firstItem) { // Check for direct 'url' first
+            relativePath = firstItem.url;
+        } else if (firstItem && 'attributes' in firstItem && firstItem.attributes?.url) {
+            relativePath = firstItem.attributes.url;
+        }
     } else {
         console.warn("getMediaUrl: No valid mediaDataContent provided or it's empty.");
         return "";
@@ -127,16 +204,19 @@ const getMediaUrl = (
         return "";
     }
 
-    const STRAPI_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:1337";
+    const STRAPI_BASE_URL = import.meta.env.VITE_API_URL || "https://accessible-charity-d22e30cd98.strapiapp.com";
 
     let fullUrl = "";
     if (relativePath.startsWith("http://") || relativePath.startsWith("https://")) {
         fullUrl = relativePath;
     } else {
-        fullUrl = `${STRAPI_BASE_URL}${relativePath.startsWith("/") ? "" : "/"}${relativePath}`;
+        // Ensure only one slash between base URL and relative path
+        const separator = relativePath.startsWith("/") ? "" : "/";
+        fullUrl = `${STRAPI_BASE_URL}${separator}${relativePath}`;
     }
     return fullUrl;
 };
+
 
 // --- Intersection Observer Hook for animations (unchanged) ---
 const useIntersectionObserver = (
@@ -192,7 +272,7 @@ const AnimatedSection: React.FC<{
     );
 };
 
-// --- Hero Section Component (MODIFIED FOR HEIGHT AND LAYOUT) ---
+// --- Hero Section Component (MODIFIED FOR HEIGHT AND LAYOUT - logic untouched) ---
 const HeroSection: React.FC<{
     videoSrc: string;
     posterSrc: string;
@@ -254,9 +334,6 @@ const HeroSection: React.FC<{
     return (
         <section
             ref={heroContainerRef}
-            // Removed justify-center to allow content to push height
-            // Increased vertical padding (py-32 for larger screens, pt-24 pb-16 for smaller)
-            // Added larger top/bottom padding for mobile (sm:py-24) to ensure title visibility and space for cards
             className="mainCard relative w-full min-h-screen flex flex-col items-center pt-24 pb-16 sm:pt-32 sm:pb-24 md:py-32 overflow-hidden"
         >
             <video
@@ -345,7 +422,7 @@ const AboutSection: React.FC<{
             id="about-section"
             className={`py-24 px-4 md:px-12 w-full flex flex-col lg:flex-row items-center gap-16 ${COLORS.white} ${COLORS.grayTextDark} shadow-xl rounded-b-lg`}
             threshold={0.2}
-            
+
         >
             <div className="lg:w-1/2 flex-shrink-0 relative group">
                 <div className="absolute inset-0 border-4 border-green-primary rounded-lg transform translate-x-4 -translate-y-4 md:translate-x-8 md:-translate-y-8 z-0 opacity-60"></div>
@@ -404,7 +481,7 @@ const GallerySection: React.FC<GallerySectionProps> = ({ galleryData, onImageCli
                         onClick={() => onImageClick(getMediaUrl(item.Image.data), item.Title)}
                         className={
                             `relative overflow-hidden rounded-xl shadow-2xl group cursor-pointer aspect-video
-                            ${item.spanColumns === 2 ? 'md:col-span-2' : ''}  
+                            ${item.spanColumns === 2 ? 'md:col-span-2' : ''}
                             transform transition-all duration-500 ease-in-out hover:shadow-lg hover:shadow-emerald-500/30 hover:scale-[1.03]
                             opacity-100 translate-y-0 `
                         }
@@ -492,15 +569,15 @@ const ImageModal: React.FC<ImageModalProps> = ({ isOpen, onClose, imageUrl, imag
                 ref={modalRef}
                 // Modal content container - Dark Gray Background, improved padding, rounded corners, shadow, and initial animation state
                 className="relative bg-gray-800 p-8 rounded-2xl shadow-2xl border border-gray-700/50
-                           max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col
-                           transform transition-all duration-300 ease-out scale-95 opacity-0" // Initial state for animation
+                            max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col
+                            transform transition-all duration-300 ease-out scale-95 opacity-0" // Initial state for animation
                 onClick={(e) => e.stopPropagation()} // Prevent modal from closing when clicking inside the content box
             >
                 {/* Close button - Styled for better appearance */}
                 <button
                     className="absolute top-4 right-4 bg-gray-700 hover:bg-gray-600 text-white rounded-full
-                               w-10 h-10 flex items-center justify-center text-xl font-bold
-                               transition-all duration-200 ease-in-out transform hover:scale-110 hover:shadow-lg hover:text-green-primary"
+                                w-10 h-10 flex items-center justify-center text-xl font-bold
+                                transition-all duration-200 ease-in-out transform hover:scale-110 hover:shadow-lg hover:text-green-primary"
                     onClick={onClose}
                     aria-label="Close Image"
                 >
@@ -538,8 +615,9 @@ const ImageModal: React.FC<ImageModalProps> = ({ isOpen, onClose, imageUrl, imag
 
 // --- Main ShowroomPage Component: Orchestrates the entire page layout ---
 const ShowroomPage: React.FC = () => {
-    const [heroData, setHeroData] = useState<LuxuryHeroAttributes | null>(null);
-    const [showroomPageData, setShowroomPageData] = useState<ShowroomPageAttributes | null>(null);
+    // We will use showroomData for the main page content, including mainBG and descriptionIMG
+    const [showroomData, setShowroomData] = useState<LuxuryCarsShowroomAttributes | null>(null);
+    const [logoData, setLogoData] = useState<LuxuryCarAttributes | null>(null); // New state for logo data
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -573,45 +651,44 @@ const ShowroomPage: React.FC = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const STRAPI_API_URL = import.meta.env.VITE_API_URL || "http://localhost:1337";
+                const STRAPI_BASE_URL = import.meta.env.VITE_API_URL || "https://accessible-charity-d22e30cd98.strapiapp.com";
 
-                // Fetch Luxury Hero Data
-                const heroApiUrl =
-                    `${STRAPI_API_URL}/api/luxury-heroes?populate[basicinfo][populate]=companyLogo&populate[videoPoster]=*&populate[videoUrl]=*&populate[aboutUsBackground]=*`;
-
-                const heroResponse = await fetch(heroApiUrl);
-                if (!heroResponse.ok) {
-                    throw new Error(`HTTP error fetching hero data! Status: ${heroResponse.status}`);
+                // --- Fetch Luxury Car Data (for logo) ---
+                const luxuryCarApiUrl = `${STRAPI_BASE_URL}/api/luxurycar?populate=*`;
+                const luxuryCarResponse = await fetch(luxuryCarApiUrl);
+                if (!luxuryCarResponse.ok) {
+                    throw new Error(`HTTP error fetching luxury car data! Status: ${luxuryCarResponse.status}.`);
                 }
-                const heroJson: StrapiCollectionResponse<LuxuryHeroAttributes> = await heroResponse.json();
-                if (heroJson?.data?.length > 0) {
-                    setHeroData(heroJson.data[0].attributes);
+                const luxuryCarJson: StrapiLuxuryCarResponse = await luxuryCarResponse.json();
+                if (luxuryCarJson?.data) {
+                    setLogoData(luxuryCarJson.data);
                 } else {
-                    setHeroData(null);
-                    console.warn("API returned no data for Luxury Hero. Ensure it's published.");
+                    console.warn("API returned no data for Luxury Car (logo). Ensure it's published.");
                 }
 
-                // Fetch Showroom Page Data
-                const showroomPageApiUrl =
-                    `${STRAPI_API_URL}/api/showroom-page?populate[SR_mainCards]=*&populate[descriptionIMG]=*&populate[GalleryImageCard][populate]=Image&populate[GalleryImageCard][populate]=spanColumns`;
-
-                const showroomPageResponse = await fetch(showroomPageApiUrl);
-                if (!showroomPageResponse.ok) {
-                    throw new Error(
-                        `HTTP error fetching showroom page data! Status: ${showroomPageResponse.status}. Please check Strapi permissions for 'showroom-page' (find/findOne) and ensure the single type is published.`
-                    );
+                // --- Fetch Showroom Page Data ---
+                // Use explicit populate for galleryCards.image
+                const showroomApiUrl = `${STRAPI_BASE_URL}/api/luxurycars-showroom?populate[galleryCards][populate]=image`;
+                const showroomResponse = await fetch(showroomApiUrl);
+                if (!showroomResponse.ok) {
+                    throw new Error(`HTTP error fetching showroom data! Status: ${showroomResponse.status}.`);
                 }
-                const showroomPageJson: StrapiSingleResponse<ShowroomPageAttributes> = await showroomPageResponse.json();
-                if (showroomPageJson?.data?.attributes) {
-                    setShowroomPageData(showroomPageJson.data.attributes);
+                const showroomJson: any = await showroomResponse.json();
+
+                if (showroomJson?.data) {
+                    setShowroomData(showroomJson.data);
                 } else {
-                    setShowroomPageData(null);
-                    console.warn("API returned no data for Showroom Page. Ensure it's published and has content.");
+                    setShowroomData(null);
+                    console.warn("API returned no data for Luxury Cars Showroom. Ensure it's published.");
                 }
 
-            } catch (err: any) {
-                setError(`Failed to load content: ${err.message}`);
-                console.error("Error fetching data:", err);
+            } catch (e: unknown) { // Use 'unknown' for type safety
+                if (e instanceof Error) {
+                    setError(`Failed to load content: ${e.message}`);
+                } else {
+                    setError("An unknown error occurred while fetching data.");
+                }
+                console.error("Error fetching data:", e);
             } finally {
                 setLoading(false);
             }
@@ -621,22 +698,25 @@ const ShowroomPage: React.FC = () => {
     }, []);
 
     // Derive URLs and content for components from fetched data
-    const logoUrl = heroData?.basicinfo?.companyLogo?.data
-        ? getMediaUrl(heroData.basicinfo.companyLogo.data)
+    // Logo URL now comes from `logoData`
+    const logoUrl = logoData?.logo?.url
+        ? getMediaUrl(logoData.logo)
         : defaultMainImage; // Fallback logo
 
-    const heroVideoUrl = heroData?.videoUrl?.data
-        ? getMediaUrl(heroData.videoUrl.data)
+    const heroVideoUrl = showroomData?.mainBG?.url
+        ? getMediaUrl(showroomData.mainBG)
         : 'https://www.w3schools.com/html/mov_bbb.mp4'; // Fallback video URL
 
-    const heroVideoPosterUrl = heroData?.videoPoster?.data
-        ? getMediaUrl(heroData.videoPoster.data)
-        : defaultMainImage; // Fallback poster image
+    // Your provided JSON does not have a 'videoPoster' directly in 'luxurycars-showroom'.
+    // If you need a poster, it should be added to your Strapi schema for 'luxurycars-showroom'
+    // or you can use a static image/default.
+    const heroVideoPosterUrl = defaultMainImage; // Fallback to a default image for poster
+
 
     // Content for Hero Section
-    const mainTitle = showroomPageData?.mainTitle || "Defining the Lusso Standard";
-    const mainDescription = showroomPageData?.mainDesc || "At Lusso, we don't just craft automobiles; we embody a philosophy of unparalleled quality, pioneering spirit, and an enduring commitment to luxury.";
-    const pillars = showroomPageData?.SR_mainCards || [
+    const mainTitle = showroomData?.mainTitle || "Defining the Lusso Standard";
+    const mainDescription = showroomData?.mainDesc || "At Lusso, we don't just craft automobiles; we embody a philosophy of unparalleled quality, pioneering spirit, and an enduring commitment to luxury.";
+    const pillars = showroomData?.cards || [ // Use 'cards' from the new data structure
         { id: 1, Title: "ELEGANCE", Description: "Refined aesthetics, timeless design." },
         { id: 2, Title: "INNOVATION", Description: "Pioneering technology, future-forward." },
         { id: 3, Title: "HERITAGE", Description: "Rich legacy, enduring craftsmanship." },
@@ -644,15 +724,24 @@ const ShowroomPage: React.FC = () => {
     ];
 
     // Content for About Section
-    const aboutTitle = showroomPageData?.discoverTitle || "An Experience Beyond Expectations";
-    const aboutP1 = showroomPageData?.discoverP1 || "More than just a display space, our showroom is an architectural masterpiece, thoughtfully curated to reflect the prestige and innovation of every vehicle it houses. From the gleaming polished floors to the ambient, intelligent lighting, every element contributes to an atmosphere of exclusive sophistication.";
-    const aboutP2 = showroomPageData?.discoverp2 || "We've designed every corner to evoke a sense of wonder and comfort, inviting you to immerse yourself in dedicated zones for personalized consultations, unwind in our luxurious private lounges, and engage with dynamic interactive displays that bring the legacy and future of our automotive masterpieces to life. This is where dreams are realized.";
-    const aboutSectionImageUrl = showroomPageData?.descriptionIMG?.data
-        ? getMediaUrl(showroomPageData.descriptionIMG.data)
+    const aboutTitle = showroomData?.discoverTitle || "An Experience Beyond Expectations";
+    const aboutP1 = showroomData?.discoverP1 || "More than just a display space, our showroom is an architectural masterpiece, thoughtfully curated to reflect the prestige and innovation of every vehicle it houses. From the gleaming polished floors to the ambient, intelligent lighting, every element contributes to an atmosphere of exclusive sophistication.";
+    const aboutP2 = showroomData?.discoverp2 || "We've designed every corner to evoke a sense of wonder and comfort, inviting you to immerse yourself in dedicated zones for personalized consultations, unwind in our luxurious private lounges, and engage with dynamic interactive displays that bring the legacy and future of our automotive masterpieces to life. This is where dreams are realized.";
+    const aboutSectionImageUrl = showroomData?.descriptionIMG?.url
+        ? getMediaUrl(showroomData.descriptionIMG)
         : defaultAboutImage; // Fallback to a dedicated about image placeholder
 
-    // Get Gallery Section data
-    const galleryData = showroomPageData?.GalleryImageCard || []; // Default to an empty array if no data
+    // Get Gallery Section data from API response
+    const galleryData: GalleryImageCard[] = Array.isArray(showroomData?.galleryCards)
+        ? showroomData.galleryCards.map((card: any) => ({
+            id: card.id,
+            Title: card.title,
+            Description: card.description,
+            Image: { data: card.image },
+            spanColumns: card.spanColums,
+        }))
+        : [];
+
 
     // --- Loading and Error States ---
     if (loading) {
@@ -700,7 +789,7 @@ const ShowroomPage: React.FC = () => {
 
                 {/* Pass the new click handler to GallerySection */}
                 <GallerySection galleryData={galleryData} onImageClick={handleImageClick} />
-                
+
                 <Footer logoUrl={logoUrl} />
             </div>
 

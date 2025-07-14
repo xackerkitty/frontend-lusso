@@ -68,10 +68,11 @@ interface StrapiCarAttributes {
 
     carImage?: SingleMediaRelation;
     carPic?: SingleMediaRelation;
-    backgroundVid?: SingleMediaRelation;
+    backgroundVID?: SingleMediaRelation;
     brandLogo?: SingleMediaRelation;
     isSold?: boolean;
-    checkingIMGs?: MultipleMediaRelation;
+    checkingIMGs?: MultipleMediaRelation; // Assuming this is for a general gallery
+    carSliderImg?: MultipleMediaRelation; // Assuming this is for slider/gallery specifically
 }
 
 interface StrapiCarData {
@@ -87,7 +88,7 @@ interface CarDetailData {
     slug: string;
     imageUrl: string;
     carPicUrl: string;
-    backgroundVideoUrl: string;
+    backgroundVID: string;
     brandLogoUrl: string;
     isSold: boolean;
 
@@ -130,9 +131,11 @@ const getMediaUrl = (
         return "";
     }
 
+    // Ensure base URL is only prepended if the path is relative
     if (relativePath.startsWith("http://") || relativePath.startsWith("https://")) {
         return relativePath;
     } else {
+        // Handle cases where relativePath might or might not start with '/'
         return `${baseUrl}${relativePath.startsWith("/") ? "" : "/"}${relativePath}`;
     }
 };
@@ -147,50 +150,74 @@ const getMultipleMediaUrls = (
     return mediaRelation.data.map(item => getMediaUrl(item, baseUrl)).filter(url => url !== "");
 };
 
+// Helper to get best image format from Strapi media object
+const getBestImageUrl = (mediaObj: any) => {
+    // Assuming mediaObj is `item.carPic.data.attributes` or similar
+    if (!mediaObj || !mediaObj.attributes) return ''; // Ensure attributes exist
+    const formats = mediaObj.attributes.formats;
+    const url = mediaObj.attributes.url;
+
+    if (formats) {
+        return (
+            formats.large?.url ||
+            formats.medium?.url ||
+            formats.small?.url ||
+            formats.thumbnail?.url ||
+            url || ''
+        );
+    }
+    return url || '';
+};
+
 // --- Hero Section Component ---
-const HeroSection: React.FC<{ backgroundVideoUrl: string }> = ({ backgroundVideoUrl }) => (
-    <section
-        className="relative w-full flex justify-center items-center text-white text-center overflow-hidden"
-        style={{
-            height: '55vh',
-            minHeight: '200px',
-            position: 'relative',
-            zIndex: 1,
-            marginTop: '96px',
-        }}
-    >
-        {backgroundVideoUrl && (
-            <video
-                className="absolute top-0 left-0 w-full h-full object-cover z-0"
-                autoPlay
-                loop
-                muted
-                playsInline
-                src={backgroundVideoUrl}
-            >
-                Your browser does not support the video tag.
-            </video>
-        )}
-        <div className="absolute inset-0 bg-black opacity-40 z-10"></div>
-        <style>{`
-            @media (min-width: 769px) {
-                section {
-                    height: 55vh !important;
+
+const HeroSection: React.FC<{ backgroundVID: string }> = ({ backgroundVID }) => {
+    // console.log("HeroSection backgroundVID:", backgroundVID); // Debugging: Check the URL passed
+    return (
+        <section
+            className="relative w-full flex justify-center items-center text-white text-center overflow-hidden"
+            style={{
+                height: '55vh',
+                minHeight: '200px',
+                position: 'relative',
+                zIndex: 1,
+                marginTop: '96px',
+            }}
+        >
+            {backgroundVID && (
+                <video
+                    className="absolute top-0 left-0 w-full h-full object-cover z-0"
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    src={backgroundVID}
+                    onError={(e) => console.error("Video error:", e.currentTarget.error)} // Add error handling for video
+                >
+                    Your browser does not support the video tag.
+                </video>
+            )}
+            <div className="absolute inset-0 bg-black opacity-40 z-10"></div>
+            <style>{`
+                @media (min-width: 769px) {
+                    section {
+                        height: 55vh !important;
+                    }
                 }
-            }
-            @media (max-width: 768px) {
-                section {
-                    height: 40vh !important;
+                @media (max-width: 768px) {
+                    section {
+                        height: 40vh !important;
+                    }
                 }
-            }
-            @media (max-width: 480px) {
-                section {
-                    height: 30vh !important;
+                @media (max-width: 480px) {
+                    section {
+                        height: 30vh !important;
+                    }
                 }
-            }
-        `}</style>
-    </section>
-);
+            `}</style>
+        </section>
+    );
+};
 
 // --- Model Selector Component ---
 interface ModelSelectorProps {
@@ -230,14 +257,30 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({ activeModel, setActiveMod
     );
 };
 
+// --- Logo fetch types ---
+interface LogoMediaDataItem {
+    id: number;
+    url: string;
+}
+interface LuxuryCarLogoAttributes {
+    logo: LogoMediaDataItem;
+    bigLogo?: LogoMediaDataItem | null;
+}
+interface StrapiLuxuryCarLogoResponse {
+    data: LuxuryCarLogoAttributes | null;
+    meta: any;
+}
+
 // --- CarDetail Main Component ---
 const CarDetail: React.FC = () => {
     const { slug } = useParams<{ slug: string }>();
     const navigate = useNavigate();
-    const strapiBaseUrl = "http://localhost:1337";
+    // Set base URL from environment variable
+    const strapiBaseUrl = import.meta.env.VITE_API_URL;
 
     const [car, setCar] = useState<CarDetailData | null>(null);
     const [heroData, setHeroData] = useState<LuxuryHeroAttributes | null>(null);
+    const [logoData, setLogoData] = useState<LuxuryCarLogoAttributes | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
@@ -265,12 +308,11 @@ const CarDetail: React.FC = () => {
 
 
     // BUTTONSSS
-        
-    
-      
+
+
     const handleEnquireClick = () => {
         navigate('/luxurycars/contact');
-         };
+    };
     // Navigate to next image in modal
     const goToNextImage = useCallback(() => {
         if (car && car.galleryImages.length > 0) {
@@ -314,95 +356,154 @@ const CarDetail: React.FC = () => {
         const fetchData = async () => {
             setLoading(true);
             setError(null);
-
             try {
-                // Fetch Luxury Heroes Data for Navbar Logo
+                // Fetch logo from /api/luxurycar
+                const logoApiUrl = `${strapiBaseUrl}/api/luxurycar?populate=*`;
+                const logoResponse = await fetch(logoApiUrl);
+                if (logoResponse.ok) {
+                    const logoJson: StrapiLuxuryCarLogoResponse = await logoResponse.json();
+                    if (logoJson?.data) {
+                        setLogoData(logoJson.data);
+                    }
+                }
+
+                // Fetch Luxury Heroes Data for Navbar Logo from remote Strapi
                 const heroApiUrl = `${strapiBaseUrl}/api/luxury-heroes?populate[basicinfo][populate]=companyLogo`;
                 const heroResponse = await fetch(heroApiUrl);
-                if (!heroResponse.ok) {
-                    throw new Error(`HTTP error fetching hero data! Status: ${heroResponse.status}`);
-                }
-                const heroJson = await heroResponse.json();
-                if (heroJson?.data?.length > 0) {
-                    setHeroData(heroJson.data[0].attributes);
+                if (heroResponse.ok) {
+                    const heroJson = await heroResponse.json();
+                    if (heroJson?.data?.length > 0) {
+                        setHeroData(heroJson.data[0].attributes);
+                    } else {
+                        setHeroData(null); // No hero data found
+                    }
                 } else {
-                    console.warn("No luxury hero data found for Navbar logo.");
+                    // If 404 or other error, just skip hero data
+                    setHeroData(null);
                 }
 
-                // Fetch Car Details Data
+                // Fetch Car Details Data from remote Strapi
                 if (!slug) {
                     setError("No car slug provided in the URL.");
                     setLoading(false);
                     return;
                 }
 
-                const populateFields = [
-                    'carImage', 'carPic', 'backgroundVid', 'brandLogo', 'carDescription',
-                    'carOverviewP1', 'carOverviewP2', 'carEngineDesc',
-                    'Car_fuel_economy_range', 'carSuspension',
-                    'carSpecifications', // <<< KEY CHANGE: Populating the component
-                    'checkingIMGs'
-                ].join(',');
-
-                const carResponse = await fetch(`${strapiBaseUrl}/api/cars?filters[slug][$eq]=${slug}&populate=${populateFields}`);
+                const carApiUrl = `${strapiBaseUrl}/api/luxurycars-cars?filters[slug][$eq]=${slug}&populate=*`;
+                const carResponse = await fetch(carApiUrl);
                 if (!carResponse.ok) {
-                    throw new Error(`HTTP error! status: ${carResponse.status}`);
+                    setError("Car not found.");
+                    setLoading(false);
+                    return;
                 }
-                const responseData: { data: StrapiCarData[] } = await carResponse.json();
+                const remoteData = await carResponse.json();
+                if (remoteData.data && remoteData.data.length > 0) {
+                    // Support both Strapi formats: with and without .attributes
+                    const raw = remoteData.data[0];
+                    const item = raw.attributes ? raw.attributes : raw;
+                    const itemId = raw.id;
 
-                if (responseData.data && responseData.data.length > 0) {
-                    const strapiCar = responseData.data[0];
-                    const attributes = strapiCar.attributes;
-
-                    const priceString = attributes.carPrice;
+                    // --- Use cars.tsx mapping logic ---
+                    const Brand = item.carBrand || '';
+                    const carSlug = item.slug;
+                    if (!carSlug) {
+                        setError("Car not found.");
+                        setLoading(false);
+                        return;
+                    }
+                    // Parse price
+                    const priceString = item.carPrice || '';
                     const parsedPrice = parseFloat(priceString.replace(/[^0-9.-]+/g, ""));
                     const price = isNaN(parsedPrice) ? 0 : parsedPrice;
 
-                    const imageUrl = getMediaUrl(attributes.carImage?.data, strapiBaseUrl)
-                        || `https://placehold.co/1920x600/333333/ffffff?text=${encodeURIComponent(attributes.carName || 'Car Background')}`;
 
-                    const carPicUrl = getMediaUrl(attributes.carPic?.data, strapiBaseUrl)
-                        || `https://placehold.co/800x400/cccccc/333333?text=${encodeURIComponent(attributes.carName || 'Main Car Image')}`;
+                    // Main image - support direct object with .url property
+                    let imageUrl = '';
+                    if (item.carPic) {
+                      if (item.carPic.url) {
+                        imageUrl = item.carPic.url;
+                      } else if (item.carPic.data && item.carPic.data.attributes && item.carPic.data.attributes.url) {
+                        imageUrl = item.carPic.data.attributes.url;
+                      }
+                      if (imageUrl && !imageUrl.startsWith('http')) {
+                        imageUrl = `${strapiBaseUrl}${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
+                      }
+                    }
+                    if (!imageUrl) {
+                      imageUrl = `https://placehold.co/800x400/cccccc/333333?text=${encodeURIComponent(item.carName || 'Main Car Image')}`;
+                    }
 
-                    const backgroundVideoUrl = getMediaUrl(attributes.backgroundVid?.data, strapiBaseUrl)
-                        || ``;
+                    // Brand logo
+                    const brandLogoUrl = item.brandLogo?.data
+                        ? getMediaUrl(item.brandLogo.data, strapiBaseUrl)
+                        : `https://placehold.co/20x20/cccccc/ffffff?text=${Brand.charAt(0)}`;
 
-                    const brand = attributes.carBrand || '';
-                    const brandLogoPlaceholder = brand ? encodeURIComponent(brand.charAt(0)) : '';
-                    const brandLogoUrl = getMediaUrl(attributes.brandLogo?.data, strapiBaseUrl)
-                        || `https://placehold.co/20x20/cccccc/ffffff?text=${brandLogoPlaceholder}`;
+                    // Background video - support direct object with .url property
+                    let backgroundVID = '';
+                    if (item.backgroundVID) {
+                      // If Strapi returns direct object (not .data)
+                      if (item.backgroundVID.url) {
+                        backgroundVID = item.backgroundVID.url;
+                      } else if (item.backgroundVID.data && item.backgroundVID.data.attributes && item.backgroundVID.data.attributes.url) {
+                        backgroundVID = item.backgroundVID.data.attributes.url;
+                      }
+                      // If the url is not absolute, prepend base
+                      if (backgroundVID && !backgroundVID.startsWith('http')) {
+                        backgroundVID = `${strapiBaseUrl}${backgroundVID.startsWith('/') ? '' : '/'}${backgroundVID}`;
+                      }
+                    }
 
-                    const galleryImages = getMultipleMediaUrls(attributes.checkingIMGs, strapiBaseUrl);
 
+                    // Gallery images: prefer galleryIMGs, then sliderImages, then carPic
+                    let galleryImages: string[] = [];
+                    if (item.galleryIMGs && Array.isArray(item.galleryIMGs)) {
+                      // If Strapi returns direct array
+                      galleryImages = item.galleryIMGs.map((img: any) => img.url ? (img.url.startsWith('http') ? img.url : `${strapiBaseUrl}${img.url.startsWith('/') ? '' : '/'}${img.url}`) : '').filter(Boolean);
+                    } else if (item.galleryIMGs && item.galleryIMGs.length) {
+                      // If Strapi returns array-like
+                      galleryImages = item.galleryIMGs.map((img: any) => img.url ? (img.url.startsWith('http') ? img.url : `${strapiBaseUrl}${img.url.startsWith('/') ? '' : '/'}${img.url}`) : '').filter(Boolean);
+                    } else if (item.galleryIMGs && item.galleryIMGs.data && Array.isArray(item.galleryIMGs.data)) {
+                      // If Strapi returns relation object
+                      galleryImages = getMultipleMediaUrls(item.galleryIMGs, strapiBaseUrl);
+                    }
+                    if (!galleryImages.length) {
+                      // Fallback to sliderImages
+                      const sliderImages = item.carSliderImg?.data && Array.isArray(item.carSliderImg.data)
+                        ? getMultipleMediaUrls(item.carSliderImg, strapiBaseUrl)
+                        : (item.checkingIMGs?.data && Array.isArray(item.checkingIMGs.data)
+                            ? getMultipleMediaUrls(item.checkingIMGs, strapiBaseUrl)
+                            : []);
+                      galleryImages = sliderImages.length > 0 ? sliderImages : [imageUrl];
+                    }
+
+                    // Specifications
+                    const specs = item.carSpecifications || {};
                     setCar({
-                        id: strapiCar.id,
-                        model: attributes.carName,
-                        brand: brand,
+                        id: itemId,
+                        model: item.carName || '',
+                        brand: Brand,
                         price: price,
-                        slug: attributes.slug,
+                        slug: carSlug,
                         imageUrl: imageUrl,
-                        carPicUrl: carPicUrl,
-                        backgroundVideoUrl: backgroundVideoUrl,
+                        carPicUrl: imageUrl, // carPicUrl will use the same as imageUrl
+                        backgroundVID: backgroundVID,
                         brandLogoUrl: brandLogoUrl,
-                        isSold: attributes.isSold || false,
-
-                        description: attributes.carDesc || 'A luxurious and high-performance vehicle offering unparalleled elegance and power.',
-                        overviewP1: attributes.carOverviewP1 || 'From its sleek exterior lines to its meticulously designed interior, every detail has been considered to provide both comfort and control. Advanced aerodynamics ensure stability at high speeds, while the intuitive infotainment system keeps you connected on the go.',
-                        overviewP2: attributes.carOverviewP2 || 'Under the hood, a powerful engine awaits, delivering exhilarating acceleration and a refined ride. The cabin is an oasis of tranquility, shielding occupants from road noise and vibrations, making every journey a pleasure. Experience the pinnacle of automotive engineering.',
-                        engineDescription: attributes.carEngineDesc || '4.0-liter Twin-Turbocharged V8 engine, producing 507 horsepower and 568 lb-ft of torque. Featuring quattro all-wheel drive system and adaptive air suspension.',
-                        fuelEconomyRange: attributes.Car_fuel_economy_range || '18-25 MPG combined',
-                        suspension: attributes.carSuspension || 'Adaptive air suspension with multiple driving modes for optimal comfort and performance.',
-
-                        // <<< KEY CHANGE: Accessing fields from the carSpecifications component
-                        year: attributes.carSpecifications?.year || 'N/A',
-                        regYear: attributes.carSpecifications?.regYear || 'N/A',
-                        numberOfOwners: attributes.carSpecifications?.owners || 'N/A',
-                        mileage: attributes.carSpecifications?.mileage || 'N/A',
-                        exteriorColor: attributes.carSpecifications?.exteriorColor || 'N/A',
-                        interiorColor: attributes.carSpecifications?.interiorColor || 'N/A',
-                        gearType: attributes.carSpecifications?.gearType || 'N/A',
-                        horsePower: attributes.carSpecifications?.horsePower || 'N/A',
-                        fuelType: attributes.carSpecifications?.fuelType || 'N/A',
+                        isSold: !!item.isSold, // Corrected from carSold to isSold based on StrapiCarAttributes
+                        description: item.carDesc || 'A luxurious and high-performance vehicle offering unparalleled elegance and power.',
+                        overviewP1: item.carOverviewP1 || '',
+                        overviewP2: item.carOverviewP2 || '',
+                        engineDescription: item.carEngineDesc || '',
+                        fuelEconomyRange: item.Car_fuel_economy_range || '',
+                        suspension: item.carSuspension || '',
+                        year: specs.year || 'N/A',
+                        regYear: specs.regYear || 'N/A',
+                        numberOfOwners: specs.owners || 'N/A',
+                        mileage: specs.mileage || 'N/A',
+                        exteriorColor: specs.exteriorColor || 'N/A',
+                        interiorColor: specs.interiorColor || 'N/A',
+                        gearType: specs.gearType || 'N/A',
+                        horsePower: specs.horsePower || 'N/A',
+                        fuelType: specs.fuelType || 'N/A',
                         galleryImages: galleryImages,
                     });
                 } else {
@@ -417,11 +518,12 @@ const CarDetail: React.FC = () => {
         };
 
         fetchData();
-    }, [slug, strapiBaseUrl]);
+    }, [slug, strapiBaseUrl]); // Added strapiBaseUrl to dependency array
 
-    const companyLogoUrl = heroData?.basicinfo?.companyLogo?.data
-        ? getMediaUrl(heroData.basicinfo.companyLogo.data, strapiBaseUrl)
-        : "";
+    // Use logo from /api/luxurycar for Navbar and Footer
+    const logoUrl = logoData?.logo?.url
+        ? (logoData.logo.url.startsWith('http') ? logoData.logo.url : `${strapiBaseUrl}${logoData.logo.url.startsWith('/') ? '' : '/'}${logoData.logo.url}`)
+        : car?.brandLogoUrl || "";
 
     if (loading) {
         return (
@@ -464,9 +566,9 @@ const CarDetail: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-white text-gray-800 flex flex-col items-center">
-            <Navbar largeLogoSrc={companyLogoUrl} smallLogoSrc={companyLogoUrl} />
+            <Navbar largeLogoSrc={logoUrl} smallLogoSrc={logoUrl} />
 
-            <HeroSection backgroundVideoUrl={car.backgroundVideoUrl} />
+            <HeroSection backgroundVID={car.backgroundVID} />
 
             <div
                 className="relative z-30 text-center pb-12 flex flex-col items-center w-full"
@@ -600,7 +702,7 @@ const CarDetail: React.FC = () => {
                                                 <svg className="w-4 h-4 md:w-5 md:h-5 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 17A.999.999 0 018 16V8.5L14 3v5.5a1 1 0 01-1 1H9z"></path>
                                                 </svg>
-                                                EXTERNAL COLOUR
+                                                EXTERIOR COLOUR
                                             </span>
                                             <span className="font-semibold text-base md:text-lg text-gray-800">{car.exteriorColor}</span>
                                         </li>
@@ -631,10 +733,10 @@ const CarDetail: React.FC = () => {
                                             </span>
                                             <span className="font-semibold text-base md:text-lg text-gray-800">{car.horsePower}</span>
                                         </li>
-                                        <li className="flex justify-between items-center pb-2">
+                                        <li className="flex justify-between items-center pb-2"> {/* This was the incomplete li */}
                                             <span className="flex items-center text-gray-600 text-sm md:text-base">
                                                 <svg className="w-4 h-4 md:w-5 md:h-5 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 7h10m-1 5l-1 1H8l-1-1m0 0V9m0 0L4 7m0 0l-1-2M4 7V3m0 0h2m0 4V3m0 0l-2-2m2 2h2"></path>
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 7h10m-1 5l-1 1H8l-1-1m0 0V9m0 0L4 7m0 0l-1-2M4 7V3m0 0h2m0 4V3m0"></path>
                                                 </svg>
                                                 FUEL TYPE
                                             </span>
@@ -642,110 +744,102 @@ const CarDetail: React.FC = () => {
                                         </li>
                                     </ul>
                                 </div>
-                                 <div className="text-center mt-6">
-                                    <p className="text-xl md:text-2xl font-bold text-gray-900 mb-2">
-                                        Price: ${car.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                    </p>
-                                    {car.isSold ? (
-                                        <span className="inline-block bg-red-600 text-white text-lg font-bold px-5 py-2 rounded-full shadow-md">
-                                            SOLD
-                                        </span>
-                                    ) : (
-                                        <button className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-semibold text-lg shadow-lg transition-all duration-300" onClick={handleEnquireClick}>
-                                            Enquire Now
-                                        </button>
-                                    )}
+                                <div className="mt-6 flex flex-col gap-3">
+                                    <button
+                                        onClick={handleEnquireClick}
+                                        className="w-full bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-semibold text-lg shadow-lg transition-all duration-300"
+                                    >
+                                        Enquire Now
+                                    </button>
                                 </div>
-                                
-                                {car.isSold && (
-                                    <div className="mt-4 text-center p-3 bg-red-100 border border-red-400 text-red-700 rounded-md">
-                                        <p className="font-bold">SOLD!</p>
-                                        <p className="text-sm">This vehicle is no longer available.</p>
-                                    </div>
-                                )}
                             </div>
                         </div>
                     </>
                 )}
 
-                {activeModel === 'Gallery' && (
+                {activeModel === 'Gallery' && car.galleryImages.length > 0 && (
                     <div className="w-full bg-white rounded-xl shadow-lg p-6 md:p-8">
                         <h2 className="text-3xl font-bold text-gray-800 mb-6 border-b pb-2 border-gray-200">Gallery</h2>
-                        {car.galleryImages && car.galleryImages.length > 0 ? (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                                {car.galleryImages.map((image, index) => (
-                                    <div key={index} className="relative group cursor-pointer overflow-hidden rounded-lg shadow-md"
-                                        onClick={() => openModal(index)}>
-                                        <img
-                                            src={image}
-                                            alt={`Gallery image ${index + 1}`}
-                                            className="w-full h-48 object-cover transform transition-transform duration-300 group-hover:scale-105"
-                                        />
-                                        <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                            <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m0 0H7"></path>
-                                            </svg>
-                                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                            {car.galleryImages.map((image, index) => (
+                                <div
+                                    key={index}
+                                    className="relative w-full h-48 sm:h-40 md:h-48 rounded-lg overflow-hidden cursor-pointer shadow-md transform transition-transform duration-200 hover:scale-105"
+                                    onClick={() => openModal(index)}
+                                >
+                                    <img
+                                        src={image}
+                                        alt={`Gallery image ${index + 1}`}
+                                        className="w-full h-full object-cover"
+                                        loading="lazy"
+                                    />
+                                    <div className="absolute inset-0 bg-black bg-opacity-25 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-200">
+                                        <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m0 0H7"></path></svg>
                                     </div>
-                                ))}
-                            </div>
-                        ) : (
-                            <p className="text-center text-gray-600 text-lg">No gallery images available for this car.</p>
-                        )}
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 )}
 
-                {/* Image Modal */}
-                {isModalOpen && car && car.galleryImages.length > 0 && (
-                    <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4" onClick={closeModal}>
-                        <div className="relative w-full max-w-5xl max-h-[90vh] flex items-center justify-center" onClick={e => e.stopPropagation()}>
-                            <button
-                                className="absolute top-4 right-4 text-white text-3xl z-50 hover:text-gray-300"
-                                onClick={closeModal}
-                                aria-label="Close image modal"
-                            >
-                                &times;
-                            </button>
-                            <img
-                                src={car.galleryImages[currentImageIndex]}
-                                alt={`Gallery image ${currentImageIndex + 1}`}
-                                className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-xl"
-                            />
-                            <button
-                                className="absolute left-4 p-2 bg-black bg-opacity-50 text-white rounded-full hover:bg-opacity-75 transition-all duration-200 z-50"
-                                onClick={goToPrevImage}
-                                aria-label="Previous image"
-                            >
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg>
-                            </button>
-                            <button
-                                className="absolute right-4 p-2 bg-black bg-opacity-50 text-white rounded-full hover:bg-opacity-75 transition-all duration-200 z-50"
-                                onClick={goToNextImage}
-                                aria-label="Next image"
-                            >
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
-                            </button>
-                        </div>
+                {activeModel === 'Gallery' && car.galleryImages.length === 0 && (
+                    <div className="w-full bg-white rounded-xl shadow-lg p-6 md:p-8 text-center text-gray-600">
+                        <p className="text-lg">No gallery images available for this car.</p>
                     </div>
                 )}
 
                 {activeModel === '3D Model' && (
-                    <div className="w-full bg-white rounded-xl shadow-lg p-6 md:p-8 text-center">
+                    <div className="w-full bg-white rounded-xl shadow-lg p-6 md:p-8">
                         <h2 className="text-3xl font-bold text-gray-800 mb-6 border-b pb-2 border-gray-200">3D Model</h2>
-                        <p className="text-lg text-gray-600">
-                            3D model integration coming soon!
-                        </p>
-                        {/* Placeholder for 3D model viewer or iframe */}
-                        <div className="bg-gray-200 rounded-lg h-96 flex items-center justify-center mt-6">
-                            <p className="text-gray-500">Your 3D model viewer will appear here.</p>
+                        <div className="flex justify-center items-center h-96 bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 text-gray-500">
+                            <p className="text-xl font-medium">3D Model Coming Soon!</p>
                         </div>
                     </div>
                 )}
             </div>
-             <div
-            style={{marginTop: '50px', width: "100%"}}>
-                <Footer logoUrl={companyLogoUrl} />
-            </div>
+
+            {/* Image Modal */}
+            {isModalOpen && car && car.galleryImages.length > 0 && (
+                <div
+                    className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4"
+                    onClick={closeModal} // Close modal when clicking outside the image
+                >
+                    <div className="relative max-w-screen-lg w-full h-full flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
+                        <button
+                            className="absolute top-4 right-4 text-white text-4xl font-bold z-50"
+                            onClick={closeModal}
+                            aria-label="Close modal"
+                        >
+                            &times;
+                        </button>
+                        <img
+                            src={car.galleryImages[currentImageIndex]}
+                            alt={`Full size image ${currentImageIndex + 1}`}
+                            className="max-w-full max-h-full object-contain"
+                        />
+                        {car.galleryImages.length > 1 && (
+                            <>
+                                <button
+                                    className="absolute left-4 bg-gray-800 bg-opacity-50 text-white p-2 rounded-full text-2xl hover:bg-opacity-75 transition-all"
+                                    onClick={goToPrevImage}
+                                    aria-label="Previous image"
+                                >
+                                    &#10094;
+                                </button>
+                                <button
+                                    className="absolute right-4 bg-gray-800 bg-opacity-50 text-white p-2 rounded-full text-2xl hover:bg-opacity-75 transition-all"
+                                    onClick={goToNextImage}
+                                    aria-label="Next image"
+                                >
+                                    &#10095;
+                                </button>
+                            </>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            <Footer logoUrl={logoUrl} />
         </div>
     );
 };

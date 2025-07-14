@@ -62,9 +62,9 @@ const getMediaUrl = (
   // Use the VITE_STRAPI_API_URL base for constructing full image URLs
   // This assumes your base URL for images is the same as your API base,
   // or that your images always return absolute URLs from strapiapp.com.
-  const STRAPI_BASE_URL = import.meta.env.VITE_STRAPI_API_URL;
+  const STRAPI_BASE_URL = import.meta.env.VITE_API_URL; // Using VITE_API_URL for consistency
   if (!STRAPI_BASE_URL) {
-      console.error("VITE_STRAPI_API_URL is not defined.");
+      console.error("VITE_API_URL is not defined.");
       return "";
   }
 
@@ -82,7 +82,7 @@ const ContactPage = () => {
   const [error, setError] = useState<string | null>(null);
 
   // Access the base Strapi API URL from environment variables
-  const STRAPI_BASE_API_URL = import.meta.env.VITE_STRAPI_API_URL;
+  const STRAPI_BASE_API_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -91,11 +91,12 @@ const ContactPage = () => {
 
         // --- Validate the base API URL ---
         if (!STRAPI_BASE_API_URL) {
-            throw new Error("VITE_STRAPI_API_URL is not defined in environment variables. Please check your .env file.");
+            throw new Error("VITE_API_URL is not defined in environment variables. Please check your .env file.");
         }
 
         // --- Construct the full API endpoint for contact data ---
-        const contactApiUrl = `${STRAPI_BASE_API_URL}/luxurycars-contactus`;
+        // CORRECTED: Added '/api' to the path
+        const contactApiUrl = `${STRAPI_BASE_API_URL}/api/luxurycars-contactus`;
         console.log("Fetching Contact Data from:", contactApiUrl);
 
         const contactResponse = await fetch(contactApiUrl);

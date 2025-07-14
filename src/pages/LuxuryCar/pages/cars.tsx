@@ -61,16 +61,6 @@ interface Car {
     display: boolean; // NEW: Added display property for the internal Car model
 }
 
-// Interfaces for LuxuryHero data (for Navbar logo) - no changes needed here, just for context
-interface BasicInfoAttributes {
-    companyName?: string;
-    companyLogo?: SingleMediaRelation;
-}
-
-interface LuxuryHeroAttributes {
-    basicinfo?: BasicInfoAttributes;
-}
-
 interface FilterSidebarProps {
     searchTerm: string;
     onSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -100,12 +90,13 @@ const getMediaUrl = (
 ): string => {
     let relativePath: string | undefined;
 
-    if (typeof mediaContent === "string") {
-        relativePath = mediaContent;
-    } else if (mediaContent && mediaContent.attributes && mediaContent.attributes.url) {
+    // Enhanced check for mediaContent.data for SingleMediaRelation type
+    if (mediaContent && typeof mediaContent !== "string" && mediaContent.attributes && mediaContent.attributes.url) {
         relativePath = mediaContent.attributes.url;
+    } else if (typeof mediaContent === "string") {
+        relativePath = mediaContent;
     } else {
-        return "";
+        return ""; // No valid media content
     }
 
     if (!relativePath) {
@@ -122,8 +113,6 @@ const getMediaUrl = (
 
 // --- Hero Section Component ---
 const HeroSection: React.FC = () => (
-
-// --- Hero Section Component ---
     <header className="relative bg-gray-900 text-white py-24 md:py-32 overflow-hidden shadow-xl">
         {/* Blue Gradient Background */}
         <div className="absolute inset-0" style={{
@@ -195,27 +184,79 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
                 </div>
                 <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isPriceExpanded ? 'max-h-48 opacity-100' : 'max-h-0 opacity-0'}`}>
                     <div className="border-t border-gray-200 pt-4">
-                        <div className="mb-4">
-                            <p className="text-gray-600 text-sm font-medium">Min: <span className="font-bold text-gray-800">${minPrice.toLocaleString()}</span></p>
+                        <div className="flex items-center gap-4 mb-2">
+                            <div className="flex flex-col flex-1">
+                                <label className="block text-gray-600 text-sm font-medium mb-1">Minimum Price</label>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    max={maxPrice}
+                                    value={minPrice}
+                                    onChange={onMinPriceChange}
+                                    className="w-full px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-right text-gray-800 bg-white"
+                                />
+                            </div>
+                            <div className="flex flex-col flex-1">
+                                <label className="block text-gray-600 text-sm font-medium mb-1">Maximum Price</label>
+                                <input
+                                    type="number"
+                                    min={minPrice}
+                                    max="500000"
+                                    value={maxPrice}
+                                    onChange={onMaxPriceChange}
+                                    className="w-full px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-right text-gray-800 bg-white"
+                                />
+                            </div>
+                        </div>
+                        <div className="mb-2">
+                            <label className="block text-gray-600 text-sm font-medium mb-1">Minimum Price </label>
                             <input
                                 type="range"
                                 min="0"
                                 max="500000"
                                 value={minPrice}
                                 onChange={onMinPriceChange}
-                                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                                style={{ accentColor: '#22c55e' }}
                             />
                         </div>
                         <div>
-                            <p className="text-gray-600 text-sm font-medium">Max: <span className="font-bold text-gray-800">${maxPrice.toLocaleString()}</span></p>
+                            <label className="block text-gray-600 text-sm font-medium mb-1">Maximum Price</label>
                             <input
                                 type="range"
                                 min="0"
                                 max="500000"
                                 value={maxPrice}
                                 onChange={onMaxPriceChange}
-                                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                                style={{ accentColor: '#22c55e' }}
                             />
+                            <style>{`
+                                input[type='range']::-webkit-slider-thumb {
+                                    width: 18px;
+                                    height: 18px;
+                                    background: #22c55e;
+                                    border-radius: 50%;
+                                    box-shadow: 0 0 2px #333;
+                                    border: 2px solid #fff;
+                                }
+                                input[type='range']:focus::-webkit-slider-thumb {
+                                    outline: 2px solid #22c55e;
+                                }
+                                input[type='range']::-moz-range-thumb {
+                                    width: 18px;
+                                    height: 18px;
+                                    background: #22c55e;
+                                    border-radius: 50%;
+                                    border: 2px solid #fff;
+                                }
+                                input[type='range']:focus::-moz-range-thumb {
+                                    outline: 2px solid #22c55e;
+                                }
+                            `}</style>
+                        </div>
+                        <div className="mt-2 text-center text-green-700 font-bold text-base">
+                            Selected Range: ${minPrice.toLocaleString()} - ${maxPrice.toLocaleString()}
                         </div>
                     </div>
                 </div>
@@ -422,13 +463,12 @@ const CarListings: React.FC<CarListingsProps> = ({ cars }) => (
 
 // --- Main LuxuryCar Page Component ---
 const LuxuryCar: React.FC = () => {
-    const strapiBaseUrl = "http://localhost:1337"; // IMPORTANT: Verify this matches your Strapi server URL
+    // Use base URL from environment variable
+    const strapiBaseUrl = import.meta.env.VITE_API_URL;
 
     const [allCars, setAllCars] = useState<Car[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-
-    const [companyLogoUrl, setCompanyLogoUrl] = useState<string>("");
 
     const [searchTerm, setSearchTerm] = useState('');
     const [minPrice, setMinPrice] = useState(0);
@@ -455,157 +495,138 @@ const LuxuryCar: React.FC = () => {
         const fetchAllData = async () => {
             setLoading(true);
             setError(null);
+            console.log("Attempting to fetch car data...");
 
             try {
-                // 1. Fetch Luxury Heroes Data for Navbar Logo
-                const heroApiUrl = `${strapiBaseUrl}/api/luxury-heroes?populate[basicinfo][populate]=companyLogo`;
-                console.log("Fetching Navbar Logo from:", heroApiUrl);
-                const heroResponse = await fetch(heroApiUrl);
-                if (!heroResponse.ok) {
-                    throw new Error(`HTTP error fetching hero data! Status: ${heroResponse.status}`);
-                }
-                const heroJson = await heroResponse.json();
-                console.log("Raw Strapi API Response for Navbar Logo:", heroJson);
-                if (heroJson?.data?.length > 0) {
-                    const logoData = heroJson.data[0].attributes?.basicinfo?.companyLogo?.data;
-                    setCompanyLogoUrl(getMediaUrl(logoData, strapiBaseUrl));
-                } else {
-                    setCompanyLogoUrl("https://placehold.co/40x40/ffffff/000000?text=L");
-                    console.warn("No luxury-hero data found or no companyLogo in Strapi. Using placeholder logo.");
-                }
-
-                // 2. Fetch Car Details Data
-                // The 'Brand' field itself will be returned directly as it's an enumeration.
-                // Added 'display' to populate to ensure it's fetched from Strapi
-                const carsApiUrl = `${strapiBaseUrl}/api/cars?populate=carImage,brandLogo,carSliderImg,slug,carSold,display`;
+                const carsApiUrl = `${strapiBaseUrl}/api/luxurycars-cars?populate=*`;
                 console.log("Fetching Cars from:", carsApiUrl);
                 const response = await fetch(carsApiUrl);
+                console.log("Fetch response received:", response);
 
                 if (!response.ok) {
-                    // Check for specific HTTP errors
+                    const errorBody = await response.text();
+                    console.error("HTTP error details:", errorBody);
                     if (response.status === 403 || response.status === 401) {
-                        throw new Error(`Authentication/Permission Error: Check Strapi roles and permissions for 'Car' collection. Status: ${response.status}`);
+                        throw new Error(`Authentication/Permission Error: Status ${response.status}. Check Strapi roles and permissions for 'Luxurycars Cars' collection.`);
+                    } else if (response.status === 404) {
+                        throw new Error(`Not Found: Status ${response.status}. The API endpoint '${carsApiUrl}' might be incorrect, or there's no published data.`);
                     }
-                    throw new Error(`HTTP error fetching cars! Status: ${response.status}`);
+                    throw new Error(`HTTP error fetching cars! Status: ${response.status}. Response: ${errorBody.substring(0, 100)}...`);
                 }
                 const responseData = await response.json();
 
-                console.log("Raw Strapi API Response for Cars:", responseData); // VERY IMPORTANT FOR DEBUGGING!
+                console.log("Raw Strapi API Response for Cars (JSON):", responseData);
 
-                // Check if responseData.data is an array and has items
                 if (!responseData.data || !Array.isArray(responseData.data) || responseData.data.length === 0) {
-                    console.warn("Strapi /api/cars returned no data or empty array.");
+                    console.warn("Strapi /api/luxurycars-cars returned no data or empty array. Displaying 'No cars found'.");
                     setAllCars([]);
                     setFilteredCars([]);
                     setLoading(false);
-                    return; // Exit early if no data
+                    return;
                 }
 
-                const loadedCars: Car[] = responseData.data.map((strapiCar: StrapiCarData) => {
-                    // CORRECTED: Extract 'Brand' directly as it's an enumeration string.
-                    const Brand = strapiCar.attributes.Brand || ''; // Access strapiCar.attributes.Brand
+                // Helper to get best image format from Strapi media object
+                const getBestImageUrl = (mediaObj: any) => {
+                    if (!mediaObj || !mediaObj.formats) return mediaObj?.url || '';
+                    return (
+                        mediaObj.formats.large?.url ||
+                        mediaObj.formats.medium?.url ||
+                        mediaObj.formats.small?.url ||
+                        mediaObj.formats.thumbnail?.url ||
+                        mediaObj.url || ''
+                    );
+                };
 
-                    console.log(`Processing car: ${strapiCar.attributes.carName || 'Unknown Name'}, Extracted Brand: '${Brand}', Slug: '${strapiCar.attributes.slug}'`);
+                // Helper for multiple images (slider/gallery)
+                const getMultipleImageUrls = (mediaArr: any[]) => {
+                    if (!Array.isArray(mediaArr)) return [];
+                    return mediaArr.map(item => getBestImageUrl(item)).filter(Boolean);
+                };
 
-                    const carSlug = strapiCar.attributes.slug;
-                    if (!carSlug) {
-                        console.warn(`Car "${strapiCar.attributes.carName}" (ID: ${strapiCar.id}) has no slug and will be skipped.`);
-                        return null; // Return null for cars without a slug, to be filtered out later
-                    }
-
-                    const priceString = strapiCar.attributes.carPrice;
+                const loadedCars: Car[] = responseData.data.map((strapiCar: any) => {
+                    // Direct mapping from API response
+                    const Brand = strapiCar.carBrand || '';
+                    const carSlug = strapiCar.slug;
+                    if (!carSlug) return null;
+                    // Parse price
+                    const priceString = strapiCar.carPrice || '';
                     const parsedPrice = parseFloat(priceString.replace(/[^0-9.-]+/g, ""));
                     const price = isNaN(parsedPrice) ? 0 : parsedPrice;
-
-                    const sliderImages = strapiCar.attributes.carSliderImg?.data
-                        ? strapiCar.attributes.carSliderImg.data.map(img => getMediaUrl(img, strapiBaseUrl))
-                        : [];
-
-                    // Use the first slider image, then carImage, then a placeholder
-                    const imageUrl = sliderImages[0] || getMediaUrl(strapiCar.attributes.carImage?.data, strapiBaseUrl)
-                        || `https://placehold.co/600x400/cccccc/ffffff?text=${encodeURIComponent(strapiCar.attributes.carName || 'No Image')}`;
-
-                    const brandLogoPlaceholder = Brand ? encodeURIComponent(Brand.charAt(0)) : ''; // CORRECTED: Use Brand
-                    // Assuming brandLogo is a field directly on the Car, or can be passed from Brand relation
-                    const brandLogoUrl = getMediaUrl(strapiCar.attributes.brandLogo?.data, strapiBaseUrl)
-                        || `https://placehold.co/20x20/cccccc/ffffff?text=${brandLogoPlaceholder}`;
-
-
+                    // Main image
+                    const imageUrl = getBestImageUrl(strapiCar.carPic);
+                    // Brand logo
+                    const brandLogoUrl = getBestImageUrl(strapiCar.brandLogo);
+                    // Slider images
+                    const sliderImages = getMultipleImageUrls(strapiCar.carSliderImg);
                     return {
                         id: strapiCar.id,
-                        model: strapiCar.attributes.carName,
-                        Brand: Brand, // CORRECTED: This now correctly holds the brand name string
+                        model: strapiCar.carName,
+                        Brand: Brand,
                         price: price,
                         slug: carSlug,
-                        imageUrl: imageUrl,
-                        brandLogoUrl: brandLogoUrl,
-                        sliderImages: sliderImages,
-                        isSold: strapiCar.attributes.carSold || false,
-                        display: strapiCar.attributes.display ?? true, // NEW: Default to true if 'display' is not explicitly set in Strapi
+                        imageUrl: imageUrl || `https://placehold.co/600x400/cccccc/ffffff?text=${encodeURIComponent(strapiCar.carName || 'No Image')}`,
+                        brandLogoUrl: brandLogoUrl || `https://placehold.co/20x20/cccccc/ffffff?text=${Brand.charAt(0)}`,
+                        sliderImages: sliderImages.length > 0 ? sliderImages : [imageUrl],
+                        isSold: !!strapiCar.carSold,
+                        display: strapiCar.carDisplay ?? true,
                     };
-                }).filter(Boolean); // Filter out any null entries (e.g., cars without slugs)
+                }).filter(Boolean);
 
                 console.log("All cars loaded into state (after processing and filtering for slug):", loadedCars);
                 setAllCars(loadedCars);
-                setFilteredCars(loadedCars); // Initialize filtered cars with all cars
+                setFilteredCars(loadedCars);
 
                 if (loadedCars.length > 0) {
                     const maxFetchedPrice = Math.max(...loadedCars.map(car => car.price));
                     setMinPrice(0);
                     setMaxPrice(maxFetchedPrice);
+                    console.log(`Initial max price set to: $${maxFetchedPrice}`);
                 } else {
                     setMinPrice(0);
-                    setMaxPrice(500000); // Reset or set default max price if no cars loaded
+                    setMaxPrice(500000);
+                    console.log("No cars loaded, prices reset to default.");
                 }
 
             } catch (e: any) {
-                console.error("Failed to fetch data:", e);
-                setError(`Failed to load content: ${e.message}. Please check your Strapi server, URL, and network connection.`);
+                console.error("Failed to fetch car data:", e);
+                setError(`Failed to load content: ${e.message}`);
             } finally {
                 setLoading(false);
+                console.log("Loading state set to false.");
             }
         };
 
         fetchAllData();
-    }, [strapiBaseUrl]); // Dependency array: re-run if strapiBaseUrl changes (unlikely)
+    }, [strapiBaseUrl]);
 
-    // This useEffect applies filtering whenever relevant state variables change
     useEffect(() => {
-        let temp = [...allCars]; // Start with a fresh copy of all cars
+        let temp = [...allCars];
 
-        // Apply search term filter
         if (searchTerm) {
             temp = temp.filter(c =>
                 c.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                c.Brand.toLowerCase().includes(searchTerm.toLowerCase()) // CORRECTED: Access c.Brand
+                c.Brand.toLowerCase().includes(searchTerm.toLowerCase())
             );
         }
 
-        // Apply price range filter
         temp = temp.filter(c => c.price >= minPrice && c.price <= maxPrice);
 
-        // Apply brand filter
         if (selectedBrands.length > 0) {
-            // Trim whitespace from both ends for a robust comparison
-            temp = temp.filter(c => selectedBrands.map(s => s.trim()).includes(c.Brand.trim())); // CORRECTED: Access c.Brand
+            temp = temp.filter(c => selectedBrands.map(s => s.trim()).includes(c.Brand.trim()));
         }
 
-        // Apply sold status filter
         if (selectedSoldStatus === 'sold') {
             temp = temp.filter(c => c.isSold);
         } else if (selectedSoldStatus === 'not-sold') {
             temp = temp.filter(c => !c.isSold);
         }
 
-        // NEW: Apply display filter - only show cars with display: true
         temp = temp.filter(c => c.display === true);
-
 
         setFilteredCars(temp);
         console.log(`Filters applied. Showing ${temp.length} cars.`);
-    }, [searchTerm, minPrice, maxPrice, selectedBrands, selectedSoldStatus, allCars]); // Dependencies
+    }, [searchTerm, minPrice, maxPrice, selectedBrands, selectedSoldStatus, allCars]);
 
-    // availableBrands is now the predefined list, as per your request
     const availableBrands = predefinedAvailableBrands;
 
     return (
@@ -628,13 +649,19 @@ const LuxuryCar: React.FC = () => {
                     border-radius: 10px;
                 }
             `}</style>
-            <Navbar largeLogoSrc={companyLogoUrl} smallLogoSrc={companyLogoUrl} />
+            {/* Navbar component without logo props */}
+            <Navbar />
             <HeroSection />
             <main className="container mx-auto py-8 px-4 flex flex-col lg:flex-row gap-8 flex-grow">
                 {loading ? (
                     <div className="w-full text-center py-20 text-gray-600 text-xl">Loading cars...</div>
                 ) : error ? (
-                    <div className="w-full text-center py-20 text-red-600 text-xl">Error: {error}</div>
+                    <div className="w-full text-center py-20 text-red-600 text-xl">
+                        Error loading cars: {error}
+                        <p className="text-base text-gray-700 mt-4">
+                            Please check your Strapi server's status, API endpoint, and public permissions for the 'Luxurycars Home' collection.
+                        </p>
+                    </div>
                 ) : (
                     <>
                         <FilterSidebar
@@ -644,10 +671,10 @@ const LuxuryCar: React.FC = () => {
                             maxPrice={maxPrice}
                             onMinPriceChange={e => setMinPrice(Math.min(Number(e.target.value), maxPrice))}
                             onMaxPriceChange={e => setMaxPrice(Math.max(Number(e.target.value), minPrice))}
-                            availableBrands={availableBrands} // This now comes from your predefined list
+                            availableBrands={availableBrands}
                             selectedBrands={selectedBrands}
                             onBrandChange={e => {
-                                const Brand = e.target.value; // CORRECTED: Use Brand
+                                const Brand = e.target.value;
                                 if (e.target.checked) setSelectedBrands([...selectedBrands, Brand]);
                                 else setSelectedBrands(selectedBrands.filter(b => b !== Brand));
                             }}
@@ -658,7 +685,7 @@ const LuxuryCar: React.FC = () => {
                     </>
                 )}
             </main>
-            <Footer logoUrl={companyLogoUrl} />
+            <Footer logoUrl="" />
         </div>
     );
 };

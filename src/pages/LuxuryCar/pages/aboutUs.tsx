@@ -123,11 +123,11 @@ const Aboutus: React.FC = () => {
                 aria-label="About Us Hero Section"
             >
                 {/* Dynamic Background Image from mainBGImg */}
-                {data.mainBGImg ? (
+                {data.JourneyIMG ? (
                     <div
                         className="absolute inset-0 w-full h-full bg-cover bg-center hero-background-media"
                         style={{
-                            backgroundImage: `url('${getMediaUrl(data.mainBGImg.formats?.large?.url || data.mainBGImg.url)}')`,
+                            backgroundImage: `url('${getMediaUrl(data.JourneyIMG.formats?.large?.url || data.JourneyIMG.url)}')`,
                         }}
                     ></div>
                 ) : (

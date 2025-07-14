@@ -276,13 +276,13 @@ function LussoMainPage() {
           <>
             <div
               className={`
-                flex flex-wrap justify-center gap-6 mb-6
+                grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 mb-6
                 transition-opacity duration-1000 ease-in-out
                 ${contentReady ? 'opacity-100' : 'opacity-0'}
                 z-10
               `}
             >
-              {companies.slice(0, 4).map((company, index) => (
+              {companies.slice(0, 6).map((company, index) => (
                 <div
                   key={company.id}
                   onClick={() => handleCardClick(company.slug)}
@@ -319,13 +319,13 @@ function LussoMainPage() {
             </div>
             <div
               className={`
-                flex justify-center gap-6
+                grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6
                 transition-opacity duration-1000 ease-in-out
                 ${contentReady ? 'opacity-100' : 'opacity-0'}
                 z-10
               `}
             >
-              {companies.slice(4).map((company, index) => (
+              {companies.slice(6, 12).map((company, index) => (
                 <div
                   key={company.id}
                   onClick={() => handleCardClick(company.slug)}
@@ -337,7 +337,7 @@ function LussoMainPage() {
                     hover:scale-105 hover:shadow-2xl hover:-translate-y-1 cursor-pointer
                     ${contentReady ? 'scale-100 opacity-100 translate-y-0' : 'scale-50 opacity-0 translate-y-10'}
                   `}
-                  style={{ transitionDelay: contentReady ? `${(index + 4) * 150}ms` : '0ms' }}
+                  style={{ transitionDelay: contentReady ? `${(index + 6) * 150}ms` : '0ms' }}
                 >
                   {company.companyLogo && company.companyLogo.url ? (
                     <img

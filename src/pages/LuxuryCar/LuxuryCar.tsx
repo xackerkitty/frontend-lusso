@@ -324,7 +324,7 @@ const LuxuryHeroFetcher = () => {
           {/* Main content overlaying the hero media */}
           <div className="relative z-10 text-center text-heading max-w-2xl mx-auto">
             <h1 className="text-5xl md:text-7xl font-bold mb-6 drop-shadow-lg text-white">
-              {heroData?.mainTitle || 'Welcome to '}<span className="text-primary">Lu$$o</span>
+              {heroData?.mainTitle || 'Welcome to '}<span className="text-primary">Lusso</span>
             </h1>
             <p className="text-2xl md:text-3xl mb-8 drop-shadow text-gray-500">
               {heroData?.subTitle || 'Experience the Pinnacle of Luxury'}

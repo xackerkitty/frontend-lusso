@@ -1,6 +1,12 @@
 import React, { useState, useEffect } from "react";
+
+// --- Simple in-memory cache for SPA navigation ---
+let cachedHeroData: any | null = null;
+let cachedLogoData: any | null = null;
+let cachedFeaturedCars: FeaturedCar[] = [];
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import LoadingScreen from "./components/LoadingScreen";
 import "./components/navbar.css";
 import "./scr/css/style.css";
 import { useNavigate } from 'react-router-dom';
@@ -117,16 +123,16 @@ const FALLBACK_VIDEO_MIME = "video/mp4";
 // This component fetches and displays hero data, including a dynamic featured car section.
 const LuxuryHeroFetcher = () => {
   // --- State Management ---
-  // Manages the component's data and UI state.
-  const [heroData, setHeroData] = useState<any | null>(null);
-  const [loading, setLoading] = useState(true);
+  // Use cached data if available
+  const [heroData, setHeroData] = useState<any | null>(cachedHeroData);
+  const [loading, setLoading] = useState(!cachedHeroData);
   const [error, setError] = useState<string | null>(null);
   const [videoLoaded, setVideoLoaded] = useState(false);
   const [useFallbackVideo, setUseFallbackVideo] = useState(false);
   // Featured cars state
-  const [featuredCars, setFeaturedCars] = useState<FeaturedCar[]>([]);
+  const [featuredCars, setFeaturedCars] = useState<FeaturedCar[]>(cachedFeaturedCars);
   const [currentCarIndex, setCurrentCarIndex] = useState(0);
-  const [logoData, setLogoData] = useState<any | null>(null);
+  const [logoData, setLogoData] = useState<any | null>(cachedLogoData);
 
   // Use base URL from environment variable only
   const STRAPI_BASE_URL = import.meta.env.VITE_API_URL;
@@ -134,13 +140,18 @@ const LuxuryHeroFetcher = () => {
   // Helper to get best image format
   const getImageUrl = (imgObj: any) => {
     if (!imgObj) return '';
+    let url = '';
     if (imgObj.formats) {
-      if (imgObj.formats.medium) return imgObj.formats.medium.url;
-      if (imgObj.formats.large) return imgObj.formats.large.url;
-      if (imgObj.formats.small) return imgObj.formats.small.url;
-      if (imgObj.formats.thumbnail) return imgObj.formats.thumbnail.url;
+      if (imgObj.formats.large?.url) url = imgObj.formats.large.url;
+      else if (imgObj.formats.medium?.url) url = imgObj.formats.medium.url;
+      else if (imgObj.formats.small?.url) url = imgObj.formats.small.url;
+      else if (imgObj.formats.thumbnail?.url) url = imgObj.formats.thumbnail.url;
+    } else if (imgObj.url) {
+      url = imgObj.url;
     }
-    return imgObj.url || '';
+    if (!url) return '';
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    return `${STRAPI_BASE_URL}${url.startsWith('/') ? '' : '/'}${url}`;
   };
 
   // --- Utility Function: getMediaUrl ---
@@ -153,75 +164,59 @@ const LuxuryHeroFetcher = () => {
       | null
       | undefined
   ): string => {
-    let relativePath: string | undefined;
-
+    let url = '';
     if (typeof mediaDataContent === "string") {
-      relativePath = mediaDataContent; // It's already a direct URL string
+      url = mediaDataContent;
     } else if (mediaDataContent && !Array.isArray(mediaDataContent)) {
       // It's a single MediaDataItem (e.g., logo.data, poster.data)
-      relativePath = mediaDataContent.attributes?.url;
+      url = getImageUrl(mediaDataContent.attributes);
     } else if (Array.isArray(mediaDataContent) && mediaDataContent.length > 0) {
       // It's an array of MediaDataItem (e.g., carPhoto.data)
-      relativePath = mediaDataContent[0].attributes?.url;
+      url = getImageUrl(mediaDataContent[0].attributes);
     } else {
-      console.warn(
-        "getMediaUrl: No valid mediaDataContent provided or it's empty."
-      );
-      return ""; // Return empty string or a placeholder if no path
-    }
-
-    if (!relativePath) {
-      console.warn(
-        "getMediaUrl: extracted relativePath was empty or undefined."
-      );
+      console.warn("getMediaUrl: No valid mediaDataContent provided or it's empty.");
       return "";
     }
-
-    let fullUrl = "";
-    if (
-      relativePath.startsWith("http://") ||
-      relativePath.startsWith("https://")
-    ) {
-      fullUrl = relativePath; // Already a full URL
-    } else {
-      // Handle cases where relativePath might start with a leading slash or not
-      fullUrl = `${STRAPI_BASE_URL}${
-        relativePath.startsWith("/") ? "" : "/"
-      }${relativePath}`;
-    }
-
-    return fullUrl;
+    return url;
   };
 
   // --- useEffect Hook: Data Fetching and AOS Initialization ---
   // Handles data fetching and initializes the AOS library when the component mounts.
   useEffect(() => {
-    // AOS.init({
-    //   duration: 1000,
-    //   once: true,
-    // });
-
+    if (cachedHeroData && cachedLogoData && cachedFeaturedCars.length > 0) {
+      setHeroData(cachedHeroData);
+      setLogoData(cachedLogoData);
+      setFeaturedCars(cachedFeaturedCars);
+      setLoading(false);
+      return;
+    }
     const fetchData = async () => {
+      setLoading(true);
       try {
         // Fetch logo from /api/luxurycar?populate=*
         const logoRes = await fetch(`${STRAPI_BASE_URL}/api/luxurycar?populate=*`);
         if (!logoRes.ok) throw new Error(`HTTP error! Status: ${logoRes.status}`);
         const logoJson = await logoRes.json();
         setLogoData(logoJson.data);
+        cachedLogoData = logoJson.data;
 
         const res = await fetch(`${STRAPI_BASE_URL}/api/luxurycars-home?populate[0]=mainBG&populate[1]=aboutUsBackground&populate[2]=carImg&populate[3]=featuredCar&populate[4]=featuredCar.carPhoto`);
         if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
         const json = await res.json();
         setHeroData(json.data);
+        cachedHeroData = json.data;
         // Featured cars extraction
         if (json.data && json.data.featuredCar && Array.isArray(json.data.featuredCar)) {
           setFeaturedCars(json.data.featuredCar);
+          cachedFeaturedCars = json.data.featuredCar;
         } else {
           setFeaturedCars([]);
+          cachedFeaturedCars = [];
         }
       } catch (err: any) {
         setError(`Failed to load content: ${err.message}`);
         setFeaturedCars([]);
+        cachedFeaturedCars = [];
       } finally {
         setLoading(false);
       }
@@ -250,17 +245,11 @@ const LuxuryHeroFetcher = () => {
   };
 
   // Get logo URL from /api/luxurycar
-  const logoUrl = logoData?.logo?.formats?.large?.url
-    || logoData?.logo?.url
-    || '';
+  const logoUrl = logoData?.logo ? getImageUrl(logoData.logo) : '';
 
   // --- Conditional Rendering for Loading and Error States ---
   if (loading) {
-    return (
-      <div className="flex justify-center items-center h-screen text-white">
-        Loading content...
-      </div>
-    );
+    return <LoadingScreen />;
   }
   if (error) {
     return (
@@ -299,7 +288,7 @@ const LuxuryHeroFetcher = () => {
           style={{ scrollSnapAlign: "start" }}
         >
           {/* Video background */}
-          {heroData?.mainBG?.url && (
+          {heroData?.mainBG && (
             <video
               autoPlay
               loop
@@ -308,7 +297,7 @@ const LuxuryHeroFetcher = () => {
               poster={getImageUrl(heroData.aboutUsBackground)}
               className="absolute inset-0 w-full h-full object-cover z-0"
               style={{ pointerEvents: "none", display: videoLoaded ? "block" : "none" }}
-              src={heroData.mainBG.url}
+              src={getImageUrl(heroData.mainBG)}
               onLoadedData={() => setVideoLoaded(true)}
               onError={() => setUseFallbackVideo(true)}
             />

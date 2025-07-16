@@ -84,12 +84,12 @@ const Navbar: React.FC<NavbarProps> = ({ largeLogoSrc, smallLogoSrc }) => {
         </div>
 
         {/* --- LARGE SCREEN LOGO --- */}
-        <Link to="#" className="max-lg:hidden flex-shrink-0" style={{ marginTop: '0.5rem' }}>
+        <Link to="/luxurycars" className="max-lg:hidden flex-shrink-0" style={{ marginTop: '0.5rem' }}>
           {largeLogoSrc && <img src={largeLogoSrc} alt="logo" className="w-56 drop-shadow-lg" />}
         </Link>
 
         {/* --- SMALL SCREEN LOGO --- */}
-        <Link to="#" className="hidden max-lg:block">
+        <Link to="/luxurycars" className="hidden max-lg:block">
           {smallLogoSrc && <img src={smallLogoSrc} alt="logo" className="w-12" />}
         </Link>
 
@@ -181,7 +181,7 @@ const Navbar: React.FC<NavbarProps> = ({ largeLogoSrc, smallLogoSrc }) => {
               </button>
 
               <li className="mb-8 hidden max-lg:block">
-                <Link to="#">
+                <Link to="/luxurycars">
                   {largeLogoSrc && <img src={largeLogoSrc} alt="logo" className="w-44 drop-shadow-lg" />}
                 </Link>
               </li>

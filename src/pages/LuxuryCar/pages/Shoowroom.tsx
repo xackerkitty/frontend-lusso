@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import LoadingScreen from '../components/LoadingScreen';
 
 // --- ABSOLUTELY CRITICAL: IMPORT LOCAL PLACEHOLDER IMAGES ---
 import defaultMainImage from '../scr/images/gallery01.png';
@@ -138,7 +139,6 @@ interface StrapiLuxuryCarsShowroomResponse {
     meta: any;
 }
 
-
 // For a collection of entries (e.g., if LuxuryHero was a Collection Type)
 interface StrapiCollectionResponse<T> {
     data: StrapiDataItem<T>[];
@@ -149,6 +149,15 @@ interface StrapiCollectionResponse<T> {
 
 
 // --- Tailwind CSS Color Utility Classes (unchanged) ---
+// Type alias for all possible media data shapes used in getMediaUrl
+type MediaDataContent =
+    | string
+    | MediaDataItem
+    | MediaDataItemWithUrl
+    | SingleMediaData
+    | { attributes?: MediaAttributes }
+    | Array<MediaDataItem | MediaDataItemWithUrl | { attributes?: MediaAttributes }>
+    | null;
 const COLORS = {
     mainDarkGreen: 'bg-dark-green-main',
     accentDarkGreen: 'bg-dark-green-accent',
@@ -166,18 +175,27 @@ const getMediaUrl = (
 ): string => {
     let relativePath: string | undefined;
 
+    if (mediaDataContent === null || mediaDataContent === undefined) {
+        console.warn("getMediaUrl: mediaDataContent is null or undefined.");
+        return "";
+    }
     if (typeof mediaDataContent === "string") {
         relativePath = mediaDataContent;
-    } else if (mediaDataContent && !Array.isArray(mediaDataContent)) {
+    } else if (!Array.isArray(mediaDataContent)) {
         // Handle SingleMediaData['data'] case where data itself might be null
-        if ('data' in mediaDataContent && mediaDataContent.data !== null) {
+        if ('data' in mediaDataContent && mediaDataContent.data !== null && mediaDataContent.data !== undefined) {
             // Check for the new structure (direct 'url')
             if ('url' in mediaDataContent.data) {
                 relativePath = mediaDataContent.data.url;
             }
             // Then check for the old structure (nested 'attributes.url')
-            else if ('attributes' in mediaDataContent.data && mediaDataContent.data.attributes?.url) {
-                relativePath = mediaDataContent.data.attributes.url;
+            else if (
+                mediaDataContent.data &&
+                typeof mediaDataContent.data === 'object' &&
+                'attributes' in mediaDataContent.data &&
+                (mediaDataContent.data as any).attributes?.url
+            ) {
+                relativePath = (mediaDataContent.data as any).attributes.url;
             }
         }
         // Handle MediaDataItemWithUrl or MediaDataItemWithAttributes directly
@@ -191,8 +209,8 @@ const getMediaUrl = (
         // Use type guards to safely access properties on array items
         if (firstItem && 'url' in firstItem) { // Check for direct 'url' first
             relativePath = firstItem.url;
-        } else if (firstItem && 'attributes' in firstItem && firstItem.attributes?.url) {
-            relativePath = firstItem.attributes.url;
+        } else if (firstItem && 'attributes' in firstItem && (firstItem as any).attributes?.url) {
+            relativePath = (firstItem as any).attributes.url;
         }
     } else {
         console.warn("getMediaUrl: No valid mediaDataContent provided or it's empty.");
@@ -613,12 +631,16 @@ const ImageModal: React.FC<ImageModalProps> = ({ isOpen, onClose, imageUrl, imag
 };
 
 
+// --- Simple in-memory cache for SPA navigation ---
+let cachedShowroomData: LuxuryCarsShowroomAttributes | null = null;
+let cachedLogoData: LuxuryCarAttributes | null = null;
+
 // --- Main ShowroomPage Component: Orchestrates the entire page layout ---
 const ShowroomPage: React.FC = () => {
-    // We will use showroomData for the main page content, including mainBG and descriptionIMG
-    const [showroomData, setShowroomData] = useState<LuxuryCarsShowroomAttributes | null>(null);
-    const [logoData, setLogoData] = useState<LuxuryCarAttributes | null>(null); // New state for logo data
-    const [loading, setLoading] = useState(true);
+    // Use cached data if available
+    const [showroomData, setShowroomData] = useState<LuxuryCarsShowroomAttributes | null>(cachedShowroomData);
+    const [logoData, setLogoData] = useState<LuxuryCarAttributes | null>(cachedLogoData);
+    const [loading, setLoading] = useState(!(cachedShowroomData && cachedLogoData));
     const [error, setError] = useState<string | null>(null);
 
     // NEW STATES for the Image Modal
@@ -649,7 +671,14 @@ const ShowroomPage: React.FC = () => {
 
 
     useEffect(() => {
+        if (cachedShowroomData && cachedLogoData) {
+            setShowroomData(cachedShowroomData);
+            setLogoData(cachedLogoData);
+            setLoading(false);
+            return;
+        }
         const fetchData = async () => {
+            setLoading(true);
             try {
                 const STRAPI_BASE_URL = import.meta.env.VITE_API_URL || "https://accessible-charity-d22e30cd98.strapiapp.com";
 
@@ -662,13 +691,14 @@ const ShowroomPage: React.FC = () => {
                 const luxuryCarJson: StrapiLuxuryCarResponse = await luxuryCarResponse.json();
                 if (luxuryCarJson?.data) {
                     setLogoData(luxuryCarJson.data);
+                    cachedLogoData = luxuryCarJson.data;
                 } else {
                     console.warn("API returned no data for Luxury Car (logo). Ensure it's published.");
                 }
 
                 // --- Fetch Showroom Page Data ---
-                // Use explicit populate for galleryCards.image
-                const showroomApiUrl = `${STRAPI_BASE_URL}/api/luxurycars-showroom?populate[galleryCards][populate]=image`;
+                // Use array-style population for Strapi v5
+                const showroomApiUrl = `${STRAPI_BASE_URL}/api/luxurycars-showroom?populate[0]=mainBG&populate[1]=descriptionIMG&populate[2]=galleryCards.image`;
                 const showroomResponse = await fetch(showroomApiUrl);
                 if (!showroomResponse.ok) {
                     throw new Error(`HTTP error fetching showroom data! Status: ${showroomResponse.status}.`);
@@ -677,6 +707,7 @@ const ShowroomPage: React.FC = () => {
 
                 if (showroomJson?.data) {
                     setShowroomData(showroomJson.data);
+                    cachedShowroomData = showroomJson.data;
                 } else {
                     setShowroomData(null);
                     console.warn("API returned no data for Luxury Cars Showroom. Ensure it's published.");
@@ -746,8 +777,8 @@ const ShowroomPage: React.FC = () => {
     // --- Loading and Error States ---
     if (loading) {
         return (
-            <div className="flex items-center justify-center min-h-screen bg-dark-green-main text-gray-100">
-                <p className="text-xl">Loading showroom data...</p>
+            <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-gray-900">
+                <LoadingScreen />
             </div>
         );
     }

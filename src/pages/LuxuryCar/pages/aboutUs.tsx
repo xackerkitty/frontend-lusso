@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import LoadingScreen from '../components/LoadingScreen';
 import '../scr/css/aboutus.css';
 
 // --- Type Definitions for new API ---
@@ -52,6 +53,21 @@ const API_URL = `${STRAPI_BASE_URL}/api/luxurycars-aboutus?populate=*`;
 const getMediaUrl = (media: any): string => {
     if (!media) return '';
     if (typeof media === 'string') return media;
+    // Prefer largest format available
+    if (media.formats) {
+        if (media.formats.large?.url) {
+            return media.formats.large.url.startsWith('http') ? media.formats.large.url : `${STRAPI_BASE_URL}${media.formats.large.url}`;
+        }
+        if (media.formats.medium?.url) {
+            return media.formats.medium.url.startsWith('http') ? media.formats.medium.url : `${STRAPI_BASE_URL}${media.formats.medium.url}`;
+        }
+        if (media.formats.small?.url) {
+            return media.formats.small.url.startsWith('http') ? media.formats.small.url : `${STRAPI_BASE_URL}${media.formats.small.url}`;
+        }
+        if (media.formats.thumbnail?.url) {
+            return media.formats.thumbnail.url.startsWith('http') ? media.formats.thumbnail.url : `${STRAPI_BASE_URL}${media.formats.thumbnail.url}`;
+        }
+    }
     if (media.url) return media.url.startsWith('http') ? media.url : `${STRAPI_BASE_URL}${media.url}`;
     if (media.data && media.data.attributes && media.data.attributes.url) {
         const url = media.data.attributes.url;
@@ -60,11 +76,17 @@ const getMediaUrl = (media: any): string => {
     return '';
 };
 
+// --- Simple in-memory cache for SPA navigation ---
+let cachedAboutData: AboutUsData | null = null;
+let cachedLogoData: any | null = null;
+
 const Aboutus: React.FC = () => {
-    const [data, setData] = useState<AboutUsData | null>(null);
-    const [loading, setLoading] = useState(true);
+    // Use cached data if available
+    const [data, setData] = useState<AboutUsData | null>(cachedAboutData);
+    const [loading, setLoading] = useState(!cachedAboutData);
     const [error, setError] = useState<string | null>(null);
     const [scrollY, setScrollY] = useState(0);
+    const [logoData, setLogoData] = useState<any | null>(cachedLogoData);
 
     useEffect(() => {
         window.addEventListener('scroll', () => setScrollY(window.scrollY));
@@ -72,6 +94,11 @@ const Aboutus: React.FC = () => {
     }, []);
 
     useEffect(() => {
+        if (cachedAboutData) {
+            setData(cachedAboutData);
+            setLoading(false);
+            return;
+        }
         setLoading(true);
         setError(null);
         fetch(API_URL)
@@ -79,15 +106,20 @@ const Aboutus: React.FC = () => {
                 if (!res.ok) throw new Error('Failed to fetch');
                 return res.json();
             })
-            .then(json => setData(json.data))
+            .then(json => {
+                setData(json.data);
+                cachedAboutData = json.data;
+            })
             .catch(err => setError(err.message))
             .finally(() => setLoading(false));
     }, []);
 
     // --- Fetch logo from API (like Shoowroom.tsx) ---
-    const [logoData, setLogoData] = useState<any | null>(null);
-
     useEffect(() => {
+        if (cachedLogoData) {
+            setLogoData(cachedLogoData);
+            return;
+        }
         const fetchLogo = async () => {
             try {
                 const STRAPI_BASE_URL = import.meta.env.VITE_API_URL;
@@ -96,6 +128,7 @@ const Aboutus: React.FC = () => {
                 if (!luxuryCarResponse.ok) throw new Error('Failed to fetch logo');
                 const luxuryCarJson = await luxuryCarResponse.json();
                 setLogoData(luxuryCarJson?.data || null);
+                cachedLogoData = luxuryCarJson?.data || null;
             } catch (e) {
                 setLogoData(null);
             }
@@ -106,7 +139,7 @@ const Aboutus: React.FC = () => {
     // Get logo URL using getMediaUrl
     const logoUrl = logoData?.logo?.url ? getMediaUrl(logoData.logo) : '';
 
-    if (loading) return <div className="text-center p-8 text-gray-700">Loading showroom data...</div>;
+    if (loading) return <LoadingScreen />;
     if (error) return <div className="text-center p-8 text-red-600 font-bold">Error: {error}</div>;
     if (!data) return <div className="text-center p-8 text-gray-700">No data found.</div>;
 
@@ -127,7 +160,7 @@ const Aboutus: React.FC = () => {
                     <div
                         className="absolute inset-0 w-full h-full bg-cover bg-center hero-background-media"
                         style={{
-                            backgroundImage: `url('${getMediaUrl(data.JourneyIMG.formats?.large?.url || data.JourneyIMG.url)}')`,
+                            backgroundImage: `url('${getMediaUrl(data.JourneyIMG)}')`,
                         }}
                     ></div>
                 ) : (
@@ -189,7 +222,7 @@ const Aboutus: React.FC = () => {
                     <div className="order-1 lg:order-2 flex justify-center">
                         {data.JourneyIMG && (
                             <img
-                                src={getMediaUrl(data.JourneyIMG.formats?.large?.url || data.JourneyIMG.url)}
+                                src={getMediaUrl(data.JourneyIMG)}
                                 alt="Our Journey image"
                                 className="rounded-xl shadow-xl w-full max-w-lg object-cover h-auto"
                                 loading="lazy"
@@ -231,7 +264,7 @@ const Aboutus: React.FC = () => {
                         <div className="flex justify-center">
                             {data.whyUsImg && (
                                 <img
-                                    src={getMediaUrl(data.whyUsImg.formats?.large?.url || data.whyUsImg.url)}
+                                    src={getMediaUrl(data.whyUsImg)}
                                     alt="Why Choose Us image"
                                     className="rounded-xl shadow-xl w-full max-w-lg object-cover h-auto"
                                     loading="lazy"

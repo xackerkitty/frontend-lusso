@@ -279,11 +279,7 @@ function LussoMainPage() {
                 <div
                   key={company.id}
                   onClick={() => handleCardClick(company.slug)}
-                  className={
-                    `w-28 h-28 md:w-36 md:h-36 lg:w-40 lg:h-40 rounded-xl flex items-center justify-center p-0 shadow-lg transform-gpu transition-all duration-200 ease-out hover:scale-105 hover:shadow-2xl hover:-translate-y-1 cursor-pointer bg-transparent` +
-                    ` ${contentReady ? 'scale-100 opacity-100 translate-y-0' : 'scale-50 opacity-0 translate-y-10'}`
-                  }
-                  style={{ transitionDelay: contentReady ? `${index * 150}ms` : '0ms' }}
+                  className="w-28 h-28 md:w-36 md:h-36 lg:w-40 lg:h-40 rounded-xl flex items-center justify-center p-0 shadow-lg transform-gpu transition-all duration-200 ease-out hover:scale-105 hover:shadow-2xl hover:-translate-y-1 cursor-pointer bg-transparent"
                 >
                   <img
                     src={company.companyLogo?.url || `https://placehold.co/200x200/CCCCCC/333333?text=No+Logo`}
@@ -303,11 +299,7 @@ function LussoMainPage() {
                 <div
                   key={company.id}
                   onClick={() => handleCardClick(company.slug)}
-                  className={
-                    `w-28 h-28 md:w-36 md:h-36 lg:w-40 lg:h-40 rounded-xl flex items-center justify-center p-0 shadow-lg transform-gpu transition-all duration-200 ease-out hover:scale-105 hover:shadow-2xl hover:-translate-y-1 cursor-pointer bg-transparent` +
-                    ` ${contentReady ? 'scale-100 opacity-100 translate-y-0' : 'scale-50 opacity-0 translate-y-10'}`
-                  }
-                  style={{ transitionDelay: contentReady ? `${(index + 6) * 150}ms` : '0ms' }}
+                  className="w-28 h-28 md:w-36 md:h-36 lg:w-40 lg:h-40 rounded-xl flex items-center justify-center p-0 shadow-lg transform-gpu transition-all duration-200 ease-out hover:scale-105 hover:shadow-2xl hover:-translate-y-1 cursor-pointer bg-transparent"
                 >
                   <img
                     src={company.companyLogo?.url || `https://placehold.co/200x200/CCCCCC/333333?text=No+Logo`}

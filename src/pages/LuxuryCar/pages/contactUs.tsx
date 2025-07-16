@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import LoadingScreen from '../components/LoadingScreen';
 import { motion } from "framer-motion";
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -75,71 +76,89 @@ const getMediaUrl = (
   return url.startsWith('http://') || url.startsWith('https://') ? url : `${ASSET_BASE_URL}${url.startsWith('/') ? '' : '/'}${url}`;
 };
 
+// --- Simple in-memory cache for SPA navigation ---
+let cachedContactData: ContactUsPageAttributes | null = null;
+let cachedLogoData: any | null = null;
 
 const ContactPage = () => {
-  const [contactData, setContactData] = useState<ContactUsPageAttributes | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  // Use cached data if available
+  const [contactData, setContactData] = useState<ContactUsPageAttributes | null>(cachedContactData);
+  const [loading, setLoading] = useState<boolean>(!cachedContactData);
   const [error, setError] = useState<string | null>(null);
+  const [logoData, setLogoData] = useState<any | null>(cachedLogoData);
 
   // Access the base Strapi API URL from environment variables
   const STRAPI_BASE_API_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
+    if (cachedContactData) {
+      setContactData(cachedContactData);
+      setLoading(false);
+      return;
+    }
     const fetchData = async () => {
+      setLoading(true);
       try {
-        setLoading(true);
-
-        // --- Validate the base API URL ---
         if (!STRAPI_BASE_API_URL) {
-            throw new Error("VITE_API_URL is not defined in environment variables. Please check your .env file.");
+          throw new Error("VITE_API_URL is not defined in environment variables. Please check your .env file.");
         }
-
-        // --- Construct the full API endpoint for contact data ---
-        // CORRECTED: Added '/api' to the path
         const contactApiUrl = `${STRAPI_BASE_API_URL}/api/luxurycars-contactus`;
-        console.log("Fetching Contact Data from:", contactApiUrl);
-
         const contactResponse = await fetch(contactApiUrl);
-
         if (!contactResponse.ok) {
-          throw new Error(
-            `HTTP error fetching contact data! Status: ${contactResponse.status} from ${contactApiUrl}`
-          );
+          throw new Error(`HTTP error fetching contact data! Status: ${contactResponse.status} from ${contactApiUrl}`);
         }
         const contactJson: ContactUsApiResponse = await contactResponse.json();
-        console.log("Contact Data Raw Response:", contactJson);
-
         if (contactJson?.data) {
           setContactData(contactJson.data);
-          console.log("Contact Data Set:", contactJson.data);
+          cachedContactData = contactJson.data;
         } else {
           console.warn("API returned no data for Contact Us Page.");
         }
-
       } catch (err: any) {
         setError(`Failed to load content: ${err.message}`);
-        console.error("Error fetching data:", err);
       } finally {
         setLoading(false);
       }
     };
-
     fetchData();
-    // Re-run effect if STRAPI_BASE_API_URL changes (unlikely in practice, but good for dependency array)
   }, [STRAPI_BASE_API_URL]);
 
-  // For the logo, if you're not fetching it dynamically, you'll still need a static URL.
-  // If your logo is also served by the same strapiapp.com instance and its URL is predictable,
-  // you could construct it here, but it's not present in your current contact-us endpoint.
-  // For now, retaining a placeholder/empty string.
-  const logoUrl = ""; // Or provide a default static public URL for your logo, e.g., "https://your-domain.com/images/logo.png"
+  // Fetch logo in a separate useEffect (like aboutUs.tsx)
+  useEffect(() => {
+    if (cachedLogoData) {
+      setLogoData(cachedLogoData);
+      return;
+    }
+    const fetchLogo = async () => {
+      try {
+        const STRAPI_BASE_URL = import.meta.env.VITE_API_URL;
+        const luxuryCarApiUrl = `${STRAPI_BASE_URL}/api/luxurycar?populate=*`;
+        const luxuryCarResponse = await fetch(luxuryCarApiUrl);
+        if (!luxuryCarResponse.ok) throw new Error('Failed to fetch logo');
+        const luxuryCarJson = await luxuryCarResponse.json();
+        setLogoData(luxuryCarJson?.data || null);
+        cachedLogoData = luxuryCarJson?.data || null;
+      } catch (e) {
+        setLogoData(null);
+      }
+    };
+    fetchLogo();
+  }, []);
+
+  // Robust logo URL extraction (check formats and fallback to url)
+  let logoUrl = "";
+  if (logoData?.logo) {
+    const logo = logoData.logo;
+    if (logo.formats?.large?.url) logoUrl = getMediaUrl(logo.formats.large.url);
+    else if (logo.formats?.medium?.url) logoUrl = getMediaUrl(logo.formats.medium.url);
+    else if (logo.formats?.small?.url) logoUrl = getMediaUrl(logo.formats.small.url);
+    else if (logo.formats?.thumbnail?.url) logoUrl = getMediaUrl(logo.formats.thumbnail.url);
+    else if (logo.url) logoUrl = getMediaUrl(logo.url);
+  }
+
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen text-xl text-[#013220]">
-        Loading contact information...
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   if (error) {

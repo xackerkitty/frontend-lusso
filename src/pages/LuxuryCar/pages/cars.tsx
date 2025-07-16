@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 // Assuming Navbar and Footer components are available at these paths
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import LoadingScreen from '../components/LoadingScreen';
 
 // --- INTERFACES ---
 interface MediaAttributes {
@@ -466,8 +467,12 @@ const LuxuryCar: React.FC = () => {
     // Use base URL from environment variable
     const strapiBaseUrl = import.meta.env.VITE_API_URL;
 
-    const [allCars, setAllCars] = useState<Car[]>([]);
-    const [loading, setLoading] = useState(true);
+    // --- Simple in-memory cache for SPA navigation ---
+    let cachedAllCars: Car[] = [];
+
+    // Use cached data if available
+    const [allCars, setAllCars] = useState<Car[]>(cachedAllCars);
+    const [loading, setLoading] = useState(cachedAllCars.length === 0);
     const [error, setError] = useState<string | null>(null);
 
     const [searchTerm, setSearchTerm] = useState('');
@@ -492,6 +497,11 @@ const LuxuryCar: React.FC = () => {
     ].sort(); // Sort them alphabetically for a clean display
 
     useEffect(() => {
+        if (cachedAllCars.length > 0) {
+            setAllCars(cachedAllCars);
+            setLoading(false);
+            return;
+        }
         const fetchAllData = async () => {
             setLoading(true);
             setError(null);
@@ -525,39 +535,64 @@ const LuxuryCar: React.FC = () => {
                     return;
                 }
 
-                // Helper to get best image format from Strapi media object
-                const getBestImageUrl = (mediaObj: any) => {
-                    if (!mediaObj || !mediaObj.formats) return mediaObj?.url || '';
-                    return (
-                        mediaObj.formats.large?.url ||
-                        mediaObj.formats.medium?.url ||
-                        mediaObj.formats.small?.url ||
-                        mediaObj.formats.thumbnail?.url ||
-                        mediaObj.url || ''
-                    );
+
+
+                // --- Showroom-style robust Strapi media extraction ---
+                const getStrapiImageUrl = (mediaObj: any, baseUrl: string) => {
+                    if (!mediaObj) return '';
+                    // Strapi v4: { data: { attributes: { url, formats } } }
+                    if (mediaObj.data && mediaObj.data.attributes) {
+                        const attr = mediaObj.data.attributes;
+                        const formats = attr.formats;
+                        let url =
+                            (formats && (formats.large?.url || formats.medium?.url || formats.small?.url || formats.thumbnail?.url)) ||
+                            attr.url || '';
+                        if (url && !url.startsWith('http')) {
+                            url = `${baseUrl}${url.startsWith('/') ? '' : '/'}${url}`;
+                        }
+                        return url;
+                    }
+                    // Strapi v3 or direct object
+                    if (mediaObj.url) {
+                        let url = mediaObj.url;
+                        if (url && !url.startsWith('http')) {
+                            url = `${baseUrl}${url.startsWith('/') ? '' : '/'}${url}`;
+                        }
+                        return url;
+                    }
+                    return '';
                 };
 
-                // Helper for multiple images (slider/gallery)
-                const getMultipleImageUrls = (mediaArr: any[]) => {
-                    if (!Array.isArray(mediaArr)) return [];
-                    return mediaArr.map(item => getBestImageUrl(item)).filter(Boolean);
+                const getStrapiMultipleImageUrls = (mediaRelation: any, baseUrl: string) => {
+                    if (!mediaRelation) return [];
+                    // Strapi v4: { data: [ { attributes: { url, formats } } ] }
+                    if (mediaRelation.data && Array.isArray(mediaRelation.data)) {
+                        return mediaRelation.data.map((item: any) => getStrapiImageUrl(item, baseUrl)).filter(Boolean);
+                    }
+                    // Strapi v3 or direct array
+                    if (Array.isArray(mediaRelation)) {
+                        return mediaRelation.map((item: any) => getStrapiImageUrl(item, baseUrl)).filter(Boolean);
+                    }
+                    return [];
                 };
 
                 const loadedCars: Car[] = responseData.data.map((strapiCar: any) => {
-                    // Direct mapping from API response
-                    const Brand = strapiCar.carBrand || '';
+                    // Brand
+                    const Brand = strapiCar.carBrand || strapiCar.Brand || '';
                     const carSlug = strapiCar.slug;
                     if (!carSlug) return null;
-                    // Parse price
+                    // Price
                     const priceString = strapiCar.carPrice || '';
                     const parsedPrice = parseFloat(priceString.replace(/[^0-9.-]+/g, ""));
                     const price = isNaN(parsedPrice) ? 0 : parsedPrice;
-                    // Main image
-                    const imageUrl = getBestImageUrl(strapiCar.carPic);
+
+                    // Main image (carPic)
+                    const imageUrl = getStrapiImageUrl(strapiCar.carPic, strapiBaseUrl);
                     // Brand logo
-                    const brandLogoUrl = getBestImageUrl(strapiCar.brandLogo);
+                    const brandLogoUrl = getStrapiImageUrl(strapiCar.brandLogo, strapiBaseUrl);
                     // Slider images
-                    const sliderImages = getMultipleImageUrls(strapiCar.carSliderImg);
+                    const sliderImages = getStrapiMultipleImageUrls(strapiCar.carSliderImg, strapiBaseUrl);
+
                     return {
                         id: strapiCar.id,
                         model: strapiCar.carName,
@@ -575,6 +610,7 @@ const LuxuryCar: React.FC = () => {
                 console.log("All cars loaded into state (after processing and filtering for slug):", loadedCars);
                 setAllCars(loadedCars);
                 setFilteredCars(loadedCars);
+                cachedAllCars = loadedCars;
 
                 if (loadedCars.length > 0) {
                     const maxFetchedPrice = Math.max(...loadedCars.map(car => car.price));
@@ -652,39 +688,43 @@ const LuxuryCar: React.FC = () => {
             {/* Navbar component without logo props */}
             <Navbar />
             <HeroSection />
-            <main className="container mx-auto py-8 px-4 flex flex-col lg:flex-row gap-8 flex-grow">
-                {loading ? (
-                    <div className="w-full text-center py-20 text-gray-600 text-xl">Loading cars...</div>
-                ) : error ? (
-                    <div className="w-full text-center py-20 text-red-600 text-xl">
-                        Error loading cars: {error}
-                        <p className="text-base text-gray-700 mt-4">
-                            Please check your Strapi server's status, API endpoint, and public permissions for the 'Luxurycars Home' collection.
-                        </p>
-                    </div>
-                ) : (
-                    <>
-                        <FilterSidebar
-                            searchTerm={searchTerm}
-                            onSearchChange={e => setSearchTerm(e.target.value)}
-                            minPrice={minPrice}
-                            maxPrice={maxPrice}
-                            onMinPriceChange={e => setMinPrice(Math.min(Number(e.target.value), maxPrice))}
-                            onMaxPriceChange={e => setMaxPrice(Math.max(Number(e.target.value), minPrice))}
-                            availableBrands={availableBrands}
-                            selectedBrands={selectedBrands}
-                            onBrandChange={e => {
-                                const Brand = e.target.value;
-                                if (e.target.checked) setSelectedBrands([...selectedBrands, Brand]);
-                                else setSelectedBrands(selectedBrands.filter(b => b !== Brand));
-                            }}
-                            selectedSoldStatus={selectedSoldStatus}
-                            onSoldStatusChange={setSelectedSoldStatus}
-                        />
-                        <CarListings cars={filteredCars} />
-                    </>
-                )}
-            </main>
+            {loading ? (
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-gray-900">
+                    <LoadingScreen />
+                </div>
+            ) : (
+                <main className="container mx-auto py-8 px-4 flex flex-col lg:flex-row gap-8 flex-grow">
+                    {error ? (
+                        <div className="w-full text-center py-20 text-red-600 text-xl">
+                            Error loading cars: {error}
+                            <p className="text-base text-gray-700 mt-4">
+                                Please check your Strapi server's status, API endpoint, and public permissions for the 'Luxurycars Home' collection.
+                            </p>
+                        </div>
+                    ) : (
+                        <>
+                            <FilterSidebar
+                                searchTerm={searchTerm}
+                                onSearchChange={e => setSearchTerm(e.target.value)}
+                                minPrice={minPrice}
+                                maxPrice={maxPrice}
+                                onMinPriceChange={e => setMinPrice(Math.min(Number(e.target.value), maxPrice))}
+                                onMaxPriceChange={e => setMaxPrice(Math.max(Number(e.target.value), minPrice))}
+                                availableBrands={availableBrands}
+                                selectedBrands={selectedBrands}
+                                onBrandChange={e => {
+                                    const Brand = e.target.value;
+                                    if (e.target.checked) setSelectedBrands([...selectedBrands, Brand]);
+                                    else setSelectedBrands(selectedBrands.filter(b => b !== Brand));
+                                }}
+                                selectedSoldStatus={selectedSoldStatus}
+                                onSoldStatusChange={setSelectedSoldStatus}
+                            />
+                            <CarListings cars={filteredCars} />
+                        </>
+                    )}
+                </main>
+            )}
             <Footer logoUrl="" />
         </div>
     );

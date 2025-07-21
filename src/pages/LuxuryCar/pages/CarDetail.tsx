@@ -1,10 +1,139 @@
-import React, { useState, useEffect, useCallback } from 'react';
+
+// This file shows the details for a luxury car. It has a lot of code, but each part is explained simply below.
+
+// We need some tools from React to make things work (like showing/hiding things, remembering stuff, etc)
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+
+// This is a special pop-up for looking at car pictures up close
+// You can zoom in, zoom out, and go to the next or previous picture
+// The code below makes that work
+interface ModalImageZoomProps {
+    imageSrc: string; // The picture to show
+    altText: string; // The text if the picture can't load
+    onClose: () => void; // What to do when you close the pop-up
+    onPrev: () => void; // What to do when you click previous
+    onNext: () => void; // What to do when you click next
+    showNav: boolean; // Should we show next/prev buttons?
+    modalKey: number; // Used to reset zoom when you open a new picture
+}
+
+// This is the pop-up component
+const ModalImageZoom: React.FC<ModalImageZoomProps> = ({ imageSrc, altText, onClose, onPrev, onNext, showNav, modalKey }) => {
+    // This remembers how much we are zoomed in
+    const [scale, setScale] = useState(1);
+    // These help us work with the picture and the pop-up box
+    const imgRef = useRef<HTMLImageElement>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
+    // This is for a fade effect when changing pictures
+    const [fade, setFade] = useState(false);
+
+    // When you open a new picture, always reset zoom to normal
+    React.useEffect(() => {
+        setScale(1);
+    }, [modalKey]);
+
+    // If you scroll your mouse wheel, zoom in or out
+    const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        let newScale = scale + (e.deltaY < 0 ? 0.2 : -0.2); // Scroll up = zoom in, down = zoom out
+        newScale = Math.max(1, Math.min(newScale, 5)); // Don't zoom out too much or in too much
+        setScale(newScale);
+    };
+
+    // If you double-click the picture, zoom in (or go back to normal)
+    const handleDoubleClick = (e: React.MouseEvent<HTMLImageElement>) => {
+        if (!containerRef.current) return;
+        // If zoom is normal, zoom in. If already zoomed, go back to normal.
+        if (scale === 1) {
+            setScale(2);
+        } else {
+            setScale(1);
+        }
+    };
+
+    // This is what shows up on the screen
+    return (
+        <div
+            ref={containerRef}
+            className="relative max-w-screen-lg w-full h-full flex items-center justify-center select-none"
+            // ? This stops the pop-up from closing if you click inside it
+            onClick={e => e.stopPropagation()}
+            // ? This lets you zoom in and out with your mouse wheel
+            onWheel={handleWheel}
+        >
+            {/* // ? This is a dark see-through layer for the fade effect when changing pictures */}
+            <div
+                className="fixed inset-0 z-[9999] pointer-events-none bg-black bg-opacity-60"
+                style={{
+                    opacity: fade ? 1 : 0,
+                    transition: 'opacity 0.28s cubic-bezier(0.5, 0, 0.5, 1)',
+                    willChange: 'opacity',
+                }}
+            />
+            {/* // ? This is the X button to close the pop-up */}
+            <button
+                className="absolute top-4 right-4 text-white text-4xl font-bold z-50"
+                onClick={onClose}
+                aria-label="Close modal"
+            >
+                &times;
+            </button>
+            {/* // ? This shows the car picture. You can double-click to zoom in/out. */}
+            <img
+                ref={imgRef}
+                src={imageSrc}
+                alt={altText}
+                className="max-w-full max-h-full object-contain cursor-pointer"
+                style={{
+                    display: 'block',
+                    margin: 'auto',
+                    transform: `scale(${scale})`, // ? Makes the picture bigger or smaller
+                    transition: 'transform 0.18s cubic-bezier(0.5, 0, 0.5, 1)',
+                    userSelect: 'none',
+                }}
+                onDoubleClick={handleDoubleClick}
+                onDragStart={e => e.preventDefault()}
+                draggable={false}
+            />
+            {/* // ? If there are more pictures, show next and previous buttons */}
+            {showNav && (
+                <>
+                    <button
+                        className="absolute left-4 bg-gray-800 bg-opacity-50 text-white p-2 rounded-full text-2xl hover:bg-opacity-75 transition-all"
+                        onClick={() => {
+                            setFade(true);
+                            setTimeout(() => { setFade(false); onPrev(); }, 180);
+                        }}
+                        aria-label="Previous image"
+                    >
+                        &#10094;
+                    </button>
+                    <button
+                        className="absolute right-4 bg-gray-800 bg-opacity-50 text-white p-2 rounded-full text-2xl hover:bg-opacity-75 transition-all"
+                        onClick={() => {
+                            setFade(true);
+                            setTimeout(() => { setFade(false); onNext(); }, 180);
+                        }}
+                        aria-label="Next image"
+                    >
+                        &#10095;
+                    </button>
+                </>
+            )}
+            {/* // ? This is a little message at the bottom to help users know what to do */}
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-50 text-white text-xs px-3 py-1 rounded shadow z-40 pointer-events-none">
+                Scroll to zoom, drag to pan, double click to zoom in/out
+            </div>
+        </div>
+    );
+};
 import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import "../scr/css/car_details.css";
 import Footer from '../components/Footer';
 
-// --- INTERFACES ---
+// ! ========================= Interfaces =========================
+// * All TypeScript interfaces for car, media, and logo data
 interface MediaAttributes {
     url: string;
     mime?: string;
@@ -46,7 +175,7 @@ interface CarSpecificationsAttributes {
     exteriorColor?: string;
     interiorColor?: string;
     gearType?: string;
-    horsePower?: string;
+    power?: string;
     fuelType?: string;
 }
 
@@ -107,12 +236,13 @@ interface CarDetailData {
     exteriorColor: string;
     interiorColor: string;
     gearType: string;
-    horsePower: string;
+    power: string;
     fuelType: string;
     galleryImages: string[];
 }
 
-// --- Helper Functions ---
+// ! ========================= Helper Functions =========================
+// * Utility functions for extracting media URLs and best image formats from Strapi
 const getMediaUrl = (
     mediaContent: MediaDataItem | string | null | undefined,
     baseUrl: string
@@ -131,7 +261,6 @@ const getMediaUrl = (
         return "";
     }
 
-    // Ensure base URL is only prepended if the path is relative
     if (relativePath.startsWith("http://") || relativePath.startsWith("https://")) {
         return relativePath;
     } else {
@@ -152,8 +281,8 @@ const getMultipleMediaUrls = (
 
 // Helper to get best image format from Strapi media object
 const getBestImageUrl = (mediaObj: any) => {
-    // Assuming mediaObj is `item.carPic.data.attributes` or similar
-    if (!mediaObj || !mediaObj.attributes) return ''; // Ensure attributes exist
+
+    if (!mediaObj || !mediaObj.attributes) return ''; 
     const formats = mediaObj.attributes.formats;
     const url = mediaObj.attributes.url;
 
@@ -169,7 +298,9 @@ const getBestImageUrl = (mediaObj: any) => {
     return url || '';
 };
 
-// --- Hero Section Component ---
+// ! ========================= Hero Section Component =========================
+// * Section with video background and car title
+// ? Responsive height, overlays, and video error handling
 
 const HeroSection: React.FC<{ backgroundVID: string }> = ({ backgroundVID }) => {
     // console.log("HeroSection backgroundVID:", backgroundVID); // Debugging: Check the URL passed
@@ -218,8 +349,14 @@ const HeroSection: React.FC<{ backgroundVID: string }> = ({ backgroundVID }) => 
         </section>
     );
 };
+// * ========================= End Hero Section Component =========================
 
-// --- Model Selector Component ---
+
+
+
+// * ========================= Model Selector Component =========================
+// Tabs for switching between Overview, Gallery, and 3D Model
+// ? Easily switch car detail views
 interface ModelSelectorProps {
     activeModel: string;
     setActiveModel: (model: string) => void;
@@ -257,7 +394,12 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({ activeModel, setActiveMod
     );
 };
 
-// --- Logo fetch types ---
+// * ========================= End Model Selector Component =========================
+
+
+
+// * ========================= Logo Fetch Types =========================
+// Types for logo data from Strapi
 interface LogoMediaDataItem {
     id: number;
     url: string;
@@ -271,7 +413,11 @@ interface StrapiLuxuryCarLogoResponse {
     meta: any;
 }
 
-// --- CarDetail Main Component ---
+// * ========================= End Logo Fetch Types =========================
+
+// * ========================= CarDetail Main Component =========================
+// Main car detail page, handles data fetching, modal, and layout
+// ? Fetches car, logo, and hero data from Strapi. Handles modal, navigation, and error states.
 const CarDetail: React.FC = () => {
     const { slug } = useParams<{ slug: string }>();
     const navigate = useNavigate();
@@ -301,14 +447,13 @@ const CarDetail: React.FC = () => {
     // Function to close the modal
     const closeModal = useCallback(() => {
         setIsModalOpen(false);
-        setCurrentImageIndex(0); // Reset index on close
-        // Restore body scroll
+        setCurrentImageIndex(0); 
+        
         document.body.style.overflow = 'unset';
     }, []);
 
 
     // BUTTONSSS
-
 
     const handleEnquireClick = () => {
         navigate('/luxurycars/contact');
@@ -441,13 +586,17 @@ const CarDetail: React.FC = () => {
                     // Background video - support direct object with .url property
                     let backgroundVID = '';
                     if (item.backgroundVID) {
-                      // If Strapi returns direct object (not .data)
+                      // ? Sometimes the video info comes as a simple object with a web link inside (url)
+                      // ? Other times, the video info is inside a box called 'data', and then inside another box called 'attributes', and then 'url'
+                      // ? We check both ways, so it works no matter how the info comes
                       if (item.backgroundVID.url) {
+                        // ? If the video link is right here, just use it
                         backgroundVID = item.backgroundVID.url;
                       } else if (item.backgroundVID.data && item.backgroundVID.data.attributes && item.backgroundVID.data.attributes.url) {
+                        // ? If the video link is hidden deeper, go inside the boxes to get it
                         backgroundVID = item.backgroundVID.data.attributes.url;
                       }
-                      // If the url is not absolute, prepend base
+                      // ? If the link does not start with 'http', it means it's not a full web address, so we add the website address in front
                       if (backgroundVID && !backgroundVID.startsWith('http')) {
                         backgroundVID = `${strapiBaseUrl}${backgroundVID.startsWith('/') ? '' : '/'}${backgroundVID}`;
                       }
@@ -502,7 +651,7 @@ const CarDetail: React.FC = () => {
                         exteriorColor: specs.exteriorColor || 'N/A',
                         interiorColor: specs.interiorColor || 'N/A',
                         gearType: specs.gearType || 'N/A',
-                        horsePower: specs.horsePower || 'N/A',
+                        power: specs.power || 'N/A',
                         fuelType: specs.fuelType || 'N/A',
                         galleryImages: galleryImages,
                     });
@@ -731,7 +880,7 @@ const CarDetail: React.FC = () => {
                                                 </svg>
                                                 HORSEPOWER
                                             </span>
-                                            <span className="font-semibold text-base md:text-lg text-gray-800">{car.horsePower}</span>
+                                            <span className="font-semibold text-base md:text-lg text-gray-800">{car.power}</span>
                                         </li>
                                         <li className="flex justify-between items-center pb-2"> {/* This was the incomplete li */}
                                             <span className="flex items-center text-gray-600 text-sm md:text-base">
@@ -745,11 +894,15 @@ const CarDetail: React.FC = () => {
                                     </ul>
                                 </div>
                                 <div className="mt-6 flex flex-col gap-3">
+                                    {/* Price tag above Contact Us button */}
+                                    <span className="block w-full text-center text-emerald-700 font-bold text-2xl mb-2 bg-emerald-100 rounded-lg py-2 shadow-sm">
+                                        {car.price > 0 ? car.price.toLocaleString() : 'Price on Request'}
+                                    </span>
                                     <button
                                         onClick={handleEnquireClick}
                                         className="w-full bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-semibold text-lg shadow-lg transition-all duration-300"
                                     >
-                                        Enquire Now
+                                        Contact Us
                                     </button>
                                 </div>
                             </div>
@@ -764,16 +917,16 @@ const CarDetail: React.FC = () => {
                             {car.galleryImages.map((image, index) => (
                                 <div
                                     key={index}
-                                    className="relative w-full h-48 sm:h-40 md:h-48 rounded-lg overflow-hidden cursor-pointer shadow-md transform transition-transform duration-200 hover:scale-105"
+                                    className="relative w-full h-48 sm:h-40 md:h-48 rounded-lg overflow-hidden cursor-zoom-in shadow-md group"
                                     onClick={() => openModal(index)}
                                 >
                                     <img
                                         src={image}
                                         alt={`Gallery image ${index + 1}`}
-                                        className="w-full h-full object-cover"
+                                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-125"
                                         loading="lazy"
                                     />
-                                    <div className="absolute inset-0 bg-black bg-opacity-25 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-200">
+                                    <div className="absolute inset-0 bg-black bg-opacity-25 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                                         <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m0 0H7"></path></svg>
                                     </div>
                                 </div>
@@ -802,40 +955,17 @@ const CarDetail: React.FC = () => {
             {isModalOpen && car && car.galleryImages.length > 0 && (
                 <div
                     className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4"
-                    onClick={closeModal} // Close modal when clicking outside the image
+                    onClick={closeModal}
                 >
-                    <div className="relative max-w-screen-lg w-full h-full flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
-                        <button
-                            className="absolute top-4 right-4 text-white text-4xl font-bold z-50"
-                            onClick={closeModal}
-                            aria-label="Close modal"
-                        >
-                            &times;
-                        </button>
-                        <img
-                            src={car.galleryImages[currentImageIndex]}
-                            alt={`Full size image ${currentImageIndex + 1}`}
-                            className="max-w-full max-h-full object-contain"
-                        />
-                        {car.galleryImages.length > 1 && (
-                            <>
-                                <button
-                                    className="absolute left-4 bg-gray-800 bg-opacity-50 text-white p-2 rounded-full text-2xl hover:bg-opacity-75 transition-all"
-                                    onClick={goToPrevImage}
-                                    aria-label="Previous image"
-                                >
-                                    &#10094;
-                                </button>
-                                <button
-                                    className="absolute right-4 bg-gray-800 bg-opacity-50 text-white p-2 rounded-full text-2xl hover:bg-opacity-75 transition-all"
-                                    onClick={goToNextImage}
-                                    aria-label="Next image"
-                                >
-                                    &#10095;
-                                </button>
-                            </>
-                        )}
-                    </div>
+                    <ModalImageZoom
+                        imageSrc={car.galleryImages[currentImageIndex]}
+                        altText={`Full size image ${currentImageIndex + 1}`}
+                        onClose={closeModal}
+                        onPrev={goToPrevImage}
+                        onNext={goToNextImage}
+                        showNav={car.galleryImages.length > 1}
+                        modalKey={isModalOpen ? 1 + currentImageIndex : 0}
+                    />
                 </div>
             )}
 
@@ -843,5 +973,7 @@ const CarDetail: React.FC = () => {
         </div>
     );
 };
+
+// ! ========================= End CarDetail Main Component =========================
 
 export default CarDetail;

@@ -302,7 +302,7 @@ const LuxuryHeroFetcher = () => {
               onError={() => setUseFallbackVideo(true)}
             />
           )}
-          <div className="absolute inset-0 bg-black/60 z-10 pointer-events-none" />
+      <div className="absolute inset-0 bg-black/30 z-10 pointer-events-none" />
           {!videoLoaded && (
             <div className="absolute inset-0 z-20 flex items-center justify-center">
               <span className="text-heading text-lg animate-pulse text-white">
@@ -312,18 +312,22 @@ const LuxuryHeroFetcher = () => {
           )}
           {/* Main content overlaying the hero media */}
           <div className="relative z-10 text-center text-heading max-w-2xl mx-auto">
-            <h1 className="text-5xl md:text-7xl font-bold mb-6 drop-shadow-lg text-white">
-              {heroData?.mainTitle || 'Welcome to '}<span className="text-primary"> Lusso</span>
+            <h1 className="text-5xl md:text-7xl font-bold mb-6 drop-shadow-lg text-white flex flex-col items-center justify-center">
+              <span> {heroData?.mainTitle || 'Welcome to '} </span>
+              {logoUrl && (
+                <img src={logoUrl} alt="Logo" style={{ maxHeight: '80px', margin: '32px auto 0 auto' }} />
+              )}
             </h1>
-            <p className="text-2xl md:text-3xl mb-8 drop-shadow text-gray-500">
-              {heroData?.subTitle || 'Experience the Pinnacle of Luxury'}
-            </p>
-            <button
-              className="bg-primary hover:bg-primary/80 text-heading px-10 py-5 rounded-xl font-semibold text-lg shadow-lg transition-all duration-300"
-              onClick={handleLearnMoreClick}
-            >
-              {heroData?.mainBtnText || 'Learn More'}
-            </button>
+            <div className="flex justify-center w-full">
+              <button
+                className="bg-green-900 hover:bg-green-800 text-white px-10 py-5 rounded-xl font-semibold text-lg shadow-lg transition-all duration-300 border-2 border-white focus:outline-none focus:ring-4 focus:ring-green-900/40 flex items-center gap-3 mt-8"
+                style={{ letterSpacing: '0.04em' }}
+                onClick={handleLearnMoreClick}
+              >
+                {heroData?.mainBtnText || 'Explore Our Showroom'}
+                <svg className="w-6 h-6 text-white ml-2 transition-transform duration-300 group-hover:translate-x-2" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </button>
+            </div>
           </div>
         </section>
 

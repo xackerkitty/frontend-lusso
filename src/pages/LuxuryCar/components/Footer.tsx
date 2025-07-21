@@ -14,7 +14,7 @@ interface FooterProps {
 
 const Footer: React.FC<FooterProps> = ({ logoUrl, className }) => {
   return (
-    <footer className={`footer bg-[#1a362f] text-gray-300 py-8 ${className || ''}`}>
+    <footer className={`footer bg-[#1a362f] text-gray-300 py-8 font-oswald ${className || ''}`}>
       <div className="container mx-auto px-4">
         {/* Top Section: Contact Info */}
         <div className="flex flex-wrap justify-between items-start text-sm pb-8 mb-8 border-b border-gray-600">

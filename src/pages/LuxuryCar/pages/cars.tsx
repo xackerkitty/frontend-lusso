@@ -4,9 +4,66 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 // Assuming Navbar and Footer components are available at these paths
 import Navbar from '../components/Navbar';
+
+// --- Logo Helper ---
+interface MediaDataItem {
+    url: string;
+    [key: string]: any;
+}
+interface LuxuryCarAttributes {
+    logo: MediaDataItem;
+    bigLogo?: MediaDataItem | null;
+}
+interface StrapiLuxuryCarResponse {
+    data: LuxuryCarAttributes | null;
+    meta: any;
+}
+
+const getMediaUrl = (mediaDataContent: any): string => {
+    let relativePath: string | undefined;
+    if (mediaDataContent === null || mediaDataContent === undefined) {
+        return "";
+    }
+    if (typeof mediaDataContent === "string") {
+        relativePath = mediaDataContent;
+    } else if (!Array.isArray(mediaDataContent)) {
+        if ('data' in mediaDataContent && mediaDataContent.data !== null && mediaDataContent.data !== undefined) {
+            if ('url' in mediaDataContent.data) {
+                relativePath = mediaDataContent.data.url;
+            } else if (mediaDataContent.data.attributes?.url) {
+                relativePath = mediaDataContent.data.attributes.url;
+            }
+        } else if ('url' in mediaDataContent) {
+            relativePath = mediaDataContent.url;
+        } else if (mediaDataContent.attributes?.url) {
+            relativePath = mediaDataContent.attributes.url;
+        }
+    } else if (Array.isArray(mediaDataContent) && mediaDataContent.length > 0) {
+        const firstItem = mediaDataContent[0];
+        if (firstItem && 'url' in firstItem) {
+            relativePath = firstItem.url;
+        } else if (firstItem && firstItem.attributes?.url) {
+            relativePath = firstItem.attributes.url;
+        }
+    } else {
+        return "";
+    }
+    if (!relativePath) {
+        return "";
+    }
+    const STRAPI_BASE_URL = import.meta.env.VITE_API_URL || "";
+    let fullUrl = "";
+    if (relativePath.startsWith("http://") || relativePath.startsWith("https://")) {
+        fullUrl = relativePath;
+    } else {
+        const separator = relativePath.startsWith("/") ? "" : "/";
+        fullUrl = `${STRAPI_BASE_URL}${separator}${relativePath}`;
+    }
+    return fullUrl;
+};
 import Footer from '../components/Footer';
 import LoadingScreen from '../components/LoadingScreen';
-
+import "../scr/css/style.css";
 // --- INTERFACES ---
 interface MediaAttributes {
     url: string;
@@ -71,46 +128,24 @@ interface FilterSidebarProps {
     onMaxPriceChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     selectedBrands: string[];
     onBrandChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-    availableBrands: string[]; // This list is passed to the sidebar
+    availableBrands: string[];
     selectedSoldStatus: 'all' | 'sold' | 'not-sold';
     onSoldStatusChange: (status: 'all' | 'sold' | 'not-sold') => void;
+    selectedCurrency: 'USD' | 'EUR';
+    onCurrencyChange: (currency: 'USD' | 'EUR') => void;
 }
 
 interface CarCardProps {
     car: Car;
+    convertPrice: (price: number) => number;
+    getCurrencySymbol: () => string;
 }
 
 interface CarListingsProps {
     cars: Car[];
+    convertPrice: (price: number) => number;
+    getCurrencySymbol: () => string;
 }
-
-// --- Helper Functions ---
-const getMediaUrl = (
-    mediaContent: MediaDataItem | string | null | undefined,
-    baseUrl: string
-): string => {
-    let relativePath: string | undefined;
-
-    // Enhanced check for mediaContent.data for SingleMediaRelation type
-    if (mediaContent && typeof mediaContent !== "string" && mediaContent.attributes && mediaContent.attributes.url) {
-        relativePath = mediaContent.attributes.url;
-    } else if (typeof mediaContent === "string") {
-        relativePath = mediaContent;
-    } else {
-        return ""; // No valid media content
-    }
-
-    if (!relativePath) {
-        return "";
-    }
-
-    if (relativePath.startsWith("http://") || relativePath.startsWith("https://")) {
-        return relativePath;
-    } else {
-        // Ensure leading slash for relative paths
-        return `${baseUrl}${relativePath.startsWith("/") ? "" : "/"}${relativePath}`;
-    }
-};
 
 // --- Hero Section Component ---
 const HeroSection: React.FC = () => (
@@ -146,14 +181,23 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
     searchTerm, onSearchChange,
     minPrice, maxPrice, onMinPriceChange, onMaxPriceChange,
     selectedBrands, onBrandChange, availableBrands,
-    selectedSoldStatus, onSoldStatusChange
+    selectedSoldStatus, onSoldStatusChange,
+    selectedCurrency, onCurrencyChange
 }) => {
     const [isPriceExpanded, setIsPriceExpanded] = useState(true);
     const [isBrandsExpanded, setIsBrandsExpanded] = useState(true);
     const [isAvailabilityExpanded, setIsAvailabilityExpanded] = useState(true);
+    // Conversion rate (should match parent)
+    const USD_TO_EUR = 0.92;
+    // Calculate slider min/max based on selected currency
+    const sliderMin = selectedCurrency === 'EUR' ? Math.round(0 * USD_TO_EUR) : 0;
+    const sliderMax = selectedCurrency === 'EUR' ? Math.round(500000 * USD_TO_EUR) : 500000;
+    // Convert minPrice/maxPrice for display
+    const displayMinPrice = selectedCurrency === 'EUR' ? Math.round(minPrice * USD_TO_EUR) : minPrice;
+    const displayMaxPrice = selectedCurrency === 'EUR' ? Math.round(maxPrice * USD_TO_EUR) : maxPrice;
 
     return (
-        <aside className="w-full lg:w-1/4 bg-white p-6 rounded-xl shadow-lg h-fit mb-8 lg:mb-0 min-h-0">
+        <aside className="sticky top-2 w-full lg:w-[370px] bg-white p-4 rounded-xl shadow-lg h-fit mb-8 lg:mb-0 min-h-0">
             <h2 className="text-2xl font-bold text-gray-800 mb-6">Filter</h2>
 
             <div className="mb-6">
@@ -173,95 +217,152 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
                 </div>
             </div>
 
-            <div className="mb-6">
-                <div
-                    className="flex justify-between items-center mb-2 cursor-pointer select-none"
-                    onClick={() => setIsPriceExpanded(!isPriceExpanded)}
-                >
-                    <label className="block text-gray-700 text-sm font-medium">Price</label>
-                    <svg className={`w-4 h-4 text-gray-500 transform transition-transform duration-300 ${isPriceExpanded ? 'rotate-0' : '-rotate-90'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
-                    </svg>
-                </div>
-                <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isPriceExpanded ? 'max-h-48 opacity-100' : 'max-h-0 opacity-0'}`}>
-                    <div className="border-t border-gray-200 pt-4">
-                        <div className="flex items-center gap-4 mb-2">
-                            <div className="flex flex-col flex-1">
-                                <label className="block text-gray-600 text-sm font-medium mb-1">Minimum Price</label>
-                                <input
-                                    type="number"
-                                    min="0"
-                                    max={maxPrice}
-                                    value={minPrice}
-                                    onChange={onMinPriceChange}
-                                    className="w-full px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-right text-gray-800 bg-white"
-                                />
-                            </div>
-                            <div className="flex flex-col flex-1">
-                                <label className="block text-gray-600 text-sm font-medium mb-1">Maximum Price</label>
-                                <input
-                                    type="number"
-                                    min={minPrice}
-                                    max="500000"
-                                    value={maxPrice}
-                                    onChange={onMaxPriceChange}
-                                    className="w-full px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-right text-gray-800 bg-white"
-                                />
-                            </div>
-                        </div>
-                        <div className="mb-2">
-                            <label className="block text-gray-600 text-sm font-medium mb-1">Minimum Price </label>
-                            <input
-                                type="range"
-                                min="0"
-                                max="500000"
-                                value={minPrice}
-                                onChange={onMinPriceChange}
-                                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                                style={{ accentColor: '#22c55e' }}
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-gray-600 text-sm font-medium mb-1">Maximum Price</label>
-                            <input
-                                type="range"
-                                min="0"
-                                max="500000"
-                                value={maxPrice}
-                                onChange={onMaxPriceChange}
-                                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                                style={{ accentColor: '#22c55e' }}
-                            />
-                            <style>{`
-                                input[type='range']::-webkit-slider-thumb {
-                                    width: 18px;
-                                    height: 18px;
-                                    background: #22c55e;
-                                    border-radius: 50%;
-                                    box-shadow: 0 0 2px #333;
-                                    border: 2px solid #fff;
-                                }
-                                input[type='range']:focus::-webkit-slider-thumb {
-                                    outline: 2px solid #22c55e;
-                                }
-                                input[type='range']::-moz-range-thumb {
-                                    width: 18px;
-                                    height: 18px;
-                                    background: #22c55e;
-                                    border-radius: 50%;
-                                    border: 2px solid #fff;
-                                }
-                                input[type='range']:focus::-moz-range-thumb {
-                                    outline: 2px solid #22c55e;
-                                }
-                            `}</style>
-                        </div>
-                        <div className="mt-2 text-center text-green-700 font-bold text-base">
-                            Selected Range: ${minPrice.toLocaleString()} - ${maxPrice.toLocaleString()}
-                        </div>
-                    </div>
+          
+<div className="mb-6">
+    <div
+        className="flex justify-between items-center mb-2 cursor-pointer select-none"
+        onClick={() => setIsPriceExpanded(!isPriceExpanded)}
+    >
+        <label className="block text-gray-700 text-sm font-medium">Price</label>
+        <svg className={`w-4 h-4 text-gray-500 transform transition-transform duration-300 ${isPriceExpanded ? 'rotate-0' : '-rotate-90'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+    </div>
+    <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isPriceExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
+        <div className="border-t border-gray-200 pt-4">
+            {/* Currency Filter Section (moved here) */}
+            <div className="mb-4">
+                <label className="block text-gray-700 text-sm font-medium mb-2">Currency</label>
+                <div className="flex gap-4">
+                    <label className="flex items-center cursor-pointer">
+                        <input
+                            type="radio"
+                            name="currency"
+                            value="USD"
+                            checked={selectedCurrency === 'USD'}
+                            onChange={() => onCurrencyChange('USD')}
+                            className="h-4 w-4 text-blue-600 rounded focus:ring-blue-500 accent-blue-600"
+                        />
+                        <span className="ml-2 text-gray-700 text-sm">USD ($)</span>
+                    </label>
+                    <label className="flex items-center cursor-pointer">
+                        <input
+                            type="radio"
+                            name="currency"
+                            value="EUR"
+                            checked={selectedCurrency === 'EUR'}
+                            onChange={() => onCurrencyChange('EUR')}
+                            className="h-4 w-4 text-blue-600 rounded focus:ring-blue-500 accent-blue-600"
+                        />
+                        <span className="ml-2 text-gray-700 text-sm">EUR (€)</span>
+                    </label>
                 </div>
             </div>
+            <div className="flex items-center gap-4 mb-2">
+                <div className="flex flex-col flex-1">
+                    <label className="block text-gray-600 text-sm font-medium mb-1">Minimum Price</label>
+                    <input
+                        type="number"
+                        min={sliderMin}
+                        max={sliderMax}
+                        value={displayMinPrice}
+                        onChange={e => {
+                            // Convert back to USD for parent state
+                            const val = Number(e.target.value);
+                            const usdVal = selectedCurrency === 'EUR' ? Math.round(val / USD_TO_EUR) : val;
+                            onMinPriceChange({
+                                ...e,
+                                target: { ...e.target, value: usdVal.toString() }
+                            });
+                        }}
+                        className="w-full px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-right text-gray-800 bg-white"
+                    />
+                </div>
+                <div className="flex flex-col flex-1">
+                    <label className="block text-gray-600 text-sm font-medium mb-1">Maximum Price</label>
+                    <input
+                        type="number"
+                        min={displayMinPrice}
+                        max={sliderMax}
+                        value={displayMaxPrice}
+                        onChange={e => {
+                            const val = Number(e.target.value);
+                            const usdVal = selectedCurrency === 'EUR' ? Math.round(val / USD_TO_EUR) : val;
+                            onMaxPriceChange({
+                                ...e,
+                                target: { ...e.target, value: usdVal.toString() }
+                            });
+                        }}
+                        className="w-full px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-right text-gray-800 bg-white"
+                    />
+                </div>
+            </div>
+            <div className="mb-2">
+                <label className="block text-gray-600 text-sm font-medium mb-1">Minimum Price </label>
+                <input
+                    type="range"
+                    min={sliderMin}
+                    max={sliderMax}
+                    value={displayMinPrice}
+                    onChange={e => {
+                        const val = Number(e.target.value);
+                        const usdVal = selectedCurrency === 'EUR' ? Math.round(val / USD_TO_EUR) : val;
+                        onMinPriceChange({
+                            ...e,
+                            target: { ...e.target, value: usdVal.toString() }
+                        });
+                    }}
+                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                    style={{ accentColor: '#22c55e' }}
+                />
+            </div>
+            <div>
+                <label className="block text-gray-600 text-sm font-medium mb-1">Maximum Price</label>
+                <input
+                    type="range"
+                    min={sliderMin}
+                    max={sliderMax}
+                    value={displayMaxPrice}
+                    onChange={e => {
+                        const val = Number(e.target.value);
+                        const usdVal = selectedCurrency === 'EUR' ? Math.round(val / USD_TO_EUR) : val;
+                        onMaxPriceChange({
+                            ...e,
+                            target: { ...e.target, value: usdVal.toString() }
+                        });
+                    }}
+                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                    style={{ accentColor: '#22c55e' }}
+                />
+                <style>{`
+                    input[type='range']::-webkit-slider-thumb {
+                        width: 18px;
+                        height: 18px;
+                        background: #22c55e;
+                        border-radius: 50%;
+                        box-shadow: 0 0 2px #333;
+                        border: 2px solid #fff;
+                    }
+                    input[type='range']:focus::-webkit-slider-thumb {
+                        outline: 2px solid #22c55e;
+                    }
+                    input[type='range']::-moz-range-thumb {
+                        width: 18px;
+                        height: 18px;
+                        background: #22c55e;
+                        border-radius: 50%;
+                        border: 2px solid #fff;
+                    }
+                    input[type='range']:focus::-moz-range-thumb {
+                        outline: 2px solid #22c55e;
+                    }
+                `}</style>
+            </div>
+          
+        </div>
+    </div>
+</div>
+               
 
             {/* Availability Filter Section */}
             <div className="mb-6">
@@ -354,26 +455,49 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
 };
 
 // --- Car Card Component with Slider Logic ---
-const CarCard: React.FC<CarCardProps> = ({ car }) => {
+const CarCard: React.FC<CarCardProps> = ({ car, convertPrice, getCurrencySymbol }) => {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [imageError, setImageError] = useState(false);
+    const [imageLoading, setImageLoading] = useState(true);
+    const [preloadedImages, setPreloadedImages] = useState<{ [key: number]: boolean }>({});
     const handleImageError = () => setImageError(true);
     const [brandLogoError, setBrandLogoError] = useState(false);
     const handleBrandLogoError = () => setBrandLogoError(true);
 
     const imageContainerRef = useRef<HTMLDivElement>(null);
 
+    // Preload all slider images on mount
+    useEffect(() => {
+        const loaded: { [key: number]: boolean } = {};
+        car.sliderImages.forEach((imgUrl, idx) => {
+            const img = new window.Image();
+            img.src = imgUrl;
+            img.onload = () => {
+                loaded[idx] = true;
+                setPreloadedImages(prev => ({ ...prev, [idx]: true }));
+            };
+            img.onerror = () => {
+                loaded[idx] = false;
+                setPreloadedImages(prev => ({ ...prev, [idx]: false }));
+            };
+        });
+    }, [car.sliderImages]);
+
+    // Reset loading state when image index changes
+    useEffect(() => {
+        setImageLoading(true);
+    }, [currentImageIndex]);
+
+    const handleImageLoad = () => setImageLoading(false);
+
     const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
         if (!imageContainerRef.current || car.sliderImages.length <= 1) {
             return;
         }
-
         const containerWidth = imageContainerRef.current.offsetWidth;
         const mouseX = e.nativeEvent.offsetX;
-
         const segmentWidth = containerWidth / car.sliderImages.length;
         const newIndex = Math.floor(mouseX / segmentWidth);
-
         if (newIndex !== currentImageIndex && newIndex < car.sliderImages.length && newIndex >= 0) {
             setCurrentImageIndex(newIndex);
         }
@@ -391,27 +515,39 @@ const CarCard: React.FC<CarCardProps> = ({ car }) => {
             className="relative bg-white rounded-lg shadow-md overflow-hidden transform hover:scale-105 transition duration-300 ease-in-out w-full border border-gray-200 block"
         >
             {car.isSold && (
-                <div className="absolute top-2 right-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full z-10">Sold</div>
+                <div className="absolute top-3 right-3 bg-red-600 text-white text-sm font-bold px-3 py-1.5 rounded-full z-10 shadow-lg">Sold</div>
             )}
 
             <div
                 ref={imageContainerRef}
-                className="relative w-full h-40 overflow-hidden"
+                className="relative w-full h-48 overflow-hidden"
                 onMouseMove={handleMouseMove}
                 onMouseLeave={handleMouseLeave}
             >
-                {imageError || !displayImageUrl ? (
+                {(imageError || !displayImageUrl) ? (
                     <div className="w-full h-full bg-gray-300 flex flex-col items-center justify-center text-gray-600 text-center p-4">
                         <p className="font-bold text-lg mb-1">{car.model}</p>
                         <p className="text-sm">Image not available</p>
                     </div>
                 ) : (
-                    <img
-                        src={displayImageUrl}
-                        alt={`${car.model} - ${currentImageIndex + 1}`}
-                        className="w-full h-full object-cover transition-opacity duration-100 ease-in-out"
-                        onError={handleImageError}
-                    />
+                    <>
+                        {imageLoading && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-gray-100 bg-opacity-60 z-10">
+                                <svg className="animate-spin h-8 w-8 text-green-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                                </svg>
+                            </div>
+                        )}
+                        <img
+                            src={displayImageUrl}
+                            alt={`${car.model} - ${currentImageIndex + 1}`}
+                            className={`w-full h-full object-cover transition-opacity duration-500 ease-in-out ${imageLoading ? 'opacity-0' : 'opacity-100'}`}
+                            onLoad={handleImageLoad}
+                            onError={handleImageError}
+                            loading="lazy"
+                        />
+                    </>
                 )}
 
                 {car.sliderImages.length > 1 && (
@@ -429,7 +565,7 @@ const CarCard: React.FC<CarCardProps> = ({ car }) => {
                 <div className="flex items-center mb-0.5">
                     {brandLogoError || !car.brandLogoUrl ? (
                         <div className="w-6 h-6 mr-2 flex items-center justify-center bg-gray-200 rounded-full text-gray-500 text-xs">
-                            {car.Brand ? car.Brand.charAt(0) : ''} {/* CORRECTED: Access car.Brand */}
+                            {car.Brand ? car.Brand.charAt(0) : ''}
                         </div>
                     ) : (
                         <img
@@ -443,24 +579,45 @@ const CarCard: React.FC<CarCardProps> = ({ car }) => {
                         {car.model}
                     </h3>
                 </div>
-                <p className="text-lg font-bold text-gray-800">${car.price.toLocaleString()}</p>
+                <p className="text-lg font-bold text-gray-800">{getCurrencySymbol()}{convertPrice(car.price).toLocaleString(undefined, {maximumFractionDigits: 0})}</p>
             </div>
         </Link>
     );
 };
 
 // --- Car Listings Component ---
-const CarListings: React.FC<CarListingsProps> = ({ cars }) => (
-    <section className="w-full lg:w-3/4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-6 min-h-0">
-        {cars.length > 0 ? cars.map(car => (
-            <div key={car.id}>
-                <CarCard car={car} />
-            </div>
-        )) : (
-            <div className="col-span-full text-center py-10 text-gray-500 text-lg">No cars found matching your criteria.</div>
-        )}
-    </section>
-);
+interface CarListingsProps {
+    cars: Car[];
+    convertPrice: (price: number) => number;
+    getCurrencySymbol: () => string;
+    visibleCount: number;
+    onLoadMore: () => void;
+}
+
+const CarListings: React.FC<CarListingsProps> = ({ cars, convertPrice, getCurrencySymbol, visibleCount, onLoadMore }) => {
+    const visibleCars = cars.slice(0, visibleCount);
+    return (
+        <div className="w-full lg:w-3/4 flex flex-col items-center">
+            <section className="test2 w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-6 min-h-0">
+                {visibleCars.length > 0 ? visibleCars.map(car => (
+                    <div key={car.id}>
+                        <CarCard car={car} convertPrice={convertPrice} getCurrencySymbol={getCurrencySymbol} />
+                    </div>
+                )) : (
+                    <div className="col-span-full text-center py-10 text-gray-500 text-lg">No cars found matching your criteria.</div>
+                )}
+            </section>
+            {cars.length > visibleCount && (
+                <button
+                    className="mt-8 px-6 py-2 bg-green-600 text-white font-semibold rounded-lg shadow hover:bg-green-700 transition"
+                    onClick={onLoadMore}
+                >
+                    Load More
+                </button>
+            )}
+        </div>
+    );
+};
 
 // --- Main LuxuryCar Page Component ---
 const LuxuryCar: React.FC = () => {
@@ -481,6 +638,17 @@ const LuxuryCar: React.FC = () => {
     const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
     const [selectedSoldStatus, setSelectedSoldStatus] = useState<'all' | 'sold' | 'not-sold'>('all');
     const [filteredCars, setFilteredCars] = useState<Car[]>([]);
+    const [visibleCount, setVisibleCount] = useState(6);
+    const [selectedCurrency, setSelectedCurrency] = useState<'USD' | 'EUR'>('USD');
+    // Conversion rate (example, you can update to live rate if needed)
+    const USD_TO_EUR = 0.92;
+    // Helper to convert price
+    const convertPrice = (price: number) => selectedCurrency === 'EUR' ? price * USD_TO_EUR : price;
+    const getCurrencySymbol = () => selectedCurrency === 'EUR' ? '€' : '$';
+
+    // --- Logo State ---
+    const [logoData, setLogoData] = useState<LuxuryCarAttributes | null>(null);
+    const [logoLoading, setLogoLoading] = useState(true);
 
     // Define your hardcoded list of available brands here
     // IMPORTANT: These names MUST exactly match the brand names you have in Strapi (e.g., "Ferrari", not "ferrari")
@@ -490,6 +658,7 @@ const LuxuryCar: React.FC = () => {
         "Bugatti",
         "Ferrari",
         "Lamborghini",
+        "Bentley",
         "Mercedes-Benz",
         "Porsche",
         "Rolls-Royce",
@@ -500,22 +669,16 @@ const LuxuryCar: React.FC = () => {
         if (cachedAllCars.length > 0) {
             setAllCars(cachedAllCars);
             setLoading(false);
-            return;
         }
         const fetchAllData = async () => {
             setLoading(true);
             setError(null);
-            console.log("Attempting to fetch car data...");
-
             try {
+                // Fetch cars
                 const carsApiUrl = `${strapiBaseUrl}/api/luxurycars-cars?populate=*`;
-                console.log("Fetching Cars from:", carsApiUrl);
                 const response = await fetch(carsApiUrl);
-                console.log("Fetch response received:", response);
-
                 if (!response.ok) {
                     const errorBody = await response.text();
-                    console.error("HTTP error details:", errorBody);
                     if (response.status === 403 || response.status === 401) {
                         throw new Error(`Authentication/Permission Error: Status ${response.status}. Check Strapi roles and permissions for 'Luxurycars Cars' collection.`);
                     } else if (response.status === 404) {
@@ -524,23 +687,15 @@ const LuxuryCar: React.FC = () => {
                     throw new Error(`HTTP error fetching cars! Status: ${response.status}. Response: ${errorBody.substring(0, 100)}...`);
                 }
                 const responseData = await response.json();
-
-                console.log("Raw Strapi API Response for Cars (JSON):", responseData);
-
                 if (!responseData.data || !Array.isArray(responseData.data) || responseData.data.length === 0) {
-                    console.warn("Strapi /api/luxurycars-cars returned no data or empty array. Displaying 'No cars found'.");
                     setAllCars([]);
                     setFilteredCars([]);
                     setLoading(false);
                     return;
                 }
-
-
-
                 // --- Showroom-style robust Strapi media extraction ---
                 const getStrapiImageUrl = (mediaObj: any, baseUrl: string) => {
                     if (!mediaObj) return '';
-                    // Strapi v4: { data: { attributes: { url, formats } } }
                     if (mediaObj.data && mediaObj.data.attributes) {
                         const attr = mediaObj.data.attributes;
                         const formats = attr.formats;
@@ -552,7 +707,6 @@ const LuxuryCar: React.FC = () => {
                         }
                         return url;
                     }
-                    // Strapi v3 or direct object
                     if (mediaObj.url) {
                         let url = mediaObj.url;
                         if (url && !url.startsWith('http')) {
@@ -562,37 +716,26 @@ const LuxuryCar: React.FC = () => {
                     }
                     return '';
                 };
-
                 const getStrapiMultipleImageUrls = (mediaRelation: any, baseUrl: string) => {
                     if (!mediaRelation) return [];
-                    // Strapi v4: { data: [ { attributes: { url, formats } } ] }
                     if (mediaRelation.data && Array.isArray(mediaRelation.data)) {
                         return mediaRelation.data.map((item: any) => getStrapiImageUrl(item, baseUrl)).filter(Boolean);
                     }
-                    // Strapi v3 or direct array
                     if (Array.isArray(mediaRelation)) {
                         return mediaRelation.map((item: any) => getStrapiImageUrl(item, baseUrl)).filter(Boolean);
                     }
                     return [];
                 };
-
                 const loadedCars: Car[] = responseData.data.map((strapiCar: any) => {
-                    // Brand
                     const Brand = strapiCar.carBrand || strapiCar.Brand || '';
                     const carSlug = strapiCar.slug;
                     if (!carSlug) return null;
-                    // Price
                     const priceString = strapiCar.carPrice || '';
                     const parsedPrice = parseFloat(priceString.replace(/[^0-9.-]+/g, ""));
                     const price = isNaN(parsedPrice) ? 0 : parsedPrice;
-
-                    // Main image (carPic)
                     const imageUrl = getStrapiImageUrl(strapiCar.carPic, strapiBaseUrl);
-                    // Brand logo
                     const brandLogoUrl = getStrapiImageUrl(strapiCar.brandLogo, strapiBaseUrl);
-                    // Slider images
                     const sliderImages = getStrapiMultipleImageUrls(strapiCar.carSliderImg, strapiBaseUrl);
-
                     return {
                         id: strapiCar.id,
                         model: strapiCar.carName,
@@ -606,33 +749,44 @@ const LuxuryCar: React.FC = () => {
                         display: strapiCar.carDisplay ?? true,
                     };
                 }).filter(Boolean);
-
-                console.log("All cars loaded into state (after processing and filtering for slug):", loadedCars);
                 setAllCars(loadedCars);
                 setFilteredCars(loadedCars);
                 cachedAllCars = loadedCars;
-
                 if (loadedCars.length > 0) {
                     const maxFetchedPrice = Math.max(...loadedCars.map(car => car.price));
                     setMinPrice(0);
                     setMaxPrice(maxFetchedPrice);
-                    console.log(`Initial max price set to: $${maxFetchedPrice}`);
                 } else {
                     setMinPrice(0);
                     setMaxPrice(500000);
-                    console.log("No cars loaded, prices reset to default.");
                 }
-
             } catch (e: any) {
-                console.error("Failed to fetch car data:", e);
                 setError(`Failed to load content: ${e.message}`);
             } finally {
                 setLoading(false);
-                console.log("Loading state set to false.");
             }
         };
-
+        // Fetch logo
+        const fetchLogo = async () => {
+            setLogoLoading(true);
+            try {
+                const logoApiUrl = `${strapiBaseUrl}/api/luxurycar?populate=*`;
+                const response = await fetch(logoApiUrl);
+                if (!response.ok) {
+                    throw new Error(`HTTP error fetching luxury car logo! Status: ${response.status}.`);
+                }
+                const logoJson: StrapiLuxuryCarResponse = await response.json();
+                if (logoJson?.data) {
+                    setLogoData(logoJson.data);
+                }
+            } catch (e) {
+                // Optionally handle logo error
+            } finally {
+                setLogoLoading(false);
+            }
+        };
         fetchAllData();
+        fetchLogo();
     }, [strapiBaseUrl]);
 
     useEffect(() => {
@@ -659,11 +813,21 @@ const LuxuryCar: React.FC = () => {
 
         temp = temp.filter(c => c.display === true);
 
+        // Shuffle the array to randomize display order
+        for (let i = temp.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [temp[i], temp[j]] = [temp[j], temp[i]];
+        }
+
         setFilteredCars(temp);
+        setVisibleCount(6); // Reset visible count when filters change
         console.log(`Filters applied. Showing ${temp.length} cars.`);
     }, [searchTerm, minPrice, maxPrice, selectedBrands, selectedSoldStatus, allCars]);
 
     const availableBrands = predefinedAvailableBrands;
+
+    // Derive logo URL
+    const logoUrl = logoData?.logo?.url ? getMediaUrl(logoData.logo) : undefined;
 
     return (
         <div className="font-sans text-gray-800 bg-gray-100 min-h-screen overflow-x-hidden flex flex-col">
@@ -685,15 +849,15 @@ const LuxuryCar: React.FC = () => {
                     border-radius: 10px;
                 }
             `}</style>
-            {/* Navbar component without logo props */}
-            <Navbar />
+            {/* Navbar component with logo */}
+            <Navbar largeLogoSrc={logoUrl} smallLogoSrc={logoUrl} />
             <HeroSection />
             {loading ? (
                 <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-gray-900">
                     <LoadingScreen />
                 </div>
             ) : (
-                <main className="container mx-auto py-8 px-4 flex flex-col lg:flex-row gap-8 flex-grow">
+                <main className="test2 container mx-auto py-8 px-4 flex flex-col lg:flex-row gap-8 flex-grow">
                     {error ? (
                         <div className="w-full text-center py-20 text-red-600 text-xl">
                             Error loading cars: {error}
@@ -719,13 +883,21 @@ const LuxuryCar: React.FC = () => {
                                 }}
                                 selectedSoldStatus={selectedSoldStatus}
                                 onSoldStatusChange={setSelectedSoldStatus}
+                                selectedCurrency={selectedCurrency}
+                                onCurrencyChange={setSelectedCurrency}
                             />
-                            <CarListings cars={filteredCars} />
+                            <CarListings
+                                cars={filteredCars}
+                                convertPrice={convertPrice}
+                                getCurrencySymbol={getCurrencySymbol}
+                                visibleCount={visibleCount}
+                                onLoadMore={() => setVisibleCount(v => v + 6)}
+                            />
                         </>
                     )}
                 </main>
             )}
-            <Footer logoUrl="" />
+            <Footer logoUrl={logoUrl || ""} />
         </div>
     );
 };

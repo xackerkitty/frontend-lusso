@@ -14,7 +14,9 @@ interface FooterProps {
 
 const Footer: React.FC<FooterProps> = ({ logoUrl, className }) => {
   return (
-    <footer className={`footer bg-[#1a362f] text-gray-300 py-8 font-oswald ${className || ''}`}>
+    <footer className={`footer bg-[#1a362f] text-gray-300 py-8 font-oswald ${className || ''}`} style={{ fontFamily: "'Playfair Display', serif", fontWeight: 'normal', fontStyle: 'normal' }}>
+      {/* Google Fonts import for Playfair Display */}
+      <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet" />
       <div className="container mx-auto px-4">
         {/* Top Section: Contact Info */}
         <div className="flex flex-wrap justify-between items-start text-sm pb-8 mb-8 border-b border-gray-600">
@@ -24,7 +26,7 @@ const Footer: React.FC<FooterProps> = ({ logoUrl, className }) => {
             <i className="fas fa-map-marker-alt text-2xl text-teal-400"></i>
             <div>
               <h4 className="font-semibold text-lg text-white mb-1">
-                Find us
+                <span style={{ fontFamily: "'Playfair Display', serif" }}>Find us</span>
               </h4>
               <p>274 Agmashenebeli Alley, Tbilisi 0159, Georgia.</p>
             </div>
@@ -34,7 +36,7 @@ const Footer: React.FC<FooterProps> = ({ logoUrl, className }) => {
             <i className="fas fa-phone-alt text-2xl text-teal-400"></i>
             <div>
               <h4 className="font-semibold text-lg text-white mb-1">
-                Call us
+                <span style={{ fontFamily: "'Playfair Display', serif" }}>Call us</span>
               </h4>
               <p>+995 555188888</p>
             </div>
@@ -44,7 +46,7 @@ const Footer: React.FC<FooterProps> = ({ logoUrl, className }) => {
             <i className="fas fa-envelope text-2xl text-teal-400"></i>
             <div>
               <h4 className="font-semibold text-lg text-white mb-1">
-                Mail us
+                <span style={{ fontFamily: "'Playfair Display', serif" }}>Mail us</span>
               </h4>
               <p>info@lussoluxurycar.com</p>
             </div>
@@ -69,25 +71,31 @@ const Footer: React.FC<FooterProps> = ({ logoUrl, className }) => {
               every journey is extraordinary.
             </p>
             <h5 className="font-semibold text-lg text-white mb-3">
-              Follow us
+              <span style={{ fontFamily: "'Playfair Display', serif" }}>Follow us</span>
             </h5>
             <div className="flex space-x-3">
               <a
-                href="#"
+                href="https://www.tiktok.com/@lusso.georgia"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="w-9 h-9 flex items-center justify-center bg-black bg-opacity-30 rounded-full hover:bg-opacity-50 transition duration-300"
                 aria-label="TikTok"
               >
                 <i className="fab fa-tiktok text-xl"></i>
               </a>
               <a
-                href="#"
+                href="https://www.instagram.com/lusso_georgia/?hl=en"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="w-9 h-9 flex items-center justify-center bg-black bg-opacity-30 rounded-full hover:bg-opacity-50 transition duration-300"
                 aria-label="Instagram"
               >
                 <i className="fab fa-instagram text-xl"></i>
               </a>
               <a
-                href="#"
+                href="https://wa.me/995555188888"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="w-9 h-9 flex items-center justify-center bg-black bg-opacity-30 rounded-full hover:bg-opacity-50 transition duration-300"
                 aria-label="WhatsApp"
               >
@@ -99,7 +107,7 @@ const Footer: React.FC<FooterProps> = ({ logoUrl, className }) => {
           {/* Useful Links */}
           <div className="w-full md:w-1/2 lg:w-1/4 p-4 mt-8 lg:mt-0">
             <h5 className="font-semibold text-lg text-white mb-3">
-              Useful links
+              <span style={{ fontFamily: "'Playfair Display', serif" }}>Useful links</span>
             </h5>
             <ul className="space-y-2">
               <li>
@@ -132,7 +140,7 @@ const Footer: React.FC<FooterProps> = ({ logoUrl, className }) => {
           {/* Our Open hours */}
           <div className="w-full md:w-1/2 lg:w-1/4 p-4 mt-8 lg:mt-0">
             <h5 className="font-semibold text-lg text-white mb-3">
-              Our Open hours
+              <span style={{ fontFamily: "'Playfair Display', serif" }}>Our Open hours</span>
             </h5>
             <p className="text-gray-400 text-xs">
               Absent index miss out on our lately news, make sure to

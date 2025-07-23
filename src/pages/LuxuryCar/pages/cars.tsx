@@ -129,8 +129,9 @@ interface FilterSidebarProps {
     selectedBrands: string[];
     onBrandChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     availableBrands: string[];
-    selectedSoldStatus: 'all' | 'sold' | 'not-sold';
-    onSoldStatusChange: (status: 'all' | 'sold' | 'not-sold') => void;
+    // --- SOLD FILTER DISABLED: Make these optional ---
+    selectedSoldStatus?: 'all' | 'sold' | 'not-sold';
+    onSoldStatusChange?: (status: 'all' | 'sold' | 'not-sold') => void;
     selectedCurrency: 'USD' | 'EUR';
     onCurrencyChange: (currency: 'USD' | 'EUR') => void;
 }
@@ -364,7 +365,8 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
 </div>
                
 
-            {/* Availability Filter Section */}
+            {/* Availability Filter Section (SOLD FILTER DISABLED) */}
+            {false && (
             <div className="mb-6">
                 <div
                     className="flex justify-between items-center mb-2 cursor-pointer select-none"
@@ -384,7 +386,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
                                 name="soldStatus"
                                 value="all"
                                 checked={selectedSoldStatus === 'all'}
-                                onChange={() => onSoldStatusChange('all')}
+                                onChange={() => onSoldStatusChange && onSoldStatusChange('all')}
                                 className="h-4 w-4 text-blue-600 rounded focus:ring-blue-500 accent-blue-600"
                             />
                             <label htmlFor="status-all" className="ml-2 text-gray-700 text-sm">All</label>
@@ -396,7 +398,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
                                 name="soldStatus"
                                 value="not-sold"
                                 checked={selectedSoldStatus === 'not-sold'}
-                                onChange={() => onSoldStatusChange('not-sold')}
+                                onChange={() => onSoldStatusChange && onSoldStatusChange('not-sold')}
                                 className="h-4 w-4 text-blue-600 rounded focus:ring-blue-500 accent-blue-600"
                             />
                             <label htmlFor="status-not-sold" className="ml-2 text-gray-700 text-sm">Available</label>
@@ -408,7 +410,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
                                 name="soldStatus"
                                 value="sold"
                                 checked={selectedSoldStatus === 'sold'}
-                                onChange={() => onSoldStatusChange('sold')}
+                                onChange={() => onSoldStatusChange && onSoldStatusChange('sold')}
                                 className="h-4 w-4 text-blue-600 rounded focus:ring-blue-500 accent-blue-600"
                             />
                             <label htmlFor="status-sold" className="ml-2 text-gray-700 text-sm">Sold</label>
@@ -416,6 +418,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
                     </div>
                 </div>
             </div>
+            )}
 
             {/* Brands Filter Section */}
             <div className="mb-0">
@@ -636,7 +639,7 @@ const LuxuryCar: React.FC = () => {
     const [minPrice, setMinPrice] = useState(0);
     const [maxPrice, setMaxPrice] = useState(500000);
     const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
-    const [selectedSoldStatus, setSelectedSoldStatus] = useState<'all' | 'sold' | 'not-sold'>('not-sold');
+    // const [selectedSoldStatus, setSelectedSoldStatus] = useState<'all' | 'sold' | 'not-sold'>('not-sold'); // SOLD FILTER DISABLED
     const [filteredCars, setFilteredCars] = useState<Car[]>([]);
     const [visibleCount, setVisibleCount] = useState(6);
     const [selectedCurrency, setSelectedCurrency] = useState<'USD' | 'EUR'>('USD');
@@ -805,11 +808,13 @@ const LuxuryCar: React.FC = () => {
             temp = temp.filter(c => selectedBrands.map(s => s.trim()).includes(c.Brand.trim()));
         }
 
-        if (selectedSoldStatus === 'sold') {
-            temp = temp.filter(c => c.isSold);
-        } else if (selectedSoldStatus === 'not-sold') {
-            temp = temp.filter(c => !c.isSold);
-        }
+        // --- SOLD FILTER DISABLED: Only show not-sold cars ---
+        temp = temp.filter(c => !c.isSold);
+        // if (selectedSoldStatus === 'sold') {
+        //     temp = temp.filter(c => c.isSold);
+        // } else if (selectedSoldStatus === 'not-sold') {
+        //     temp = temp.filter(c => !c.isSold);
+        // }
 
         temp = temp.filter(c => c.display === true);
 
@@ -822,7 +827,7 @@ const LuxuryCar: React.FC = () => {
         setFilteredCars(temp);
         setVisibleCount(6); // Reset visible count when filters change
         console.log(`Filters applied. Showing ${temp.length} cars.`);
-    }, [searchTerm, minPrice, maxPrice, selectedBrands, selectedSoldStatus, allCars]);
+    }, [searchTerm, minPrice, maxPrice, selectedBrands, /*selectedSoldStatus,*/ allCars]);
 
     const availableBrands = predefinedAvailableBrands;
 
@@ -881,8 +886,8 @@ const LuxuryCar: React.FC = () => {
                                     if (e.target.checked) setSelectedBrands([...selectedBrands, Brand]);
                                     else setSelectedBrands(selectedBrands.filter(b => b !== Brand));
                                 }}
-                                selectedSoldStatus={selectedSoldStatus}
-                                onSoldStatusChange={setSelectedSoldStatus}
+                                // selectedSoldStatus={selectedSoldStatus} // SOLD FILTER DISABLED
+                                // onSoldStatusChange={setSelectedSoldStatus} // SOLD FILTER DISABLED
                                 selectedCurrency={selectedCurrency}
                                 onCurrencyChange={setSelectedCurrency}
                             />

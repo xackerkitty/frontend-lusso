@@ -602,13 +602,6 @@ const LuxuryHeroFetcher = () => {
               className="rounded-xl"
             ></iframe>
           </div>
-          {heroData?.carImg && (
-            <img
-              className="absolute car-test"
-              src={getImageUrl(heroData.carImg)}
-              alt="Car"
-            />
-          )}
         </section>
         {/* ---------------------------|| location End || ---------------------------||  */}
         {/*////////////////////////////////////////////////////////////////////////////*/}

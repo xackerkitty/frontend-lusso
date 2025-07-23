@@ -223,19 +223,35 @@ const Aboutus: React.FC = () => {
                     style={{ transform: `translateY(${parallaxOffset}px)` }}
                 >
                     {/* ? This is the big animated title at the top. Each word pops in one by one. */}
-                    <h1 className="text-5xl sm:text-7xl lg:text-8xl font-extrabold leading-tight mb-4 sm:mb-6 tracking-tight text-white hero-title animate-fade-in-up drop-shadow-[0_4px_32px_rgba(30,58,36,0.5)]">
+                    <h1
+                        className="text-5xl sm:text-7xl lg:text-8xl font-extrabold mb-1 sm:mb-2 tracking-tight text-white hero-title animate-fade-in-up drop-shadow-[0_4px_32px_rgba(30,58,36,0.5)]"
+                        style={{
+                            lineHeight: '1.15',
+                            minHeight: 'min(18vw, 10em)',
+                            wordBreak: 'break-word',
+                        }}
+                    >
                         {titleWords.map((word, index) => (
                             <span
                                 key={index}
-                                className={`inline-block overflow-hidden animate-word-pop ${word.includes(',') ? 'text-emerald-300' : ''}`}
-                                style={{ animationDelay: `${0.1 * index}s` }}
+                                className={`inline-block overflow-visible animate-word-pop ${word.includes(',') ? 'text-emerald-300' : ''}`}
+                                style={{
+                                    animationDelay: `${0.1 * index}s`,
+                                    verticalAlign: 'baseline',
+                                    paddingBottom: '0.1em',
+                                }}
                             >
-                                <span className="block">{word}</span>
+                                <span className="block" style={{lineHeight: '1.15'}}>{word}</span>
                             </span>
                         ))}
                     </h1>
                     {/* // ? This is the main description text under the title. */}
-                    <p className="text-xl sm:text-2xl lg:text-3xl font-light mb-8 sm:mb-10 opacity-90 text-gray-200 animate-fade-in-up delay-700 hero-description">
+                    <p
+                        className="text-xl sm:text-2xl lg:text-3xl font-light mb-8 sm:mb-10 opacity-90 text-gray-200 animate-fade-in-up delay-700 hero-description"
+                        style={{
+                            marginTop: 'clamp(-0.5em, -2vw, -1.2em)',
+                        }}
+                    >
                         {data.mainDesc}
                     </p>
                     {/* // ! Button you see under the description. It uses the text from the API. */}

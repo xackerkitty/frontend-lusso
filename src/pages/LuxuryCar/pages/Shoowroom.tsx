@@ -556,46 +556,45 @@ const ImageModal: React.FC<ImageModalProps> = ({ isOpen, onClose, imageUrl, imag
     useEffect(() => {
         if (isOpen) {
             setShouldRender(true);
-            // Add a slight delay for fade-in animation
             setTimeout(() => {
                 if (modalRef.current) {
                     modalRef.current.classList.add('scale-100', 'opacity-100');
                     modalRef.current.classList.remove('scale-95', 'opacity-0');
                 }
-            }, 50); // Small delay to allow render before animation
+            }, 50);
         } else {
             if (modalRef.current) {
                 modalRef.current.classList.remove('scale-100', 'opacity-100');
                 modalRef.current.classList.add('scale-95', 'opacity-0');
             }
-            // Wait for transition to finish before unmounting
-            const timer = setTimeout(() => setShouldRender(false), 300); // Duration of the transition
+            const timer = setTimeout(() => setShouldRender(false), 300);
             return () => clearTimeout(timer);
         }
     }, [isOpen]);
 
-    if (!shouldRender) return null; // Only render if shouldRender is true
-
+    if (!shouldRender) return null;
 
     return (
         <div
-            // Overlay background with blur and transition
             className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-80 backdrop-filter backdrop-blur-md transition-opacity duration-300 ease-out"
-            onClick={onClose} // Close modal when clicking on the dark overlay
+            onClick={onClose}
         >
             <div
                 ref={modalRef}
-                // Modal content container - Dark Gray Background, improved padding, rounded corners, shadow, and initial animation state
-                className="relative bg-gray-800 p-8 rounded-2xl shadow-2xl border border-gray-700/50
+                className="relative bg-gray-900 p-10 rounded-3xl shadow-2xl border-4 border-green-500
                             max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col
-                            transform transition-all duration-300 ease-out scale-95 opacity-0" // Initial state for animation
-                onClick={(e) => e.stopPropagation()} // Prevent modal from closing when clicking inside the content box
+                            transform transition-all duration-300 ease-out scale-95 opacity-0
+                            ring-4 ring-green-300/40 ring-offset-2
+                            before:absolute before:inset-0 before:rounded-3xl before:pointer-events-none
+                            before:border-8 before:border-green-300/60 before:opacity-30 before:z-10
+                            before:shadow-[0_0_40px_10px_rgba(16,185,129,0.25)]"
+                style={{ boxShadow: '0 0 40px 8px rgba(16, 185, 129, 0.18), 0 8px 32px 0 rgba(0,0,0,0.45)' }}
+                onClick={(e) => e.stopPropagation()}
             >
-                {/* Close button - Styled for better appearance */}
                 <button
                     className="absolute top-4 right-4 bg-gray-700 hover:bg-gray-600 text-white rounded-full
                                 w-10 h-10 flex items-center justify-center text-xl font-bold
-                                transition-all duration-200 ease-in-out transform hover:scale-110 hover:shadow-lg hover:text-green-primary"
+                                transition-all duration-200 ease-in-out transform hover:scale-110 hover:shadow-lg hover:text-green-400"
                     onClick={onClose}
                     aria-label="Close Image"
                 >
@@ -604,12 +603,11 @@ const ImageModal: React.FC<ImageModalProps> = ({ isOpen, onClose, imageUrl, imag
                     </svg>
                 </button>
 
-                {/* Image */}
                 {imageUrl && (
                     <img
                         src={imageUrl}
                         alt={imageTitle || "Gallery Image"}
-                        className="max-w-full max-h-[70vh] object-contain mx-auto rounded-lg shadow-md border border-gray-700/30"
+                        className="max-w-full max-h-[70vh] object-contain mx-auto rounded-2xl shadow-lg border-2 border-green-400/80"
                         onError={(e) => {
                             e.currentTarget.src = `https://placehold.co/600x400/555/EEE?text=Image+Load+Error`;
                             e.currentTarget.alt = "Image failed to load";
@@ -617,10 +615,9 @@ const ImageModal: React.FC<ImageModalProps> = ({ isOpen, onClose, imageUrl, imag
                     />
                 )}
 
-                {/* Title - Improved typography and a subtle line below */}
                 {imageTitle && (
-                    <div className="mt-6 pt-4 border-t border-gray-700 text-center">
-                        <h3 className="text-white text-3xl md:text-4xl font-heading font-extrabold">
+                    <div className="mt-6 pt-4 border-t-2 border-green-400/60 text-center">
+                        <h3 className="text-green-200 text-3xl md:text-4xl font-heading font-extrabold drop-shadow-lg tracking-wide">
                             {imageTitle}
                         </h3>
                     </div>

@@ -636,7 +636,7 @@ const LuxuryCar: React.FC = () => {
     const [minPrice, setMinPrice] = useState(0);
     const [maxPrice, setMaxPrice] = useState(500000);
     const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
-    const [selectedSoldStatus, setSelectedSoldStatus] = useState<'all' | 'sold' | 'not-sold'>('all');
+    const [selectedSoldStatus, setSelectedSoldStatus] = useState<'all' | 'sold' | 'not-sold'>('not-sold');
     const [filteredCars, setFilteredCars] = useState<Car[]>([]);
     const [visibleCount, setVisibleCount] = useState(6);
     const [selectedCurrency, setSelectedCurrency] = useState<'USD' | 'EUR'>('USD');

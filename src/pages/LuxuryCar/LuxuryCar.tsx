@@ -288,7 +288,8 @@ const LuxuryHeroFetcher = () => {
           style={{ scrollSnapAlign: "start" }}
         >
           {/* Video background */}
-          {heroData?.mainBG && (
+          {/* Video background with fallback logic */}
+          {heroData?.mainBG && !useFallbackVideo && (
             <video
               autoPlay
               loop
@@ -300,6 +301,21 @@ const LuxuryHeroFetcher = () => {
               src={getImageUrl(heroData.mainBG)}
               onLoadedData={() => setVideoLoaded(true)}
               onError={() => setUseFallbackVideo(true)}
+            />
+          )}
+          {/* Fallback video if main video fails */}
+          {useFallbackVideo && (
+            <video
+              autoPlay
+              loop
+              muted
+              playsInline
+              poster={getImageUrl(heroData.aboutUsBackground)}
+              className="absolute inset-0 w-full h-full object-cover z-0"
+              style={{ pointerEvents: "none", display: videoLoaded ? "block" : "none" }}
+              src={FALLBACK_VIDEO_URL}
+              onLoadedData={() => setVideoLoaded(true)}
+              onError={() => setVideoLoaded(false)}
             />
           )}
       <div className="absolute inset-0 bg-black/30 z-10 pointer-events-none" />

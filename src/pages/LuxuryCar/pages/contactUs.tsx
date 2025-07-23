@@ -263,11 +263,32 @@ const ContactPage = () => {
             </div>
 
             <div className="flex gap-4 mt-6">
-              <a href="#" className="text-[#013220] hover:scale-110 transition">
-                <i className="fab fa-facebook fa-lg"></i>
+              <a
+                href="https://www.tiktok.com/@lusso.georgia"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-9 h-9 flex items-center justify-center bg-gray-100 rounded-full hover:scale-110 transition duration-300"
+                aria-label="TikTok"
+              >
+                <i className="fab fa-tiktok text-xl"></i>
               </a>
-              <a href="#" className="text-[#013220] hover:scale-110 transition">
-                <i className="fab fa-instagram fa-lg"></i>
+              <a
+                href="https://www.instagram.com/lusso_georgia/?hl=en"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-9 h-9 flex items-center justify-center bg-gray-100 rounded-full hover:scale-110 transition duration-300"
+                aria-label="Instagram"
+              >
+                <i className="fab fa-instagram text-xl"></i>
+              </a>
+              <a
+                href="https://wa.me/995555188888"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-9 h-9 flex items-center justify-center bg-gray-100 rounded-full hover:scale-110 transition duration-300"
+                aria-label="WhatsApp"
+              >
+                <i className="fab fa-whatsapp text-xl"></i>
               </a>
             </div>
           </motion.div>

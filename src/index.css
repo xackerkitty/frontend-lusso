@@ -16,8 +16,6 @@
     --color-primary-light: 20 117 55; /* #147537 */
     --color-primary-dark: 7 45 21; /* #072d15 */
     --color-secondary: 76 175 80; /* #4CAF50 - Açık yeşil */
-    --color-secondary-light: 102 187 106; /* #66bb6a */
-    --color-accent: 255 179 0; /* #ffb300 - Amber - Vurgu rengi */
     
     /* Ek renkler - Project-Bolt uyumlu */
     --color-warning: 245 158 11; /* #f59e0b - amber */
@@ -46,6 +44,7 @@ html {
   /* scroll-padding-top: 80px; */ /* Bu satır scroll-snap ile çakışmaması için yorum satırına alındı veya kaldırıldı */
 }
 
+/* Removed overflow-y: auto !important; from html, body, #root */
 html, body, #root, .nike-route-container {
   margin: 0 !important;
   padding: 0 !important;
@@ -54,7 +53,7 @@ html, body, #root, .nike-route-container {
   color: #374151;
   background-color: white;
   height: 100%;
-  overflow-y: auto !important;
+  /* overflow-y: auto !important; <-- REMOVED THIS LINE */
 }
 
 body.nike-page {
@@ -80,19 +79,19 @@ h1[class*="blue"] {
 :root {
   --bg-overlay-30: rgba(30, 41, 59, 0.3);
   --bg-overlay-50: rgba(30, 41, 59, 0.5);
-  --text-dark: #1a202c;  /* Koyu metin rengi, daha okunabilir */
-  --text-light: #f7fafc;  /* Au00e7ık metin rengi, koyu arka planlarda */
+  --text-dark: #1a202c;   /* Koyu metin rengi, daha okunabilir */
+  --text-light: #f7fafc;   /* Açık metin rengi, koyu arka planlarda */
   --text-medium: #4a5568; /* Orta ton metin rengi */
-  --primary-color: rgb(14, 78, 37);  /* #0e4e25 - Nike yeu015fil rengi */
+  --primary-color: rgb(14, 78, 37);   /* #0e4e25 - Nike yeşil rengi */
   --primary-light: rgba(14, 78, 37, 0.1);
   --primary-border: rgba(14, 78, 37, 0.3);
-  --accent-color: rgb(14, 78, 37);  /* #0e4e25 - Yeu015fil vurgu rengi - Ana sayfayla uyumlu */
+  --accent-color: rgb(14, 78, 37);   /* #0e4e25 - Yeşil vurgu rengi - Ana sayfayla uyumlu */
 }
 
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Playfair Display', serif;
   font-weight: bold;
-  color: var(--text-dark);  /* bau015flıklara varsayılan koyu renk */
+  color: var(--text-dark);   /* başlıklara varsayılan koyu renk */
 }
 
 /* Alt proje bileşen stilleri */
@@ -233,7 +232,6 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .btn {
-
   display: inline-flex;
   align-items: center;
   justify-content: center;

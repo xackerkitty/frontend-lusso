@@ -1,14 +1,29 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom'; // Import Link
+
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 
 interface NavbarProps {
   largeLogoSrc?: string;
   smallLogoSrc?: string;
+  alwaysShowBackground?: boolean;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ largeLogoSrc, smallLogoSrc }) => {
+const Navbar: React.FC<NavbarProps> = ({ largeLogoSrc, smallLogoSrc, alwaysShowBackground = false }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [selectedLanguage, setSelectedLanguage] = useState('en'); // 'en' for English
+  const [selectedLanguage, setSelectedLanguage] = useState('en');
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const isScrolled = window.scrollY > 50;
+      console.log('Scroll Y:', window.scrollY, 'Is Scrolled:', isScrolled); // Debug log
+      setScrolled(isScrolled);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -22,14 +37,37 @@ const Navbar: React.FC<NavbarProps> = ({ largeLogoSrc, smallLogoSrc }) => {
   };
 
   return (
-    <header
-      className="fixed top-0 left-0 w-full shadow-lg px-4 sm:px-12 min-h-[96px] tracking-wide z-50"
-      style={{
-        backgroundColor: '#21332B',
-        boxShadow: 'inset -10px -10px 60px rgba(0, 0, 0, 0.5), inset -10px -10px 80px rgba(0, 0, 0, 0.5), 0 4px 20px rgba(0, 0, 0, 0.8)',
-        borderBottomLeftRadius: '25px',
-        borderBottomRightRadius: '25px',
-      }}
+    <>
+      <style>
+        {`
+          html, body {
+            overflow: auto !important;
+            height: auto !important;
+          }
+          #root {
+            overflow: auto !important;
+            height: auto !important;
+          }
+        `}
+      </style>
+      <header
+        className={`fixed top-0 left-0 w-full px-4 sm:px-12 min-h-[96px] tracking-wide z-50 transition-all duration-300`}
+      style={scrolled || alwaysShowBackground
+        ? {
+            backgroundColor: '#21332B',
+            boxShadow: 'inset -10px -10px 60px rgba(0, 0, 0, 0.5), inset -10px -10px 80px rgba(0, 0, 0, 0.5)',
+            borderBottomLeftRadius: '25px',
+            borderBottomRightRadius: '25px',
+            transition: 'background 0.3s, box-shadow 0.3s',
+          }
+        : {
+            background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.2) 70%, transparent 100%)',
+            boxShadow: 'none',
+            borderBottomLeftRadius: '25px',
+            borderBottomRightRadius: '25px',
+            transition: 'background 0.3s, box-shadow 0.3s',
+          }
+      }
     >
       <div className="flex flex-wrap items-center justify-between gap-x-10 max-w-screen-xl mx-auto w-full h-full py-4">
         {/* --- DESKTOP LEFT NAVIGATION --- */}
@@ -38,46 +76,28 @@ const Navbar: React.FC<NavbarProps> = ({ largeLogoSrc, smallLogoSrc }) => {
             <li className="px-3">
               <Link
                 to='/luxurycars'
-                className="relative text-gray-100 block font-medium text-lg group
-                               transition-all duration-300 ease-out
-                               hover:text-gray-200 group-hover:text-xl"
+                className="relative text-gray-100 block font-medium text-lg group transition-all duration-300 ease-out hover:text-gray-200 group-hover:text-xl"
               >
                 Home
-                <span
-                  className="absolute left-0 bottom-[-4px] w-full h-0.5 bg-gray-200
-                                 transform scale-x-0 group-hover:scale-x-100
-                                 transition-transform duration-300 ease-out"
-                ></span>
+                <span className="absolute left-0 bottom-[-4px] w-full h-0.5 bg-gray-200 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out"></span>
               </Link>
             </li>
             <li className="px-3">
               <Link
                 to='/luxurycars/showroom'
-                className="relative text-gray-100 block font-medium text-lg group
-                               transition-all duration-300 ease-out
-                               hover:text-gray-200 group-hover:text-xl"
+                className="relative text-gray-100 block font-medium text-lg group transition-all duration-300 ease-out hover:text-gray-200 group-hover:text-xl"
               >
                 Showroom
-                <span
-                  className="absolute left-0 bottom-[-4px] w-full h-0.5 bg-gray-200
-                                 transform scale-x-0 group-hover:scale-x-100
-                                 transition-transform duration-300 ease-out"
-                ></span>
+                <span className="absolute left-0 bottom-[-4px] w-full h-0.5 bg-gray-200 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out"></span>
               </Link>
             </li>
             <li className="px-3">
               <Link
                 to='/luxurycars/cars'
-                className="relative text-gray-100 block font-medium text-lg group
-                               transition-all duration-300 ease-out
-                               hover:text-gray-200 group-hover:text-xl"
+                className="relative text-gray-100 block font-medium text-lg group transition-all duration-300 ease-out hover:text-gray-200 group-hover:text-xl"
               >
                 Cars
-                <span
-                  className="absolute left-0 bottom-[-4px] w-full h-0.5 bg-gray-200
-                                 transform scale-x-0 group-hover:scale-x-100
-                                 transition-transform duration-300 ease-out"
-                ></span>
+                <span className="absolute left-0 bottom-[-4px] w-full h-0.5 bg-gray-200 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out"></span>
               </Link>
             </li>
           </ul>
@@ -99,31 +119,19 @@ const Navbar: React.FC<NavbarProps> = ({ largeLogoSrc, smallLogoSrc }) => {
             <li className="px-3">
               <Link
                 to='/luxurycars/aboutus'
-                className="relative text-gray-100 block font-medium text-lg group
-                               transition-all duration-300 ease-out
-                               hover:text-gray-200 group-hover:text-xl"
+                className="relative text-gray-100 block font-medium text-lg group transition-all duration-300 ease-out hover:text-gray-200 group-hover:text-xl"
               >
                 About Us
-                <span
-                  className="absolute left-0 bottom-[-4px] w-full h-0.5 bg-gray-200
-                                 transform scale-x-0 group-hover:scale-x-100
-                                 transition-transform duration-300 ease-out"
-                ></span>
+                <span className="absolute left-0 bottom-[-4px] w-full h-0.5 bg-gray-200 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out"></span>
               </Link>
             </li>
             <li className="px-3">
               <Link
                 to='/luxurycars/contactus'
-                className="relative text-gray-100 block font-medium text-lg group
-                               transition-all duration-300 ease-out
-                               hover:text-gray-200 group-hover:text-xl"
+                className="relative text-gray-100 block font-medium text-lg group transition-all duration-300 ease-out hover:text-gray-200 group-hover:text-xl"
               >
                 Contact
-                <span
-                  className="absolute left-0 bottom-[-4px] w-full h-0.5 bg-gray-200
-                                 transform scale-x-0 group-hover:scale-x-100
-                                 transition-transform duration-300 ease-out"
-                ></span>
+                <span className="absolute left-0 bottom-[-4px] w-full h-0.5 bg-gray-200 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out"></span>
               </Link>
             </li>
           </ul>
@@ -133,11 +141,9 @@ const Navbar: React.FC<NavbarProps> = ({ largeLogoSrc, smallLogoSrc }) => {
               id="language-select-desktop"
               value={selectedLanguage}
               onChange={handleLanguageChange}
-              // REVISED TAILWIND CLASSES FOR SUBTLER LOOK
               className="block appearance-none bg-transparent border border-gray-600 px-3 py-1.5 pr-6 rounded-md text-gray-100 text-base focus:outline-none focus:ring-1 focus:ring-gray-400 cursor-pointer"
             >
               <option value="en" className="bg-[#21332B]">English</option>
-              {/* Add other language options here when needed, ensure they have a dark background for contrast */}
             </select>
             {/* Custom arrow for the select dropdown */}
             <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-1.5 text-gray-400">
@@ -189,81 +195,51 @@ const Navbar: React.FC<NavbarProps> = ({ largeLogoSrc, smallLogoSrc }) => {
               <li className="border-b border-gray-300 py-4 px-3">
                 <Link
                   to='/luxurycars'
-                  className="relative text-gray-100 block font-medium text-lg group
-                               transition-all duration-300 ease-out
-                               hover:text-gray-200 group-hover:text-xl"
+                  className="relative text-gray-100 block font-medium text-lg group transition-all duration-300 ease-out hover:text-gray-200 group-hover:text-xl"
                   onClick={toggleMenu}
                 >
                   Home
-                  <span
-                    className="absolute left-0 bottom-[-4px] w-full h-0.5 bg-gray-200
-                                   transform scale-x-0 group-hover:scale-x-100
-                                   transition-transform duration-300 ease-out"
-                  ></span>
+                  <span className="absolute left-0 bottom-[-4px] w-full h-0.5 bg-gray-200 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out"></span>
                 </Link>
               </li>
               <li className="border-b border-gray-300 py-4 px-3">
                 <Link
                   to='/luxurycars/showroom'
-                  className="relative text-gray-100 block font-medium text-lg group
-                               transition-all duration-300 ease-out
-                               hover:text-gray-200 group-hover:text-xl"
+                  className="relative text-gray-100 block font-medium text-lg group transition-all duration-300 ease-out hover:text-gray-200 group-hover:text-xl"
                   onClick={toggleMenu}
                 >
                   Showroom
-                  <span
-                    className="absolute left-0 bottom-[-4px] w-full h-0.5 bg-gray-200
-                                   transform scale-x-0 group-hover:scale-x-100
-                                   transition-transform duration-300 ease-out"
-                  ></span>
+                  <span className="absolute left-0 bottom-[-4px] w-full h-0.5 bg-gray-200 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out"></span>
                 </Link>
               </li>
               <li className="border-b border-gray-300 py-4 px-3">
                 <Link
                   to='/luxurycars/cars'
-                  className="relative text-gray-100 block font-medium text-lg group
-                               transition-all duration-300 ease-out
-                               hover:text-gray-200 group-hover:text-xl"
+                  className="relative text-gray-100 block font-medium text-lg group transition-all duration-300 ease-out hover:text-gray-200 group-hover:text-xl"
                   onClick={toggleMenu}
                 >
                   Cars
-                  <span
-                    className="absolute left-0 bottom-[-4px] w-full h-0.5 bg-gray-200
-                                   transform scale-x-0 group-hover:scale-x-100
-                                   transition-transform duration-300 ease-out"
-                  ></span>
+                  <span className="absolute left-0 bottom-[-4px] w-full h-0.5 bg-gray-200 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out"></span>
                 </Link>
               </li>
               <li className="border-b border-gray-300 py-4 px-3">
                 <Link
                   to='/luxurycars/aboutus'
-                  className="relative text-gray-100 block font-medium text-lg group
-                               transition-all duration-300 ease-out
-                               hover:text-gray-200 group-hover:text-xl"
+                  className="relative text-gray-100 block font-medium text-lg group transition-all duration-300 ease-out hover:text-gray-200 group-hover:text-xl"
                   onClick={toggleMenu}
                 >
                   About Us
-                  <span
-                    className="absolute left-0 bottom-[-4px] w-full h-0.5 bg-gray-200
-                                   transform scale-x-0 group-hover:scale-x-100
-                                   transition-transform duration-300 ease-out"
-                  ></span>
+                  <span className="absolute left-0 bottom-[-4px] w-full h-0.5 bg-gray-200 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out"></span>
                 </Link>
               </li>
               <li className="border-b border-gray-300 py-4 px-3">
                 <Link
                   to='/luxurycars/contactus'
-                  className="relative text-gray-100 block font-medium text-lg group
-                               transition-all duration-300 ease-out
-                               hover:text-gray-200 group-hover:text-xl"
+                  className="relative text-gray-100 block font-medium text-lg group transition-all duration-300 ease-out hover:text-gray-200 group-hover:text-xl"
                   onClick={toggleMenu}
                 >
                   Contact
-                  <span
-                    className="absolute left-0 bottom-[-4px] w-full h-0.5 bg-gray-200
-                                   transform scale-x-0 group-hover:scale-x-100
-                                   transition-transform duration-300 ease-out"
-                  ></span>
+                  <span className="absolute left-0 bottom-[-4px] w-full h-0.5 bg-gray-200 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out"></span>
                 </Link>
               </li>
               {/* Language Selector for Mobile */}
@@ -273,11 +249,9 @@ const Navbar: React.FC<NavbarProps> = ({ largeLogoSrc, smallLogoSrc }) => {
                   id="language-select-mobile"
                   value={selectedLanguage}
                   onChange={handleLanguageChange}
-                  // REVISED TAILWIND CLASSES FOR SUBTLER LOOK
                   className="block w-full appearance-none bg-transparent border border-gray-600 px-3 py-1.5 pr-6 rounded-md text-gray-100 text-base focus:outline-none focus:ring-1 focus:ring-gray-400 cursor-pointer"
                 >
                   <option value="en" className="bg-[#21332B]">English</option>
-                  {/* Add other language options here when needed */}
                 </select>
                 {/* Custom arrow for the select dropdown (mobile) */}
                 <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center px-1.5 text-gray-400">
@@ -291,6 +265,7 @@ const Navbar: React.FC<NavbarProps> = ({ largeLogoSrc, smallLogoSrc }) => {
         )}
       </div>
     </header>
+    </>
   );
 };
 

@@ -386,7 +386,7 @@ const HeroSection: React.FC<{
                     {mainDescription}
                 </p>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-16">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-6 mb-16">
                     {pillars.map((pillar, index) => (
                         <div
                             key={pillar.id || index}
@@ -438,9 +438,8 @@ const AboutSection: React.FC<{
     return (
         <AnimatedSection
             id="about-section"
-            className={`py-24 px-4 md:px-12 w-full flex flex-col lg:flex-row items-center gap-16 ${COLORS.white} ${COLORS.grayTextDark} shadow-xl rounded-b-lg`}
+            className={`px-4 md:px-12 w-full min-h-screen flex flex-col lg:flex-row items-center justify-center gap-16 ${COLORS.white} ${COLORS.grayTextDark} shadow-xl`}
             threshold={0.2}
-
         >
             <div className="lg:w-1/2 flex-shrink-0 relative group">
                 <div className="absolute inset-0 border-4 border-green-primary rounded-lg transform translate-x-4 -translate-y-4 md:translate-x-8 md:-translate-y-8 z-0 opacity-60"></div>

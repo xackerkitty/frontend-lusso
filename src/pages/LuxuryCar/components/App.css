@@ -1,0 +1,24 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+body {
+  height: 200vh;
+  background-color: rgb(110, 110, 110);
+}
+nav {
+  position: fixed;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 10rem;
+}
+ul {
+  list-style: none;
+}
+li {
+  display: inline;
+  margin: 0 1rem;
+  color: #fff;
+}

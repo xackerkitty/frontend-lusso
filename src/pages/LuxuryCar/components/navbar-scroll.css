@@ -1,0 +1,8 @@
+/* CSS for navbar background change on scroll */
+.navbar-header {
+  background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.0) 100%);
+  transition: background 0.3s;
+}
+body.navbar-scrolled .navbar-header {
+  background: #22c55e !important; /* Tailwind green-500 */
+}

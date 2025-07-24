@@ -224,7 +224,7 @@ const Aboutus: React.FC = () => {
                 >
                     {/* ? This is the big animated title at the top. Each word pops in one by one. */}
                     <h1
-                        className="text-5xl sm:text-7xl lg:text-8xl font-extrabold mb-1 sm:mb-2 tracking-tight text-white hero-title animate-fade-in-up drop-shadow-[0_4px_32px_rgba(30,58,36,0.5)]"
+                        className="text-5xl sm:text-7xl lg:text-8xl font-extrabold mb-1 sm:mb-2 tracking-widest text-white hero-title animate-fade-in-up drop-shadow-[0_4px_32px_rgba(30,58,36,0.5)]"
                         style={{
                             lineHeight: '1.15',
                             minHeight: 'min(18vw, 10em)',
@@ -246,22 +246,22 @@ const Aboutus: React.FC = () => {
                         ))}
                     </h1>
                     {/* // ? This is the main description text under the title. */}
-                    <p
+                    {/* <p
                         className="text-xl sm:text-2xl lg:text-3xl font-light mb-8 sm:mb-10 opacity-90 text-gray-200 animate-fade-in-up delay-700 hero-description"
                         style={{
                             marginTop: 'clamp(-0.5em, -2vw, -1.2em)',
                         }}
                     >
                         {data.mainDesc}
-                    </p>
+                    </p> */}
                     {/* // ! Button you see under the description. It uses the text from the API. */}
-                    <a
+                    {/* <a
                         href="#"
                         className="inline-block bg-emerald-600 text-white font-bold py-4 px-12 sm:py-5 sm:px-16 rounded-full shadow-xl hover:bg-emerald-700 transition-all duration-300 transform hover:scale-105 animate-button-slide-up hero-button"
                         aria-label={data.buttonTxt}
                     >
                         {data.buttonTxt}
-                    </a>
+                    </a> */}
                 </div>
                 {/* // * Animated scroll-down indicator to show there's more below */}
                 <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center animate-bounce">

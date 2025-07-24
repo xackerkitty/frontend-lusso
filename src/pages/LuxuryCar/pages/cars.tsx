@@ -835,7 +835,10 @@ const LuxuryCar: React.FC = () => {
     const logoUrl = logoData?.logo?.url ? getMediaUrl(logoData.logo) : undefined;
 
     return (
-        <div className="font-sans text-gray-800 bg-gray-100 min-h-screen overflow-x-hidden flex flex-col">
+        <div
+            className="text-gray-800 bg-gray-100 min-h-screen overflow-x-hidden flex flex-col"
+            style={{ fontFamily: "'Playfair Display', serif" }}
+        >
             {/* Custom scrollbar styling */}
             <style>{`
                 .custom-scrollbar::-webkit-scrollbar {

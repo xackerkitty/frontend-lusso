@@ -115,8 +115,7 @@ interface LuxuryHeroAttributes {
 }
 
 // Fallback video source for robustness.
-const FALLBACK_VIDEO_URL =
-  "http://localhost:1337/uploads/landing_v2_03b5dc92f5.mp4";
+const FALLBACK_VIDEO_URL = "/images/car/For Website 30SEC - Trim.mp4";
 const FALLBACK_VIDEO_MIME = "video/mp4";
 
 // --- LuxuryHeroFetcher Component ---
@@ -129,6 +128,7 @@ const LuxuryHeroFetcher = () => {
   const [error, setError] = useState<string | null>(null);
   const [videoLoaded, setVideoLoaded] = useState(false);
   const [useFallbackVideo, setUseFallbackVideo] = useState(false);
+  const [videoFailed, setVideoFailed] = useState(false); // If both videos fail
   // Featured cars state
   const [featuredCars, setFeaturedCars] = useState<FeaturedCar[]>(cachedFeaturedCars);
   const [currentCarIndex, setCurrentCarIndex] = useState(0);
@@ -187,7 +187,7 @@ const LuxuryHeroFetcher = () => {
       setHeroData(cachedHeroData);
       setLogoData(cachedLogoData);
       setFeaturedCars(cachedFeaturedCars);
-      setLoading(false);
+      setTimeout(() => setLoading(false), 1000); // Delay hiding loading screen by 1s
       return;
     }
     const fetchData = async () => {
@@ -218,7 +218,7 @@ const LuxuryHeroFetcher = () => {
         setFeaturedCars([]);
         cachedFeaturedCars = [];
       } finally {
-        setLoading(false);
+        setTimeout(() => setLoading(false), 400); // Delay hiding loading screen by 1s
       }
     };
     fetchData();
@@ -247,10 +247,7 @@ const LuxuryHeroFetcher = () => {
   // Get logo URL from /api/luxurycar
   const logoUrl = logoData?.logo ? getImageUrl(logoData.logo) : '';
 
-  // --- Conditional Rendering for Loading and Error States ---
-  if (loading) {
-    return <LoadingScreen />;
-  }
+  // --- Conditional Rendering for Error State ---
   if (error) {
     return (
       <div className="flex justify-center items-center h-screen text-red-500">
@@ -262,6 +259,11 @@ const LuxuryHeroFetcher = () => {
   // --- Component JSX (Rendered Output) ---
   return (
     <div className="relative">
+      {loading && (
+        <div style={{position: 'fixed', inset: 0, zIndex: 9999}}>
+          <LoadingScreen />
+        </div>
+      )}
       {/* //////////////////////////////////////////////////////////////////////////// */}
       {/* { -------------------------|| Navbar begin || ---------------------------|| } */}
 
@@ -271,10 +273,9 @@ const LuxuryHeroFetcher = () => {
       {/*////////////////////////////////////////////////////////////////////////////*/}
 
       <div
-        className="overflow-y-auto scroll-smooth"
+        className="scroll-smooth"
         style={{
-          height: "100vh",
-          scrollSnapType: "y mandatory",
+          scrollSnapType: "y proximity",
           WebkitOverflowScrolling: "touch",
         }}
       >
@@ -289,61 +290,97 @@ const LuxuryHeroFetcher = () => {
         >
           {/* Video background */}
           {/* Video background with fallback logic */}
-          {heroData?.mainBG && !useFallbackVideo && (
+          {/* Main video with preload and improved error handling */}
+          {heroData?.mainBG && !useFallbackVideo && !videoFailed && (
             <video
               autoPlay
               loop
               muted
               playsInline
+              preload="auto"
               poster={getImageUrl(heroData.aboutUsBackground)}
               className="absolute inset-0 w-full h-full object-cover z-0"
               style={{ pointerEvents: "none", display: videoLoaded ? "block" : "none" }}
               src={getImageUrl(heroData.mainBG)}
               onLoadedData={() => setVideoLoaded(true)}
-              onError={() => setUseFallbackVideo(true)}
+              onError={() => { setUseFallbackVideo(true); setVideoLoaded(false); }}
             />
           )}
           {/* Fallback video if main video fails */}
-          {useFallbackVideo && (
+          {useFallbackVideo && !videoFailed && (
             <video
               autoPlay
               loop
               muted
               playsInline
+              preload="auto"
               poster={getImageUrl(heroData.aboutUsBackground)}
               className="absolute inset-0 w-full h-full object-cover z-0"
               style={{ pointerEvents: "none", display: videoLoaded ? "block" : "none" }}
               src={FALLBACK_VIDEO_URL}
               onLoadedData={() => setVideoLoaded(true)}
-              onError={() => setVideoLoaded(false)}
+              onError={() => { setVideoLoaded(false); setVideoFailed(true); }}
             />
           )}
-      <div className="absolute inset-0 bg-black/30 z-10 pointer-events-none" />
-          {!videoLoaded && (
-            <div className="absolute inset-0 z-20 flex items-center justify-center">
+          {/* Fallback image if both videos fail */}
+          {videoFailed && (
+            <>
+              <img
+                src={getImageUrl(heroData.aboutUsBackground) || logoUrl}
+                alt="Fallback Background"
+                className="absolute inset-0 w-full h-full object-cover z-0"
+                style={{ pointerEvents: "none" }}
+              />
+              {/* Gradient overlays for fallback image */}
+              <div className="absolute top-0 left-0 w-full h-1/5 z-10 pointer-events-none" style={{background: 'linear-gradient(to bottom, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.0) 100%)'}} />
+              <div className="absolute bottom-0 left-0 w-full h-1/5 z-10 pointer-events-none" style={{background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.0) 100%)'}} />
+            </>
+          )}
+          {/* Gradient overlays for video backgrounds (always present) */}
+          <div className="absolute top-0 left-0 w-full h-1/5 z-10 pointer-events-none" style={{background: 'linear-gradient(to bottom, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.0) 100%)'}} />
+          <div className="absolute bottom-0 left-0 w-full h-1/5 z-10 pointer-events-none" style={{background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.0) 100%)'}} />
+          <div className="absolute inset-0 bg-black/30 z-10 pointer-events-none" />
+          {/* Loading overlay until video or fallback image is ready */}
+          {!videoLoaded && !videoFailed && (
+            <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/40">
               <span className="text-heading text-lg animate-pulse text-white">
                 Loading video...
               </span>
             </div>
           )}
           {/* Main content overlaying the hero media */}
-          <div className="relative z-10 text-center text-heading max-w-2xl mx-auto">
-            <h1 className="text-5xl md:text-7xl font-bold mb-6 drop-shadow-lg text-white flex flex-col items-center justify-center">
-              <span> {heroData?.mainTitle || 'Welcome to '} </span>
-              {logoUrl && (
-                <img src={logoUrl} alt="Logo" style={{ maxHeight: '80px', margin: '32px auto 0 auto' }} />
-              )}
-            </h1>
-            <div className="flex justify-center w-full">
-              <button
-                className="bg-green-900 hover:bg-green-800 text-white px-10 py-5 rounded-xl font-semibold text-lg shadow-lg transition-all duration-300 border-2 border-white focus:outline-none focus:ring-4 focus:ring-green-900/40 flex items-center gap-3 mt-8"
-                style={{ letterSpacing: '0.04em' }}
-                onClick={handleLearnMoreClick}
+          <div className="relative z-10 flex justify-start items-center h-full w-full pl-12">
+            <motion.div
+              className="text-left max-w-xl flex flex-col justify-start"
+              style={{ marginTop: '26vh' }}
+              initial={{ opacity: 0, y: 60 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1.8, ease: [0.22, 1, 0.36, 1] }} // cubic-bezier for smoother ease
+            >
+              <motion.h1
+                className="text-5xl md:text-7xl font-bold mb-2 drop-shadow-lg text-white"
+                initial={{ opacity: 0, y: 60 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 2.2, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
               >
-                {heroData?.mainBtnText || 'Explore Our Showroom'}
-                <svg className="w-6 h-6 text-white ml-2 transition-transform duration-300 group-hover:translate-x-2" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14M12 5l7 7-7 7"/></svg>
-              </button>
-            </div>
+                Experience the Pinnacle of Luxury Cars
+              </motion.h1>
+              <motion.div
+                className="flex justify-start w-full"
+                initial={{ opacity: 0, y: 60 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 1.7, delay: 1.1, ease: [0.22, 1, 0.36, 1] }}
+              >
+                <button
+                  className="text-white px-5 py-2.5 rounded-md font-semibold text-base border border-white focus:outline-none focus:ring-2 focus:ring-green-900/40 flex items-center gap-2 mt-2 bg-transparent shadow-none hover:bg-transparent"
+                  style={{ letterSpacing: '0.04em' }}
+                  onClick={handleLearnMoreClick}
+                >
+                  Explore Our Showroom
+                  <svg className="w-5 h-5 text-white ml-1 transition-transform duration-300 group-hover:translate-x-2" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </button>
+              </motion.div>
+            </motion.div>
           </div>
         </section>
 
@@ -579,6 +616,7 @@ const LuxuryHeroFetcher = () => {
         {/* { -------------------------|| location begin || ---------------------------|| } */}
         <section
           id="location"
+          
           className="location_section h-[calc(100vh-96px)] flex flex-col items-center justify-center text-black text-3xl p-4"
           style={{ scrollSnapAlign: "start" }}
         >

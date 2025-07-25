@@ -170,7 +170,13 @@ function LussoMainPage() {
             companyLogo: companyLogo,
             contactInfo: contactInfo,
           };
-        }).filter(Boolean);
+        }).filter((company: Company | null): company is Company => company !== null).sort((a: Company, b: Company) => {
+          // Prioritize "lusso-automobiles" to be first
+          if (a.slug === 'lusso-automobiles') return -1;
+          if (b.slug === 'lusso-automobiles') return 1;
+          // Then sort by ID (lowest to highest)
+          return a.id - b.id;
+        });
         setCompanies(companiesWithAbsoluteUrlsAndSlugs);
       } catch (err: any) {
         setLogosError("Failed to load company logos. Please try again later.");

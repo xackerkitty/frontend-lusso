@@ -6,24 +6,46 @@ interface NavbarProps {
   largeLogoSrc?: string;
   smallLogoSrc?: string;
   alwaysShowBackground?: boolean;
+  hideOnScrollDown?: boolean; // New prop to enable scroll direction detection
 }
 
-const Navbar: React.FC<NavbarProps> = ({ largeLogoSrc, smallLogoSrc, alwaysShowBackground = false }) => {
+const Navbar: React.FC<NavbarProps> = ({ largeLogoSrc, smallLogoSrc, alwaysShowBackground = false, hideOnScrollDown = false }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState('en');
   const [scrolled, setScrolled] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
 
   useEffect(() => {
     const handleScroll = () => {
-      const isScrolled = window.scrollY > 50;
-      console.log('Scroll Y:', window.scrollY, 'Is Scrolled:', isScrolled); // Debug log
+      const currentScrollY = window.scrollY;
+      
+      // Always update scrolled state for background changes
+      const isScrolled = currentScrollY > 50;
       setScrolled(isScrolled);
+      
+      // Only handle visibility if hideOnScrollDown is enabled
+      if (hideOnScrollDown) {
+        // Show navbar when at the top
+        if (currentScrollY < 10) {
+          setIsVisible(true);
+        }
+        // Show navbar when scrolling up, hide when scrolling down
+        else if (currentScrollY < lastScrollY) {
+          setIsVisible(true);
+        } else if (currentScrollY > lastScrollY && currentScrollY > 100) {
+          setIsVisible(false);
+        }
+        
+        setLastScrollY(currentScrollY);
+      }
     };
-    window.addEventListener('scroll', handleScroll);
+    
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => {
       window.removeEventListener('scroll', handleScroll);
     };
-  }, []);
+  }, [hideOnScrollDown, lastScrollY]);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -43,30 +65,58 @@ const Navbar: React.FC<NavbarProps> = ({ largeLogoSrc, smallLogoSrc, alwaysShowB
           html, body {
             overflow: auto !important;
             height: auto !important;
+            margin: 0 !important;
+            padding: 0 !important;
           }
           #root {
             overflow: auto !important;
             height: auto !important;
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+          * {
+            box-sizing: border-box;
           }
         `}
       </style>
       <header
-        className={`fixed top-0 left-0 w-full px-4 sm:px-12 min-h-[96px] tracking-wide z-50 transition-all duration-300`}
-      style={scrolled || alwaysShowBackground
-        ? {
-            backgroundColor: '#21332B',
-            boxShadow: 'inset -10px -10px 60px rgba(0, 0, 0, 0.5), inset -10px -10px 80px rgba(0, 0, 0, 0.5)',
-            borderBottomLeftRadius: '25px',
-            borderBottomRightRadius: '25px',
-            transition: 'background 0.3s, box-shadow 0.3s',
-          }
-        : {
-            background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.2) 70%, transparent 100%)',
-            boxShadow: 'none',
-            borderBottomLeftRadius: '25px',
-            borderBottomRightRadius: '25px',
-            transition: 'background 0.3s, box-shadow 0.3s',
-          }
+        className={`fixed top-0 left-0 w-full px-4 sm:px-12 min-h-[96px] tracking-wide z-50 transition-all duration-300 ${
+          hideOnScrollDown ? (isVisible ? 'translate-y-0' : '-translate-y-full') : ''
+        }`}
+      style={
+        hideOnScrollDown
+          ? // Special logic for hideOnScrollDown pages
+            (scrolled && isVisible)
+              ? {
+                  backgroundColor: 'rgba(33, 51, 43, 0.5)', // More transparent green
+                  boxShadow: 'inset -10px -10px 60px rgba(0, 0, 0, 0.2), inset -10px -10px 80px rgba(0, 0, 0, 0.2)',
+                  borderBottomLeftRadius: '25px',
+                  borderBottomRightRadius: '25px',
+                  transition: 'background 0.3s, box-shadow 0.3s, transform 0.3s ease-in-out',
+                }
+              : {
+                  background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.2) 70%, transparent 100%)',
+                  boxShadow: 'none',
+                  borderBottomLeftRadius: '25px',
+                  borderBottomRightRadius: '25px',
+                  transition: 'background 0.3s, box-shadow 0.3s, transform 0.3s ease-in-out',
+                }
+          : // Normal logic for other pages
+            (scrolled || alwaysShowBackground)
+              ? {
+                  backgroundColor: 'rgba(33, 51, 43, 0.5)', // More transparent green
+                  boxShadow: 'inset -10px -10px 60px rgba(0, 0, 0, 0.2), inset -10px -10px 80px rgba(0, 0, 0, 0.2)',
+                  borderBottomLeftRadius: '25px',
+                  borderBottomRightRadius: '25px',
+                  transition: 'background 0.3s, box-shadow 0.3s, transform 0.3s ease-in-out',
+                }
+              : {
+                  background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.2) 70%, transparent 100%)',
+                  boxShadow: 'none',
+                  borderBottomLeftRadius: '25px',
+                  borderBottomRightRadius: '25px',
+                  transition: 'background 0.3s, box-shadow 0.3s, transform 0.3s ease-in-out',
+                }
       }
     >
       <div className="flex flex-wrap items-center justify-between gap-x-10 max-w-screen-xl mx-auto w-full h-full py-4">

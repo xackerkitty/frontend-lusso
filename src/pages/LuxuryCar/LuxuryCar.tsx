@@ -125,6 +125,7 @@ const LuxuryHeroFetcher = () => {
   // Use cached data if available
   const [heroData, setHeroData] = useState<any | null>(cachedHeroData);
   const [loading, setLoading] = useState(!cachedHeroData);
+  const [loadingVisible, setLoadingVisible] = useState(!cachedHeroData);
   const [error, setError] = useState<string | null>(null);
   const [videoLoaded, setVideoLoaded] = useState(false);
   const [useFallbackVideo, setUseFallbackVideo] = useState(false);
@@ -187,11 +188,18 @@ const LuxuryHeroFetcher = () => {
       setHeroData(cachedHeroData);
       setLogoData(cachedLogoData);
       setFeaturedCars(cachedFeaturedCars);
-      setTimeout(() => setLoading(false), 1000); // Delay hiding loading screen by 1s
+      // For cached data, show loading for minimum 2 seconds
+      setTimeout(() => {
+        setLoadingVisible(false);
+        setTimeout(() => setLoading(false), 1000); // Wait for fade to complete
+      }, 2000); // Minimum 2s for cached data
       return;
     }
+    
     const fetchData = async () => {
       setLoading(true);
+      const startTime = Date.now(); // Track when loading started
+      
       try {
         // Fetch logo from /api/luxurycar?populate=*
         const logoRes = await fetch(`${STRAPI_BASE_URL}/api/luxurycar?populate=*`);
@@ -218,7 +226,14 @@ const LuxuryHeroFetcher = () => {
         setFeaturedCars([]);
         cachedFeaturedCars = [];
       } finally {
-        setTimeout(() => setLoading(false), 400); // Delay hiding loading screen by 1s
+        const loadTime = Date.now() - startTime;
+        const minLoadTime = 2000; // Minimum 2 seconds
+        const remainingTime = Math.max(0, minLoadTime - loadTime);
+        
+        setTimeout(() => {
+          setLoadingVisible(false);
+          setTimeout(() => setLoading(false), 1000); // Wait for fade to complete
+        }, remainingTime);
       }
     };
     fetchData();
@@ -261,13 +276,13 @@ const LuxuryHeroFetcher = () => {
     <div className="relative">
       {loading && (
         <div style={{position: 'fixed', inset: 0, zIndex: 9999}}>
-          <LoadingScreen />
+          <LoadingScreen isVisible={loadingVisible} />
         </div>
       )}
       {/* //////////////////////////////////////////////////////////////////////////// */}
       {/* { -------------------------|| Navbar begin || ---------------------------|| } */}
 
-      <Navbar largeLogoSrc={logoUrl} smallLogoSrc={logoUrl} />
+      <Navbar largeLogoSrc={logoUrl} smallLogoSrc={logoUrl} hideOnScrollDown={true}/>
 
       {/* ---------------------------|| Navbar End || ---------------------------||  */}
       {/*////////////////////////////////////////////////////////////////////////////*/}
@@ -343,7 +358,7 @@ const LuxuryHeroFetcher = () => {
           {/* Loading overlay until video or fallback image is ready */}
           {!videoLoaded && !videoFailed && (
             <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/40">
-              <span className="text-heading text-lg animate-pulse text-white">
+              <span className="text-heading text-lg animate-pulse text-white" style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 300 }}>
                 Loading video...
               </span>
             </div>
@@ -359,6 +374,7 @@ const LuxuryHeroFetcher = () => {
             >
               <motion.h1
                 className="text-5xl md:text-7xl font-bold mb-2 drop-shadow-lg text-white"
+                style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 700 }}
                 initial={{ opacity: 0, y: 60 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 2.2, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
@@ -373,7 +389,7 @@ const LuxuryHeroFetcher = () => {
               >
                 <button
                   className="text-white px-5 py-2.5 rounded-md font-semibold text-base border border-white focus:outline-none focus:ring-2 focus:ring-green-900/40 flex items-center gap-2 mt-2 bg-transparent shadow-none hover:bg-transparent"
-                  style={{ letterSpacing: '0.04em' }}
+                  style={{ letterSpacing: '0.04em', fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 400 }}
                   onClick={handleLearnMoreClick}
                 >
                   Explore Our Showroom
@@ -556,10 +572,10 @@ const LuxuryHeroFetcher = () => {
             {/* Content Overlay */}
             <div className="absolute inset-0 bg-black bg-opacity-40 flex flex-col items-center justify-center p-6 rounded-3xl">
               <div className="text-center w-full">
-                <h1 className="text-white text-4xl sm:text-5xl lg:text-6xl font-bold mb-4 tracking-wide">
+                <h1 className="text-white text-4xl sm:text-5xl lg:text-6xl font-bold mb-4 tracking-wide" style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 700 }}>
                   Our Cars
                 </h1>
-                <p className="text-white text-lg sm:text-xl mb-8 max-w-2xl mx-auto">
+                <p className="text-white text-lg sm:text-xl mb-8 max-w-2xl mx-auto" style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 300 }}>
                   Explore our exclusive collection of luxury vehicles.
                 </p>
                 <div className="flex flex-wrap justify-center items-center gap-4 sm:gap-6 md:gap-8 mb-12 px-2">
@@ -594,7 +610,7 @@ const LuxuryHeroFetcher = () => {
                     className="h-20 w-20 object-contain logo-item cursor-pointer"
                   />
                 </div>
-                <button className="bg-white text-gray-800 px-8 py-3 rounded-full text-lg font-semibold hover:text-gray-900 explore-button shadow-lg" onClick={handleOurCarsClick}>
+                <button className="bg-white text-gray-800 px-8 py-3 rounded-full text-lg font-semibold hover:text-gray-900 explore-button shadow-lg" style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 400 }} onClick={handleOurCarsClick}>
                   Explore
                 </button>
               </div>
@@ -621,10 +637,10 @@ const LuxuryHeroFetcher = () => {
           style={{ scrollSnapAlign: "start" }}
         >
           <div className="text-center mb-8">
-            <h2 className="text-5xl font-bold mb-4 text-black">
+            <h2 className="text-5xl font-bold mb-4 text-black" style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 700 }}>
               {heroData?.locationTitle}
             </h2>
-            <p className="text-xl text-black">
+            <p className="text-xl text-black" style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 300 }}>
               {heroData?.locationDesc}
             </p>
           </div>

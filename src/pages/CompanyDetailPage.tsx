@@ -265,119 +265,173 @@ const CompanyDetailPage: React.FC = () => {
     }
 
     return (
-        <div className="min-h-screen bg-black text-gray-100 font-sans">
-            <nav className="fixed w-full z-10 bg-black bg-opacity-30 backdrop-filter backdrop-blur-lg shadow-md">
-                <div className="mx-auto py-4 flex items-center" style={{ paddingLeft: '5.5rem', paddingRight: '5.5rem' }}>
-                    <div className="text-2xl font-bold text-white rounded-md">
-                        BLU <span className="text-green-400">Holding</span>
-                    </div>
-                    <button
-                        onClick={() => navigate('/')}
-                        className="text-white hover:text-green-400 transition duration-300 rounded-md px-3 py-1 border border-white hover:border-green-400 ml-auto"
-                    >
-                        Go Back
-                    </button>
-                </div>
-            </nav>
-
-            <main className="flex flex-col md:flex-row min-h-screen md:min-h-[120vh] pt-16">
-                <div className="w-full md:w-1/2 flex items-center justify-center p-8 bg-[#0A260A] bg-opacity-90 rounded-md">
-                    <div className="max-w-xl text-left mx-auto">
-                        <h1 className="text-4xl sm:text-5xl font-bold mb-6 text-white rounded-md">
-                            {company.mainTitle || company.companyName || "Null"}
-                        </h1>
-                        <p className="text-base sm:text-lg leading-relaxed mb-8 text-gray-300 rounded-md">
-                            {company.mainDesc || "Null"}
-                        </p>
-
-                        {/* Show button only if mainWebLink is valid, not a placeholder, and not 'nothing' */}
-                        {company.mainWebLink && company.mainWebLink !== "choose here" && company.mainWebLink !== "mainWebLink" && company.mainWebLink.trim() !== "" && company.mainWebLink !== "nothing" && company.buttonTxt && (
-                            <button
-                                onClick={handleDiscoverWebsite}
-                                className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-300 ease-in-out transform hover:scale-105 mb-8"
-                            >
-                                {company.buttonTxt}
-                            </button>
-                        )}
-
-                        <h2 className="text-2xl sm:text-3xl font-semibold mb-4 text-white rounded-md">
-                            {company.contactTitle || ""}
-                        </h2>
-                        <div className="space-y-3 text-gray-300">
-                            {company.contactInfo.length > 0 ? (
-                                company.contactInfo.map((contact, index) => (
-                                    <p key={contact.id || index} className="flex items-center rounded-md">
-                                        {/* Font Awesome Icons based on contact_type */}
-                                        {contact.contact_type === 'Location' && (
-                                            <FontAwesomeIcon icon={faMapMarkerAlt} className="w-5 h-5 mr-3 text-green-400" />
-                                        )}
-                                        {contact.contact_type === 'Phone' && (
-                                            <FontAwesomeIcon icon={faPhone} className="w-5 h-5 mr-3 text-green-400" />
-                                        )}
-                                        {contact.contact_type === 'Email' && (
-                                            <FontAwesomeIcon icon={faEnvelope} className="w-5 h-5 mr-3 text-green-400" />
-                                        )}
-                                        {contact.contact_type === 'Instagram' && (
-                                            <FontAwesomeIcon icon={faInstagram} className="w-5 h-5 mr-3 text-green-400" />
-                                        )}
-                                        {contact.contact_type === 'Facebook' && (
-                                            <FontAwesomeIcon icon={faFacebookF} className="w-5 h-5 mr-3 text-green-400" />
-                                        )}
-                                        {contact.contact_type === 'TikTok' && (
-                                            <FontAwesomeIcon icon={faTiktok} className="w-5 h-5 mr-3 text-green-400" />
-                                        )}
-                                        {/* Fallback for other contact types or if no icon matches */}
-                                        {(!['Location', 'Phone', 'Email', 'Instagram', 'Facebook', 'TikTok'].includes(contact.contact_type)) && (
-                                            <span className="mr-3">🔗</span>
-                                        )}
-                                        {/* Removed the contact.contact_type text here */}
-                                        {contact.contact_detail}
-                                    </p>
-                                ))
-                            ) : (
-                                <p className="flex items-center rounded-md">
-                                    No contact information available.
-                                </p>
-                            )}
-                        </div>
-                    </div>
-                    </div>
-
-                    <div className="w-full md:w-1/2 flex items-center justify-center rounded-md"
-                         style={{ backgroundColor: '#1f2937', minHeight: '400px', minWidth: '400px', background: '#1f2937 !important' }}>
-                        {company.mainBanner && company.mainBanner.url ? (
-                            <img
-                                src={company.mainBanner.url}
-                                alt={company.mainBanner.alternativeText || company.companyName + " Main Banner"}
-                                className="w-full h-full object-cover rounded-lg shadow-lg"
-                                onError={(e) => {
-                                    const target = e.target as HTMLImageElement;
-                                    target.onerror = null;
-                                    target.src = "https://placehold.co/800x600/374151/ffffff?text=Main+Banner+Not+Found";
-                                }}
-                            />
-                        ) : company.companyLogo && company.companyLogo.url ? (
-                            <img
-                                src={company.companyLogo.url}
-                                alt={company.companyName || "Company Logo"}
-                                className="w-[80%] h-[80%] object-contain rounded-lg shadow-lg"
-                                style={{ backgroundColor: '#1f2937', background: '#1f2937 !important' }}
-                                onError={(e) => {
-                                    const target = e.target as HTMLImageElement;
-                                    target.onerror = null;
-                                    target.src = "https://placehold.co/800x600/6b7280/ffffff?text=Image+Not+Found";
-                                }}
-                            />
-                        ) : (
-                            <div className="w-full h-full flex items-center justify-center bg-gray-700 text-gray-300 text-xl rounded-lg">
-                                No Image Available
-                            </div>
-                        )}
-                    </div>
-                </main>
-            
+      <div className="min-h-screen bg-black text-gray-100 font-sans">
+        <nav className="fixed w-full z-10 bg-black bg-opacity-30 backdrop-filter backdrop-blur-lg shadow-md">
+          <div
+            className="mx-auto py-4 flex items-center"
+            style={{ paddingLeft: "5.5rem", paddingRight: "5.5rem" }}
+          >
+            <div className="text-2xl font-bold text-white rounded-md">
+              <img
+                src="/assets/logo/logo_blue_holding.png"
+                alt="Logo"
+                style={{ width: "100%", height: "50px" }}
+              />
             </div>
-        );
+            <button
+              onClick={() => navigate("/")}
+              className="text-white hover:text-green-400 transition duration-300 rounded-md px-3 py-1 border border-white hover:border-green-400 ml-auto"
+            >
+              Go Back
+            </button>
+          </div>
+        </nav>
+
+        <main className="flex flex-col md:flex-row min-h-screen md:min-h-[120vh] pt-16">
+          <div className="w-full md:w-1/2 flex items-center justify-center p-8 bg-[#0A260A] bg-opacity-90 rounded-md">
+            <div className="max-w-xl text-left mx-auto">
+              <h1 className="text-4xl sm:text-5xl font-bold mb-6 text-white rounded-md">
+                {company.mainTitle || company.companyName || "Null"}
+              </h1>
+              <p className="text-base sm:text-lg leading-relaxed mb-8 text-gray-300 rounded-md">
+                {company.mainDesc || "Null"}
+              </p>
+
+              {/* Show button only if mainWebLink is valid, not a placeholder, and not 'nothing' */}
+              {company.mainWebLink &&
+                company.mainWebLink !== "choose here" &&
+                company.mainWebLink !== "mainWebLink" &&
+                company.mainWebLink.trim() !== "" &&
+                company.mainWebLink !== "nothing" &&
+                company.buttonTxt && (
+                  <button
+                    onClick={handleDiscoverWebsite}
+                    className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-300 ease-in-out transform hover:scale-105 mb-8"
+                  >
+                    {company.buttonTxt}
+                  </button>
+                )}
+
+              <h2 className="text-2xl sm:text-3xl font-semibold mb-4 text-white rounded-md">
+                {company.contactTitle || ""}
+              </h2>
+              <div className="space-y-3 text-gray-300">
+                {company.contactInfo.length > 0 ? (
+                  company.contactInfo.map((contact, index) => (
+                    <p
+                      key={contact.id || index}
+                      className="flex items-center rounded-md"
+                    >
+                      {/* Font Awesome Icons based on contact_type */}
+                      {contact.contact_type === "Location" && (
+                        <FontAwesomeIcon
+                          icon={faMapMarkerAlt}
+                          className="w-5 h-5 mr-3 text-green-400"
+                        />
+                      )}
+                      {contact.contact_type === "Phone" && (
+                        <FontAwesomeIcon
+                          icon={faPhone}
+                          className="w-5 h-5 mr-3 text-green-400"
+                        />
+                      )}
+                      {contact.contact_type === "Email" && (
+                        <FontAwesomeIcon
+                          icon={faEnvelope}
+                          className="w-5 h-5 mr-3 text-green-400"
+                        />
+                      )}
+                      {contact.contact_type === "Instagram" && (
+                        <FontAwesomeIcon
+                          icon={faInstagram}
+                          className="w-5 h-5 mr-3 text-green-400"
+                        />
+                      )}
+                      {contact.contact_type === "Facebook" && (
+                        <FontAwesomeIcon
+                          icon={faFacebookF}
+                          className="w-5 h-5 mr-3 text-green-400"
+                        />
+                      )}
+                      {contact.contact_type === "TikTok" && (
+                        <FontAwesomeIcon
+                          icon={faTiktok}
+                          className="w-5 h-5 mr-3 text-green-400"
+                        />
+                      )}
+                      {/* Fallback for other contact types or if no icon matches */}
+                      {![
+                        "Location",
+                        "Phone",
+                        "Email",
+                        "Instagram",
+                        "Facebook",
+                        "TikTok",
+                      ].includes(contact.contact_type) && (
+                        <span className="mr-3">🔗</span>
+                      )}
+                      {/* Removed the contact.contact_type text here */}
+                      {contact.contact_detail}
+                    </p>
+                  ))
+                ) : (
+                  <p className="flex items-center rounded-md">
+                    No contact information available.
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div
+            className="w-full md:w-1/2 flex items-center justify-center rounded-md"
+            style={{
+              backgroundColor: "#1f2937",
+              minHeight: "400px",
+              minWidth: "400px",
+              background: "#1f2937 !important",
+            }}
+          >
+            {company.mainBanner && company.mainBanner.url ? (
+              <img
+                src={company.mainBanner.url}
+                alt={
+                  company.mainBanner.alternativeText ||
+                  company.companyName + " Main Banner"
+                }
+                className="w-full h-full object-cover rounded-lg shadow-lg"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.onerror = null;
+                  target.src =
+                    "https://placehold.co/800x600/374151/ffffff?text=Main+Banner+Not+Found";
+                }}
+              />
+            ) : company.companyLogo && company.companyLogo.url ? (
+              <img
+                src={company.companyLogo.url}
+                alt={company.companyName || "Company Logo"}
+                className="w-[80%] h-[80%] object-contain rounded-lg shadow-lg"
+                style={{
+                  backgroundColor: "#1f2937",
+                  background: "#1f2937 !important",
+                }}
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.onerror = null;
+                  target.src =
+                    "https://placehold.co/800x600/6b7280/ffffff?text=Image+Not+Found";
+                }}
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-gray-700 text-gray-300 text-xl rounded-lg">
+                No Image Available
+              </div>
+            )}
+          </div>
+        </main>
+      </div>
+    );
     };
 
 export default CompanyDetailPage;

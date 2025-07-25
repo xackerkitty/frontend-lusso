@@ -106,6 +106,7 @@ const Aboutus: React.FC = () => {
     // ? 'data' holds all the info for the page, 'loading' shows a spinner, 'error' shows if something went wrong
     const [data, setData] = useState<AboutUsData | null>(cachedAboutData);
     const [loading, setLoading] = useState(!cachedAboutData);
+    const [loadingVisible, setLoadingVisible] = useState(!cachedAboutData);
     const [error, setError] = useState<string | null>(null);
     // * This tracks how far the user has scrolled, for parallax effect
     const [scrollY, setScrollY] = useState(0);
@@ -124,11 +125,18 @@ const Aboutus: React.FC = () => {
     useEffect(() => {
         if (cachedAboutData) {
             setData(cachedAboutData);
-            setLoading(false);
+            // For cached data, show loading for minimum 2 seconds
+            setTimeout(() => {
+                setLoadingVisible(false);
+                setTimeout(() => setLoading(false), 1000); // Wait for fade to complete
+            }, 2000); // Minimum 2s for cached data
             return;
         }
+        
         setLoading(true);
         setError(null);
+        const startTime = Date.now(); // Track when loading started
+        
         fetch(API_URL)
             .then(res => {
                 if (!res.ok) throw new Error('Failed to fetch');
@@ -139,7 +147,16 @@ const Aboutus: React.FC = () => {
                 cachedAboutData = json.data;
             })
             .catch(err => setError(err.message))
-            .finally(() => setLoading(false));
+            .finally(() => {
+                const loadTime = Date.now() - startTime;
+                const minLoadTime = 2000; // Minimum 2 seconds
+                const remainingTime = Math.max(0, minLoadTime - loadTime);
+                
+                setTimeout(() => {
+                    setLoadingVisible(false);
+                    setTimeout(() => setLoading(false), 1000); // Wait for fade to complete
+                }, remainingTime);
+            });
     }, []);
 
 
@@ -170,29 +187,43 @@ const Aboutus: React.FC = () => {
     // * Get the logo image URL using our helper
     const logoUrl = logoData?.logo?.url ? getMediaUrl(logoData.logo) : '';
 
-
-    // ! Show loading spinner if data is still loading
-    if (loading) return <LoadingScreen />;
-    // ! Show error message if something went wrong
-    if (error) return <div className="text-center p-8 text-red-600 font-bold">Error: {error}</div>;
-    // * Show a message if no data was found (shouldn't happen)
-    if (!data) return <div className="text-center p-8 text-gray-700">No data found.</div>;
-
-
     // * Calculate how much to move the hero text for the parallax effect
     const parallaxOffset = scrollY * 0.2;
     // * Split the main title into words so we can animate them one by one
-    const titleWords = (data.mainTitle || '').split(' ');
+    const titleWords = (data?.mainTitle || '').split(' ');
 
 
     return (
         <div className="min-h-screen bg-[#f0f2f5] text-[#1a202c] overflow-x-hidden font-inter antialiased">
 
-            {/* //////////////////////////////////////////////////////////////////////////// */}
-            {/* { -------------------------|| Navbar begin || ---------------------------|| } */}
-            <Navbar largeLogoSrc={logoUrl} smallLogoSrc={logoUrl} />
-            {/* ---------------------------|| Navbar End || ---------------------------||  */}
-            {/*////////////////////////////////////////////////////////////////////////////*/}
+            {/* Loading Screen Overlay */}
+            {loading && (
+                <div 
+                    className={`fixed inset-0 z-[9999] w-full h-full transition-opacity duration-1000 ${
+                        loadingVisible ? 'opacity-100' : 'opacity-0'
+                    }`}
+                    style={{backgroundColor: 'rgb(26, 54, 47)'}}
+                >
+                    <LoadingScreen isVisible={loadingVisible} />
+                </div>
+            )}
+
+            {/* Show error or no data messages only when not loading */}
+            {!loading && error && (
+                <div className="text-center p-8 text-red-600 font-bold">Error: {error}</div>
+            )}
+            {!loading && !error && !data && (
+                <div className="text-center p-8 text-gray-700">No data found.</div>
+            )}
+
+            {/* Main content - only show when we have data or when still loading */}
+            {(data || loading) && (
+                <>
+                    {/* //////////////////////////////////////////////////////////////////////////// */}
+                    {/* { -------------------------|| Navbar begin || ---------------------------|| } */}
+                    <Navbar largeLogoSrc={logoUrl} smallLogoSrc={logoUrl} hideOnScrollDown={true}/>
+                    {/* ---------------------------|| Navbar End || ---------------------------||  */}
+                    {/*////////////////////////////////////////////////////////////////////////////*/}
 
             {/* //////////////////////////////////////////////////////////////////////////// */}
             {/* { -------------------------|| Hero Section begin || ---------------------|| } */}
@@ -201,7 +232,7 @@ const Aboutus: React.FC = () => {
                 aria-label="About Us Hero Section"
             >
                 {/* // * Show a big background image if available, otherwise use a fallback color */}
-                {data.JourneyIMG ? (
+                {data?.JourneyIMG ? (
                     <div
                         className="absolute inset-0 w-full h-full bg-cover bg-center hero-background-media"
                         style={{
@@ -279,20 +310,20 @@ const Aboutus: React.FC = () => {
                     <div className="order-2 lg:order-1 text-center lg:text-left">
                         {/* // * Title for the story section */}
                         <h2 id="our-story-heading" className="text-3xl sm:text-4xl font-extrabold text-[#1e3a24] mb-4 sm:mb-6">
-                            {data.JourneyTitleTxt}
+                            {data?.JourneyTitleTxt}
                         </h2>
                         {/* // ? First paragraph of the story, split by double newlines */}
                         <p className="text-base sm:text-lg leading-relaxed mb-4 sm:mb-6 text-gray-700">
-                            {data.JourneyDesc?.split("\n\n")[0]}
+                            {data?.JourneyDesc?.split("\n\n")[0]}
                         </p>
                         {/* // ? Second paragraph of the story, if available */}
                         <p className="text-base sm:text-lg leading-relaxed text-gray-700">
-                            {data.JourneyDesc?.split("\n\n")[1]}
+                            {data?.JourneyDesc?.split("\n\n")[1]}
                         </p>
                     </div>
                     {/* // * Show the journey image on the right */}
                     <div className="order-1 lg:order-2 flex justify-center">
-                        {data.JourneyIMG && (
+                        {data?.JourneyIMG && (
                             <img
                                 src={getMediaUrl(data.JourneyIMG)}
                                 alt="Our Journey image"
@@ -318,7 +349,7 @@ const Aboutus: React.FC = () => {
                         Our Core Values
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-                        {Array.isArray(data.ourValues) && data.ourValues.filter(v => v.valueTitle && v.valueDesc).length > 0 ? (
+                        {Array.isArray(data?.ourValues) && data.ourValues.filter(v => v.valueTitle && v.valueDesc).length > 0 ? (
                             // ! Show each value in a nice card if available
                             data.ourValues.filter(v => v.valueTitle && v.valueDesc).map((value) => (
                                 <div key={value.id} className="bg-white p-8 rounded-2xl shadow-xl flex flex-col items-center justify-center text-center transform hover:scale-105 transition-all duration-500 hover:shadow-emerald-500/40 group border border-gray-200">
@@ -346,7 +377,7 @@ const Aboutus: React.FC = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-12 items-center">
                         {/* // * Show the image for this section if available */}
                         <div className="flex justify-center">
-                            {data.whyUsImg && (
+                            {data?.whyUsImg && (
                                 <img
                                     src={getMediaUrl(data.whyUsImg)}
                                     alt="Why Choose Us image"
@@ -357,7 +388,7 @@ const Aboutus: React.FC = () => {
                         </div>
                         <div>
                             <ul className="space-y-4 sm:space-y-6 text-base sm:text-lg text-gray-700">
-                                {Array.isArray(data.whyUs) && data.whyUs.filter(w => w.whyUsTitle && w.whyUsDesc).length > 0 ? (
+                                {Array.isArray(data?.whyUs) && data.whyUs.filter(w => w.whyUsTitle && w.whyUsDesc).length > 0 ? (
                                     // ! Show each reason as a list item with a checkmark
                                     data.whyUs.filter(w => w.whyUsTitle && w.whyUsDesc).map((item) => (
                                         <li key={item.id} className="flex items-start">
@@ -396,19 +427,19 @@ const Aboutus: React.FC = () => {
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
                     {/* * Title for the CTA section */}
                     <h2 className="beforefooter_text text-3xl sm:text-4xl font-extrabold mb-4 sm:mb-6">
-                        {data.CTA_title}
+                        {data?.CTA_title}
                     </h2>
                     {/* ? Description for the CTA section */}
                     <p className="text-base sm:text-lg mb-8 sm:mb-10 opacity-90 text-gray">
-                        {data.CTA_Desc}
+                        {data?.CTA_Desc}
                     </p>
                     {/* ! Button to go to the contact page */}
                     <a
                         href="/luxurycars/contact"
                         className="inline-block bg-white text-[#1e3a24] font-semibold py-2 px-6 sm:py-3 sm:px-8 rounded-full shadow-lg hover:bg-gray-100 transition-all duration-300 transform hover:scale-105"
-                        aria-label={data.CTA_buttonTxt}
+                        aria-label={data?.CTA_buttonTxt}
                     >
-                        {data.CTA_buttonTxt}
+                        {data?.CTA_buttonTxt}
                     </a>
                 </div>
             </section>
@@ -421,6 +452,8 @@ const Aboutus: React.FC = () => {
             {/* ---------------------------|| Footer End || ---------------------------||  */}
             {/*////////////////////////////////////////////////////////////////////////////*/}
 
+                </>
+            )}
         </div>
     );
 };

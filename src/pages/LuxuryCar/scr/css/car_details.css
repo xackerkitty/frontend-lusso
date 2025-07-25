@@ -1,6 +1,39 @@
+@font-face {
+  font-family: 'Ferrari Sans';
+  src: url("/fonts/Ferrari-SansLight.ttf") format("truetype");
+  font-weight: 300;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Ferrari Sans';
+  src: url("/fonts/Ferrari-SansRegular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Ferrari Sans';
+  src: url("/fonts/Ferrari-SansBold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+}
+
 .background-video{
     height: 60vh !important;
 }
+
 .car-text{
   font-family: 'Playfair Display', serif !important;
+}
+
+/* Apply Ferrari Sans globally, but preserve original fonts for description/overview */
+* {
+  font-family: 'Ferrari Sans', sans-serif;
+}
+
+/* Keep original fonts for description and overview content */
+.keep-original-font,
+.keep-original-font * {
+  font-family: inherit !important;
 }

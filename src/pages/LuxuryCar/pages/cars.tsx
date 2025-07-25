@@ -171,7 +171,7 @@ const HeroSection: React.FC = () => (
             <div className="absolute inset-0 bg-black opacity-30"></div> {/* Subtle overlay for depth */}
         </div>
         <div className="container mx-auto relative z-10 text-center px-4" style={{marginTop: "3rem"}}>
-            <h1 className="text-4xl md:text-6xl font-bold mb-4 text-white">Our Cars</h1>
+            <h1 className="text-4xl md:text-6xl font-bold mb-4 text-white" style={{ fontFamily: "'Ferrari-SansBold', sans-serif" }}>Our Cars</h1>
             <p className="text-lg md:text-xl opacity-90">Explore our exclusive collection of luxury vehicles.</p>
         </div>
     </header>
@@ -578,7 +578,7 @@ const CarCard: React.FC<CarCardProps> = ({ car, convertPrice, getCurrencySymbol 
                             onError={handleBrandLogoError}
                         />
                     )}
-                    <h3 className="text-lg font-semibold text-gray-900 leading-tight">
+                    <h3 className="text-lg font-semibold text-gray-900 leading-tight" style={{ fontFamily: "'Ferrari-SansRegular', sans-serif" }}>
                         {car.model}
                     </h3>
                 </div>
@@ -633,6 +633,7 @@ const LuxuryCar: React.FC = () => {
     // Use cached data if available
     const [allCars, setAllCars] = useState<Car[]>(cachedAllCars);
     const [loading, setLoading] = useState(cachedAllCars.length === 0);
+    const [loadingVisible, setLoadingVisible] = useState(cachedAllCars.length === 0);
     const [error, setError] = useState<string | null>(null);
 
     const [searchTerm, setSearchTerm] = useState('');
@@ -671,11 +672,18 @@ const LuxuryCar: React.FC = () => {
     useEffect(() => {
         if (cachedAllCars.length > 0) {
             setAllCars(cachedAllCars);
-            setLoading(false);
+            // For cached data, show loading for minimum 2 seconds
+            setTimeout(() => {
+                setLoadingVisible(false);
+                setTimeout(() => setLoading(false), 1000); // Wait for fade to complete
+            }, 2000); // Minimum 2s for cached data
         }
+        
         const fetchAllData = async () => {
             setLoading(true);
             setError(null);
+            const startTime = Date.now(); // Track when loading started
+            
             try {
                 // Fetch cars
                 const carsApiUrl = `${strapiBaseUrl}/api/luxurycars-cars?populate=*`;
@@ -693,7 +701,14 @@ const LuxuryCar: React.FC = () => {
                 if (!responseData.data || !Array.isArray(responseData.data) || responseData.data.length === 0) {
                     setAllCars([]);
                     setFilteredCars([]);
-                    setLoading(false);
+                    const loadTime = Date.now() - startTime;
+                    const minLoadTime = 2000; // Minimum 2 seconds
+                    const remainingTime = Math.max(0, minLoadTime - loadTime);
+                    
+                    setTimeout(() => {
+                        setLoadingVisible(false);
+                        setTimeout(() => setLoading(false), 1000); // Wait for fade to complete
+                    }, remainingTime);
                     return;
                 }
                 // --- Showroom-style robust Strapi media extraction ---
@@ -766,7 +781,14 @@ const LuxuryCar: React.FC = () => {
             } catch (e: any) {
                 setError(`Failed to load content: ${e.message}`);
             } finally {
-                setLoading(false);
+                const loadTime = Date.now() - startTime;
+                const minLoadTime = 2000; // Minimum 2 seconds
+                const remainingTime = Math.max(0, minLoadTime - loadTime);
+                
+                setTimeout(() => {
+                    setLoadingVisible(false);
+                    setTimeout(() => setLoading(false), 1000); // Wait for fade to complete
+                }, remainingTime);
             }
         };
         // Fetch logo
@@ -858,53 +880,59 @@ const LuxuryCar: React.FC = () => {
                 }
             `}</style>
             {/* Navbar component with logo */}
-            <Navbar largeLogoSrc={logoUrl} smallLogoSrc={logoUrl} />
-            <HeroSection />
-            {loading ? (
-                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-gray-900">
-                    <LoadingScreen />
+            {/* Loading Screen Overlay */}
+            {loading && (
+                <div 
+                    className={`fixed inset-0 z-[9999] w-full h-full transition-opacity duration-1000 ${
+                        loadingVisible ? 'opacity-100' : 'opacity-0'
+                    }`}
+                    style={{backgroundColor: 'rgb(26, 54, 47)'}}
+                >
+                    <LoadingScreen isVisible={loadingVisible} />
                 </div>
-            ) : (
-                <main className="test2 container mx-auto py-8 px-4 flex flex-col lg:flex-row gap-8 flex-grow">
-                    {error ? (
-                        <div className="w-full text-center py-20 text-red-600 text-xl">
-                            Error loading cars: {error}
-                            <p className="text-base text-gray-700 mt-4">
-                                Please check your Strapi server's status, API endpoint, and public permissions for the 'Luxurycars Home' collection.
-                            </p>
-                        </div>
-                    ) : (
-                        <>
-                            <FilterSidebar
-                                searchTerm={searchTerm}
-                                onSearchChange={e => setSearchTerm(e.target.value)}
-                                minPrice={minPrice}
-                                maxPrice={maxPrice}
-                                onMinPriceChange={e => setMinPrice(Math.min(Number(e.target.value), maxPrice))}
-                                onMaxPriceChange={e => setMaxPrice(Math.max(Number(e.target.value), minPrice))}
-                                availableBrands={availableBrands}
-                                selectedBrands={selectedBrands}
-                                onBrandChange={e => {
-                                    const Brand = e.target.value;
-                                    if (e.target.checked) setSelectedBrands([...selectedBrands, Brand]);
-                                    else setSelectedBrands(selectedBrands.filter(b => b !== Brand));
-                                }}
-                                // selectedSoldStatus={selectedSoldStatus} // SOLD FILTER DISABLED
-                                // onSoldStatusChange={setSelectedSoldStatus} // SOLD FILTER DISABLED
-                                selectedCurrency={selectedCurrency}
-                                onCurrencyChange={setSelectedCurrency}
-                            />
-                            <CarListings
-                                cars={filteredCars}
-                                convertPrice={convertPrice}
-                                getCurrencySymbol={getCurrencySymbol}
-                                visibleCount={visibleCount}
-                                onLoadMore={() => setVisibleCount(v => v + 6)}
-                            />
-                        </>
-                    )}
-                </main>
             )}
+
+            <Navbar largeLogoSrc={logoUrl} smallLogoSrc={logoUrl} hideOnScrollDown={true} />
+            <HeroSection />
+            <main className="test2 container mx-auto py-8 px-4 flex flex-col lg:flex-row gap-8 flex-grow">
+                {error ? (
+                    <div className="w-full text-center py-20 text-red-600 text-xl">
+                        Error loading cars: {error}
+                        <p className="text-base text-gray-700 mt-4">
+                            Please check your Strapi server's status, API endpoint, and public permissions for the 'Luxurycars Home' collection.
+                        </p>
+                    </div>
+                ) : (
+                    <>
+                        <FilterSidebar
+                            searchTerm={searchTerm}
+                            onSearchChange={e => setSearchTerm(e.target.value)}
+                            minPrice={minPrice}
+                            maxPrice={maxPrice}
+                            onMinPriceChange={e => setMinPrice(Math.min(Number(e.target.value), maxPrice))}
+                            onMaxPriceChange={e => setMaxPrice(Math.max(Number(e.target.value), minPrice))}
+                            availableBrands={availableBrands}
+                            selectedBrands={selectedBrands}
+                            onBrandChange={e => {
+                                const Brand = e.target.value;
+                                if (e.target.checked) setSelectedBrands([...selectedBrands, Brand]);
+                                else setSelectedBrands(selectedBrands.filter(b => b !== Brand));
+                            }}
+                            // selectedSoldStatus={selectedSoldStatus} // SOLD FILTER DISABLED
+                            // onSoldStatusChange={setSelectedSoldStatus} // SOLD FILTER DISABLED
+                            selectedCurrency={selectedCurrency}
+                            onCurrencyChange={setSelectedCurrency}
+                        />
+                        <CarListings
+                            cars={filteredCars}
+                            convertPrice={convertPrice}
+                            getCurrencySymbol={getCurrencySymbol}
+                            visibleCount={visibleCount}
+                            onLoadMore={() => setVisibleCount(v => v + 6)}
+                        />
+                    </>
+                )}
+            </main>
             <Footer logoUrl={logoUrl || ""} />
         </div>
     );

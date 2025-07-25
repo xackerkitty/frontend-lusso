@@ -9,6 +9,9 @@ import defaultAboutImage from '../scr/images/gallery01.png';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 
+// Import showroom styles
+import '../scr/css/showroom.css';
+
 // Define Strapi Data Interfaces
 
 // Represents a single media item's attributes (URL, dimensions, etc.)
@@ -374,14 +377,22 @@ const HeroSection: React.FC<{
                 <h1
                     className={`text-5xl md:text-6xl font-heading font-extrabold mb-8 ${COLORS.grayTextLight} drop-shadow-lg
                         animate-fade-in-up-custom animate-breathe text-shimmer-light`}
-                    style={{ animationDelay: '200ms' }}
+                    style={{ 
+                        animationDelay: '200ms',
+                        fontFamily: 'Ferrari Sans, sans-serif',
+                        fontWeight: 700
+                    }}
                 >
                     {mainTitle}
                 </h1>
                 <p
                     className={`text-xl md:text-2xl ${COLORS.grayTextLight} mb-12 leading-relaxed max-w-3xl mx-auto
                         animate-fade-in-up-custom`}
-                    style={{ animationDelay: '600ms' }}
+                    style={{ 
+                        animationDelay: '600ms',
+                        fontFamily: 'Ferrari Sans, sans-serif',
+                        fontWeight: 300
+                    }}
                 >
                     {mainDescription}
                 </p>
@@ -397,10 +408,14 @@ const HeroSection: React.FC<{
                                     animate-fade-in-up-custom`}
                             style={{ animationDelay: `${800 + (100 * index)}ms` }}
                         >
-                            <h3 className={`text-2xl font-heading font-bold mb-2 ${COLORS.grayTextLight}`}>
+                            <h3 className={`text-2xl font-heading font-bold mb-2 ${COLORS.grayTextLight}`}
+                                style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 700 }}
+                            >
                                 {pillar.Title}
                             </h3>
-                            <p className={`text-base ${COLORS.grayTextMedium}`}>
+                            <p className={`text-base ${COLORS.grayTextMedium}`}
+                               style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 300 }}
+                            >
                                 {pillar.Description}
                             </p>
                         </div>
@@ -454,18 +469,28 @@ const AboutSection: React.FC<{
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-30 group-hover:opacity-50 transition-opacity duration-500 rounded-lg z-10"></div>
                 <div className="absolute inset-0 flex items-center justify-center p-4 text-white text-center opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-20">
-                    <p className="text-3xl font-heading font-bold drop-shadow-md">Discover the Difference</p>
+                    <p className="text-3xl font-heading font-bold drop-shadow-md"
+                       style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 700 }}
+                    >
+                        Discover the Difference
+                    </p>
                 </div>
             </div>
 
             <div className="lg:w-1/2 text-left">
-                <h2 className={`text-5xl font-heading font-extrabold mb-6 ${COLORS.grayTextDark}`}>
+                <h2 className={`text-5xl font-heading font-extrabold mb-6 ${COLORS.grayTextDark}`}
+                    style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 700 }}
+                >
                     {title}
                 </h2>
-                <p className={`text-xl ${COLORS.grayTextDark} mb-6 leading-relaxed`}>
+                <p className={`text-xl ${COLORS.grayTextDark} mb-6 leading-relaxed`}
+                   style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 400 }}
+                >
                     {paragraph1}
                 </p>
-                <p className={`text-lg ${COLORS.grayTextDark} leading-relaxed`}>
+                <p className={`text-lg ${COLORS.grayTextDark} leading-relaxed`}
+                   style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 300 }}
+                >
                     {paragraph2}
                 </p>
             </div>
@@ -487,6 +512,7 @@ const GallerySection: React.FC<GallerySectionProps> = ({ galleryData, onImageCli
         >
             <h2
                 className={`text-5xl font-heading font-extrabold mb-16 text-center ${COLORS.grayTextDark}`}
+                style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 700 }}
             >
                 A Glimpse Inside Our World
             </h2>
@@ -518,10 +544,13 @@ const GallerySection: React.FC<GallerySectionProps> = ({ galleryData, onImageCli
                         <div className="absolute bottom-4 left-4 right-4 text-white p-2 opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500 ease-out">
                             <p
                                 className={`text-xl md:text-2xl font-bold font-heading tracking-wide ${COLORS.grayTextLight}`}
+                                style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 700 }}
                             >
                                 {item.Title}
                             </p>
-                            <p className={`${COLORS.grayTextLighter} text-sm mt-1`}>
+                            <p className={`${COLORS.grayTextLighter} text-sm mt-1`}
+                               style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 300 }}
+                            >
                                 {item.Description}
                             </p>
                         </div>
@@ -530,6 +559,7 @@ const GallerySection: React.FC<GallerySectionProps> = ({ galleryData, onImageCli
             </div>
             <p
                 className={`text-center ${COLORS.grayTextMedium} mt-20 text-lg max-w-3xl mx-auto px-4`}
+                style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 300 }}
             >
                 Every detail, every corner, meticulously designed to elevate your senses
                 and connect you with the artistry of luxury automobiles.
@@ -616,7 +646,9 @@ const ImageModal: React.FC<ImageModalProps> = ({ isOpen, onClose, imageUrl, imag
 
                 {imageTitle && (
                     <div className="mt-6 pt-4 border-t-2 border-green-400/60 text-center">
-                        <h3 className="text-green-200 text-3xl md:text-4xl font-heading font-extrabold drop-shadow-lg tracking-wide">
+                        <h3 className="text-green-200 text-3xl md:text-4xl font-heading font-extrabold drop-shadow-lg tracking-wide"
+                            style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 700 }}
+                        >
                             {imageTitle}
                         </h3>
                     </div>
@@ -637,6 +669,7 @@ const ShowroomPage: React.FC = () => {
     const [showroomData, setShowroomData] = useState<LuxuryCarsShowroomAttributes | null>(cachedShowroomData);
     const [logoData, setLogoData] = useState<LuxuryCarAttributes | null>(cachedLogoData);
     const [loading, setLoading] = useState(!(cachedShowroomData && cachedLogoData));
+    const [loadingVisible, setLoadingVisible] = useState(!(cachedShowroomData && cachedLogoData));
     const [error, setError] = useState<string | null>(null);
 
     // NEW STATES for the Image Modal
@@ -670,11 +703,18 @@ const ShowroomPage: React.FC = () => {
         if (cachedShowroomData && cachedLogoData) {
             setShowroomData(cachedShowroomData);
             setLogoData(cachedLogoData);
-            setLoading(false);
+            // For cached data, show loading for minimum 2 seconds
+            setTimeout(() => {
+                setLoadingVisible(false);
+                setTimeout(() => setLoading(false), 1000); // Wait for fade to complete
+            }, 2000); // Minimum 2s for cached data
             return;
         }
+        
         const fetchData = async () => {
             setLoading(true);
+            const startTime = Date.now(); // Track when loading started
+            
             try {
                 const STRAPI_BASE_URL = import.meta.env.VITE_API_URL || "https://accessible-charity-d22e30cd98.strapiapp.com";
 
@@ -717,7 +757,14 @@ const ShowroomPage: React.FC = () => {
                 }
                 console.error("Error fetching data:", e);
             } finally {
-                setLoading(false);
+                const loadTime = Date.now() - startTime;
+                const minLoadTime = 2000; // Minimum 2 seconds
+                const remainingTime = Math.max(0, minLoadTime - loadTime);
+                
+                setTimeout(() => {
+                    setLoadingVisible(false);
+                    setTimeout(() => setLoading(false), 1000); // Wait for fade to complete
+                }, remainingTime);
             }
         };
 
@@ -771,14 +818,6 @@ const ShowroomPage: React.FC = () => {
 
 
     // --- Loading and Error States ---
-    if (loading) {
-        return (
-            <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-gray-900">
-                <LoadingScreen />
-            </div>
-        );
-    }
-
     if (error) {
         return (
             <div className="flex items-center justify-center min-h-screen bg-red-800 text-white p-4 text-center">
@@ -792,8 +831,21 @@ const ShowroomPage: React.FC = () => {
     return (
         <div
             className={`min-h-screen ${COLORS.grayTextLight} flex flex-col items-center overflow-hidden font-body ${COLORS.mainDarkGreen}`}
+            style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 400 }}
         >
-            <Navbar largeLogoSrc={logoUrl} smallLogoSrc={logoUrl} />
+            {/* Loading Screen Overlay */}
+            {loading && (
+                <div 
+                    className={`fixed inset-0 z-[9999] w-full h-full transition-opacity duration-1000 ${
+                        loadingVisible ? 'opacity-100' : 'opacity-0'
+                    }`}
+                    style={{backgroundColor: 'rgb(26, 54, 47)'}}
+                >
+                    <LoadingScreen isVisible={loadingVisible} />
+                </div>
+            )}
+
+            <Navbar largeLogoSrc={logoUrl} smallLogoSrc={logoUrl} hideOnScrollDown={true}/>
 
             <div className="w-full">
                 <HeroSection

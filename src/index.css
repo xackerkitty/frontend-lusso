@@ -1,14 +1,31 @@
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Inter:wght@300;400;600&display=swap');
-/* Tailwind Direktifleri */
-/* postcss-import: */
-@import 'tailwindcss/base';
-@import 'tailwindcss/components';
-@import 'tailwindcss/utilities';
 
-/* Orijinal direktifler: */
-/* @tailwind base; */
-/* @tailwind components; */
-/* @tailwind utilities; */
+/* Ferrari Fonts */
+@font-face {
+  font-family: 'Ferrari-SansRegular';
+  src: url('/fonts/Ferrari-SansRegular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Ferrari-SansBold';
+  src: url('/fonts/Ferrari-SansBold.ttf') format('truetype');
+  font-weight: bold;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Ferrari-SansLight';
+  src: url('/fonts/Ferrari-SansLight.ttf') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+}
+
+/* Tailwind Direktifleri */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 @layer base {
   :root {

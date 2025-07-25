@@ -312,7 +312,6 @@ const HeroSection: React.FC<{ backgroundVID: string }> = ({ backgroundVID }) => 
                 minHeight: '200px',
                 position: 'relative',
                 zIndex: 1,
-                marginTop: '96px',
             }}
         >
             {backgroundVID && (
@@ -374,18 +373,21 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({ activeModel, setActiveMod
         <div className="flex flex-wrap justify-center gap-2 md:gap-4 p-4 bg-white rounded-lg shadow-inner z-40 -mt-8 relative md:-mt-12 lg:-mt-16">
             <button
                 className={buttonClass('Overview')}
+                style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 600 }}
                 onClick={() => setActiveModel('Overview')}
             >
                 Overview
             </button>
             <button
                 className={buttonClass('Gallery')}
+                style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 600 }}
                 onClick={() => setActiveModel('Gallery')}
             >
                 Gallery
             </button>
             <button
                 className={buttonClass('3D Model')}
+                style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 600 }}
                 onClick={() => setActiveModel('3D Model')}
             >
                 3D model
@@ -676,8 +678,10 @@ const CarDetail: React.FC = () => {
 
     if (loading) {
         return (
-            <div className="flex flex-col items-center justify-center h-screen bg-gray-900 text-white p-4">
-                <h2 className="text-3xl font-bold mb-4">Loading Details...</h2>
+            <div className="flex flex-col items-center justify-center h-screen bg-gray-900 text-white p-4"
+                 style={{ fontFamily: 'Ferrari Sans, sans-serif' }}
+            >
+                <h2 className="text-3xl font-bold mb-4" style={{ fontWeight: 700 }}>Loading Details...</h2>
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500"></div>
             </div>
         );
@@ -685,12 +689,15 @@ const CarDetail: React.FC = () => {
 
     if (error) {
         return (
-            <div className="flex flex-col items-center justify-center h-screen bg-gray-900 text-white p-4" >
-                <h2 className="text-3xl font-bold mb-4 text-red-500">Error: {error}</h2>
-                <p className="text-lg text-gray-400">There was a problem loading the page content. Please try again later.</p>
+            <div className="flex flex-col items-center justify-center h-screen bg-gray-900 text-white p-4"
+                 style={{ fontFamily: 'Ferrari Sans, sans-serif' }}
+            >
+                <h2 className="text-3xl font-bold mb-4 text-red-500" style={{ fontWeight: 700 }}>Error: {error}</h2>
+                <p className="text-lg text-gray-400" style={{ fontWeight: 300 }}>There was a problem loading the page content. Please try again later.</p>
                 <button
                     onClick={() => navigate('/luxurycars/cars')}
                     className="mt-6 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-semibold text-lg shadow-lg transition-all duration-300"
+                    style={{ fontWeight: 600 }}
                 >
                     Back to Cars
                 </button>
@@ -700,12 +707,15 @@ const CarDetail: React.FC = () => {
 
     if (!car) {
         return (
-            <div className="flex flex-col items-center justify-center h-screen bg-gray-900 text-white p-4">
-                <h2 className="text-3xl font-bold mb-4">No Car Details Available</h2>
-                <p className="text-lg text-gray-400">The car you are looking for could not be found.</p>
+            <div className="flex flex-col items-center justify-center h-screen bg-gray-900 text-white p-4"
+                 style={{ fontFamily: 'Ferrari Sans, sans-serif' }}
+            >
+                <h2 className="text-3xl font-bold mb-4" style={{ fontWeight: 700 }}>No Car Details Available</h2>
+                <p className="text-lg text-gray-400" style={{ fontWeight: 300 }}>The car you are looking for could not be found.</p>
                 <button
                     onClick={() => navigate('/luxurycars/cars')}
                     className="mt-6 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-semibold text-lg shadow-lg transition-all duration-300"
+                    style={{ fontWeight: 600 }}
                 >
                     Back to Cars
                 </button>
@@ -714,8 +724,10 @@ const CarDetail: React.FC = () => {
     }
 
     return (
-        <div className="min-h-screen bg-white text-gray-800 flex flex-col items-center">
-            <Navbar largeLogoSrc={logoUrl} smallLogoSrc={logoUrl} />
+        <div className="min-h-screen bg-white text-gray-800 flex flex-col items-center"
+             style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 400 }}
+        >
+            <Navbar largeLogoSrc={logoUrl} smallLogoSrc={logoUrl} hideOnScrollDown={true} />
 
             <HeroSection backgroundVID={car.backgroundVID} />
 
@@ -758,19 +770,25 @@ const CarDetail: React.FC = () => {
                 {activeModel === 'Overview' && (
                     <>
                         <div className="w-full lg:w-2/3 bg-white rounded-xl shadow-lg p-6 md:p-8 flex flex-col">
-                            <h1 className="text-3xl md:text-4xl font-extrabold mb-2 text-gray-900 uppercase tracking-tight leading-tight">
-                                {car.brand} {car.model}
+                            <h1 className="text-3xl md:text-4xl font-extrabold mb-2 text-gray-900 uppercase tracking-tight leading-tight"
+                                style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 700 }}
+                            >
+                                {car.model}
                             </h1>
-                            <p className="text-lg md:text-xl text-gray-700 mb-6 font-medium">
+                            <p className="text-lg md:text-xl text-gray-700 mb-6 font-medium keep-original-font">
                                 {car.description}
                             </p>
 
                             <div className="mb-8">
-                                <h2 className="text-3xl font-bold text-gray-800 mb-4 border-b pb-2 border-gray-200">Overview</h2>
-                                <p className="text-base md:text-lg text-gray-700 leading-relaxed mb-4">
+                                <h2 className="text-3xl font-bold text-gray-800 mb-4 border-b pb-2 border-gray-200"
+                                    style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 700 }}
+                                >
+                                    Overview
+                                </h2>
+                                <p className="text-base md:text-lg text-gray-700 leading-relaxed mb-4 keep-original-font">
                                     {car.overviewP1}
                                 </p>
-                                <p className="text-base md:text-lg text-gray-700 leading-relaxed">
+                                <p className="text-base md:text-lg text-gray-700 leading-relaxed keep-original-font">
                                     {car.overviewP2}
                                 </p>
                             </div>
@@ -780,13 +798,17 @@ const CarDetail: React.FC = () => {
                                     className="flex justify-between items-center bg-gray-50 p-4 cursor-pointer select-none hover:bg-gray-100 transition-colors duration-200"
                                     onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
                                 >
-                                    <h3 className="text-lg font-semibold text-gray-800">Description of vehicle</h3>
+                                    <h3 className="text-lg font-semibold text-gray-800"
+                                        style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 600 }}
+                                    >
+                                        Description of vehicle
+                                    </h3>
                                     <svg className={`w-5 h-5 text-gray-600 transform transition-transform duration-300 ${isDescriptionExpanded ? 'rotate-0' : '-rotate-90'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
                                     </svg>
                                 </div>
                                 <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isDescriptionExpanded ? 'max-h-96 opacity-100 py-4' : 'max-h-0 opacity-0'}`}>
-                                    <div className="px-4 text-gray-700 space-y-3">
+                                    <div className="px-4 text-gray-700 space-y-3 keep-original-font">
                                         {car.engineDescription && <p><strong>Engine:</strong> {car.engineDescription}</p>}
                                         {car.fuelEconomyRange && <p><strong>Fuel Economy:</strong> {car.fuelEconomyRange}</p>}
                                         {car.suspension && <p><strong>Suspension:</strong> {car.suspension}</p>}
@@ -800,6 +822,7 @@ const CarDetail: React.FC = () => {
                             <button
                                 onClick={() => navigate(-1)}
                                 className="mt-auto bg-gray-800 hover:bg-gray-700 text-white px-8 py-3 rounded-xl font-semibold text-lg shadow-lg transition-all duration-300 self-center"
+                                style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 600 }}
                             >
                                 Back to Cars
                             </button>
@@ -807,7 +830,11 @@ const CarDetail: React.FC = () => {
 
                         <div className="w-full lg:w-1/3 bg-emerald-950 rounded-xl shadow-lg p-3 md:p-4 text-white h-fit lg:sticky lg:top-24 flex flex-col border border-emerald-800">
                             <div className="bg-white rounded-lg p-5 md:p-6 flex flex-col text-gray-900 shadow-inner">
-                                <h2 className="text-2xl font-bold mb-4 text-center text-gray-800 border-b border-gray-200 pb-3">SPECIFICATIONS</h2>
+                                <h2 className="text-2xl font-bold mb-4 text-center text-gray-800 border-b border-gray-200 pb-3"
+                                    style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 700 }}
+                                >
+                                    SPECIFICATIONS
+                                </h2>
                                 <div className="flex-grow">
                                     <ul className="w-full space-y-2">
                                         <li className="flex justify-between items-center border-b border-gray-200 pb-2">
@@ -901,6 +928,7 @@ const CarDetail: React.FC = () => {
                                     <button
                                         onClick={handleEnquireClick}
                                         className="w-full bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-semibold text-lg shadow-lg transition-all duration-300"
+                                        style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 600 }}
                                     >
                                         Contact Us
                                     </button>
@@ -912,7 +940,11 @@ const CarDetail: React.FC = () => {
 
                 {activeModel === 'Gallery' && car.galleryImages.length > 0 && (
                     <div className="w-full bg-white rounded-xl shadow-lg p-6 md:p-8">
-                        <h2 className="text-3xl font-bold text-gray-800 mb-6 border-b pb-2 border-gray-200">Gallery</h2>
+                        <h2 className="text-3xl font-bold text-gray-800 mb-6 border-b pb-2 border-gray-200"
+                            style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 700 }}
+                        >
+                            Gallery
+                        </h2>
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                             {car.galleryImages.map((image, index) => (
                                 <div
@@ -943,7 +975,11 @@ const CarDetail: React.FC = () => {
 
                 {activeModel === '3D Model' && (
                     <div className="w-full bg-white rounded-xl shadow-lg p-6 md:p-8">
-                        <h2 className="text-3xl font-bold text-gray-800 mb-6 border-b pb-2 border-gray-200">3D Model</h2>
+                        <h2 className="text-3xl font-bold text-gray-800 mb-6 border-b pb-2 border-gray-200"
+                            style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 700 }}
+                        >
+                            3D Model
+                        </h2>
                         <div className="flex justify-center items-center h-96 bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 text-gray-500">
                             <p className="text-xl font-medium">3D Model Coming Soon!</p>
                         </div>

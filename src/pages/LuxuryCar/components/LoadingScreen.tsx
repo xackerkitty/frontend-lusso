@@ -1,9 +1,31 @@
 import React from "react";
 
-const LoadingScreen: React.FC = () => (
-  <div className="flex flex-col items-center justify-center h-screen bg-gray-900 text-white p-4">
+interface LoadingScreenProps {
+  isVisible: boolean;
+}
+
+const LoadingScreen: React.FC<LoadingScreenProps> = ({ isVisible }) => (
+  <div 
+    className={`flex flex-col items-center justify-center h-screen text-white p-4 transition-opacity duration-1000 ${
+      isVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
+    }`} 
+    style={{backgroundColor: 'rgb(26, 54, 47)'}}
+  >
+    <style>{`
+      @keyframes flicker {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.3; }
+      }
+      .flicker {
+        animation: flicker 2.5s ease-in-out infinite;
+      }
+    `}</style>
     
-    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500"></div>
+    <img 
+      src="/assets/logov2.png" 
+      alt="Lusso Logo" 
+      className="flicker w-40 h-40 object-contain"
+    />
   </div>
 );
 

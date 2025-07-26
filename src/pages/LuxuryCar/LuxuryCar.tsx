@@ -121,6 +121,12 @@ const FALLBACK_VIDEO_MIME = "video/mp4";
 // --- LuxuryHeroFetcher Component ---
 // This component fetches and displays hero data, including a dynamic featured car section.
 const LuxuryHeroFetcher = () => {
+  // --- Utility function to detect mobile devices ---
+  const isMobileDevice = () => {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+           window.innerWidth <= 768;
+  };
+
   // --- State Management ---
   // Always show loading screen initially, regardless of cached data
   const [heroData, setHeroData] = useState<any | null>(cachedHeroData);
@@ -271,7 +277,7 @@ const LuxuryHeroFetcher = () => {
   return (
     <div className="relative">
       {loading && (
-        <div style={{position: 'fixed', inset: 0, zIndex: 9999}}>
+        <div style={{position: 'fixed', inset: 0, zIndex: 9999, touchAction: 'none'}}>
           <LoadingScreen isVisible={loadingVisible} />
         </div>
       )}
@@ -286,8 +292,12 @@ const LuxuryHeroFetcher = () => {
       <div
         className="scroll-smooth"
         style={{
-          scrollSnapType: "y proximity",
+          scrollSnapType: isMobileDevice() ? "none" : "y mandatory",
           WebkitOverflowScrolling: "touch",
+          overflowY: "auto",
+          height: "100vh",
+          touchAction: "pan-y",
+          scrollBehavior: "smooth",
         }}
       >
         {/* //////////////////////////////////////////////////////////////////////////// */}
@@ -296,8 +306,13 @@ const LuxuryHeroFetcher = () => {
         {/* Displays the main introductory section with a background video or image. */}
         <section
           id="home"
-          className="flex items-center justify-center relative bg-gradient-to-br from-primary/10 via-primary/20 to-primary/30 h-screen overflow-hidden"
-          style={{ scrollSnapAlign: "start" }}
+          className="flex items-center justify-center relative bg-gradient-to-br from-primary/10 via-primary/20 to-primary/30 min-h-screen overflow-hidden"
+          style={{ 
+            height: "100vh", 
+            minHeight: "100dvh",
+            scrollSnapAlign: isMobileDevice() ? "none" : "start",
+            scrollSnapStop: isMobileDevice() ? "normal" : "always"
+          }}
         >
           {/* Video background */}
           {/* Video background with fallback logic */}
@@ -406,8 +421,13 @@ const LuxuryHeroFetcher = () => {
         {/* { -------------------------|| about us begin || ---------------------------|| } */}
         <section
           id="about"
-          className="section-aboutus h-screen flex items-center justify-center bg-gray-600 text-white text-3xl"
-          style={{ scrollSnapAlign: "start" }}
+          className="section-aboutus min-h-screen flex items-center justify-center bg-gray-600 text-white text-3xl"
+          style={{ 
+            height: "100vh", 
+            minHeight: "100dvh",
+            scrollSnapAlign: isMobileDevice() ? "none" : "start",
+            scrollSnapStop: isMobileDevice() ? "normal" : "always"
+          }}
         >
           {/* --- background image --- */}
           {heroData?.aboutUsBackground && (
@@ -446,10 +466,13 @@ const LuxuryHeroFetcher = () => {
         {/* Showcases a carousel of featured cars with navigation buttons. */}
         <section
           id="featured-cars"
-          className="section_cars_we_offer h-screen"
+          className="section_cars_we_offer min-h-screen"
           style={{
-            scrollSnapAlign: "start",
+            height: "100vh",
+            minHeight: "100dvh",
             backgroundColor: currentCar?.backgroundColor || "",
+            scrollSnapAlign: isMobileDevice() ? "none" : "start",
+            scrollSnapStop: isMobileDevice() ? "normal" : "always"
           }}
         >
           <h2 className="cwo_title">Our Featured Cars</h2>
@@ -558,8 +581,13 @@ const LuxuryHeroFetcher = () => {
 
         <section
           id="our_cars"
-          className="h-screen flex items-center justify-center bg-gray-700 text-white text-3xl"
-          style={{ scrollSnapAlign: "start" }}
+          className="min-h-screen flex items-center justify-center bg-gray-700 text-white text-3xl"
+          style={{ 
+            height: "100vh", 
+            minHeight: "100dvh",
+            scrollSnapAlign: isMobileDevice() ? "none" : "start",
+            scrollSnapStop: isMobileDevice() ? "normal" : "always"
+          }}
         >
           <div className="relative w-full  h-[calc(100vh)] bg-white rounded-3xl overflow-hidden shadow-xl card-inner-shadow main-card-effect cursor-pointer flex items-center justify-center">
             {/* Blurry Background Layer */}
@@ -628,8 +656,13 @@ const LuxuryHeroFetcher = () => {
         {/* { -------------------------|| location begin || ---------------------------|| } */}
         <section
           id="location"
-          className="location_section h-screen flex flex-col items-center justify-center text-black text-3xl p-4"
-          style={{ scrollSnapAlign: "start" }}
+          className="location_section min-h-screen flex flex-col items-center justify-center text-black text-3xl p-4"
+          style={{ 
+            height: "100vh", 
+            minHeight: "100dvh",
+            scrollSnapAlign: isMobileDevice() ? "none" : "start",
+            scrollSnapStop: isMobileDevice() ? "normal" : "always"
+          }}
         >
           <div className="text-center mb-8">
             <h2 className="text-5xl font-bold mb-4 text-black" style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 700 }}>
@@ -659,8 +692,13 @@ const LuxuryHeroFetcher = () => {
         {/* //////////////////////////////////////////////////////////////////////////// */}
         {/* { -------------------------|| Footer begin || ---------------------------|| } */} 
         <section
-          className="h-screen flex flex-col bg-white"
-          style={{ scrollSnapAlign: "start" }}
+          className="min-h-screen flex flex-col bg-white"
+          style={{ 
+            height: "100vh", 
+            minHeight: "100dvh",
+            scrollSnapAlign: isMobileDevice() ? "none" : "start",
+            scrollSnapStop: isMobileDevice() ? "normal" : "always"
+          }}
         >
           {/* This div acts as the main content area of the 100vh section, taking up all available space above the footer */}
           <div className="flex-grow flex items-center justify-center text-gray-700">

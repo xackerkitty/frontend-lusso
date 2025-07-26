@@ -149,31 +149,51 @@ interface CarListingsProps {
 
 // --- Hero Section Component ---
 const HeroSection: React.FC = () => (
-    <header className="relative bg-gray-900 text-white py-24 md:py-32 overflow-hidden shadow-xl">
-        {/* Blue Gradient Background */}
-        <div className="absolute inset-0" style={{
-            background: "linear-gradient(to right,rgb(45, 58, 46),rgb(0, 27, 6))"
-        }}>
-            {/* Blurry "Lusso" Text */}
-            <div
-                className="absolute inset-0 flex items-center justify-center pointer-events-none"
-                style={{
-                    fontSize: '10rem', // Adjust font size as needed
-                    fontWeight: 'bold',
-                    color: 'rgba(255, 255, 255, 0.33)', // Very light white for the blurry effect
-                    filter: 'blur(3px)', // Adjust blur amount as needed
-                    zIndex: 0, // Ensure it's behind the main content
-                }}
-            >
-                Lusso
-            </div>
-            <div className="absolute inset-0 bg-black opacity-30"></div> {/* Subtle overlay for depth */}
-        </div>
-        <div className="container mx-auto relative z-10 text-center px-4">
-            <h1 className="text-4xl md:text-6xl font-bold mb-4 text-white" style={{ fontFamily: "'Ferrari-SansBold', sans-serif" }}>Our Cars</h1>
-            <p className="text-lg md:text-xl opacity-90">Explore our exclusive collection of luxury vehicles.</p>
-        </div>
-    </header>
+  <section
+    className="relative bg-gray-900 text-white overflow-hidden shadow-xl flex items-center justify-center"
+    style={{
+      height: "320px",
+      minHeight: "320px",
+      maxHeight: "320px",
+      marginTop: "0",
+      width: "100%",
+    }}
+  >
+    {/* Blue Gradient Background */}
+    <div
+      className="absolute inset-0"
+      style={{
+        background: "linear-gradient(to right,rgb(45, 58, 46),rgb(0, 27, 6))",
+      }}
+    >
+      {/* Blurry "Lusso" Text */}
+      <div
+        className="absolute inset-0 flex items-center justify-center pointer-events-none"
+        style={{
+          fontSize: "4rem", // Much smaller font size
+          fontWeight: "bold",
+          color: "rgba(255, 255, 255, 0.33)", // Very light white for the blurry effect
+          filter: "blur(3px)", // Adjust blur amount as needed
+          zIndex: 0, // Ensure it's behind the main content
+        }}
+      >
+        Lusso
+      </div>
+      <div className="absolute inset-0 bg-black opacity-30"></div>{" "}
+      {/* Subtle overlay for depth */}
+    </div>
+    <div className="container mx-auto relative z-10 text-center px-4">
+      <h1
+        className="text-2xl md:text-4xl font-bold mb-1 text-white"
+        style={{ fontFamily: "'Ferrari-SansBold', sans-serif" }}
+      >
+        Our Cars
+      </h1>
+      <p className="text-sm md:text-base opacity-90">
+        Explore our exclusive collection of luxury vehicles.
+      </p>
+    </div>
+  </section>
 );
 
 // --- Filter Sidebar Component ---
@@ -857,7 +877,7 @@ const LuxuryCar: React.FC = () => {
 
     return (
         <div
-            className="text-gray-800 bg-gray-100 min-h-screen overflow-x-hidden flex flex-col"
+            className="text-gray-800 bg-gray-100 min-h-screen flex flex-col"
             style={{ fontFamily: "'Playfair Display', serif" }}
         >
             {/* Custom scrollbar styling */}
@@ -877,6 +897,16 @@ const LuxuryCar: React.FC = () => {
                     background: #555;
                     border-radius: 10px;
                 }
+                
+                /* Ensure navbar is always visible */
+                body {
+                    overflow-x: hidden !important;
+                }
+                
+                /* Ensure proper spacing for fixed navbar */
+                .cars-page-content {
+                    padding-top: 0;
+                }
             `}</style>
             {/* Navbar component with logo */}
             {/* Loading Screen Overlay */}
@@ -892,8 +922,10 @@ const LuxuryCar: React.FC = () => {
             )}
 
             <Navbar largeLogoSrc={logoUrl} smallLogoSrc={logoUrl} hideOnScrollDown={true} />
-            <HeroSection />
-            <main className="test2 container mx-auto py-8 px-4 flex flex-col lg:flex-row gap-8 flex-grow">
+            
+            <div className="cars-page-content">
+                <HeroSection />
+                <main className="test2 container mx-auto py-8 px-4 flex flex-col lg:flex-row gap-8 flex-grow">
                 {error ? (
                     <div className="w-full text-center py-20 text-red-600 text-xl">
                         Error loading cars: {error}
@@ -932,6 +964,7 @@ const LuxuryCar: React.FC = () => {
                     </>
                 )}
             </main>
+            </div>
             <Footer logoUrl={logoUrl || ""} />
         </div>
     );

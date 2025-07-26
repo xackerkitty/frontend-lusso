@@ -15,10 +15,14 @@ html, body {
     height: 100%; /* Ensures html and body fill the viewport */
     overflow-x: hidden; /* Prevents horizontal scrollbar if elements slightly exceed width */
     font-family: 'Ferrari Sans', sans-serif;
+    /* Enable smooth scrolling on mobile */
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
 }
 
 section{
     height: 100vh !important;
+    min-height: 100dvh; /* Use dynamic viewport height for mobile */
 }
 
 @font-face {
@@ -52,7 +56,7 @@ section{
   background-color: white !important;
   font-family: 'Ferrari Sans', sans-serif;
   font-weight: 400;
-  overflow: hidden; /* Prevent content overflow issues */
+  /* overflow: hidden; */ /* Removed - was preventing scrolling on mobile */
   /* No flexbox here for desktop; relying on absolute positioning for children */
 }
 
@@ -146,16 +150,36 @@ section{
 
 /* ---------------- MOBILE LAYOUT ADJUSTMENTS (768px and below) ---------------- */
 @media (max-width: 768px) {
+  /* Enable better mobile scrolling */
+  html, body {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+    overflow-y: auto !important;
+    /* Fix iOS Safari scrolling issues */
+    position: relative !important;
+  }
+  
+  /* Fix scroll snap issues on mobile */
+  .scroll-smooth {
+    scroll-snap-type: none !important;
+  }
+  
+  /* Prevent fixed elements from blocking scroll */
+  * {
+    -webkit-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+  }
+  
   .section-aboutus {
     display: flex; /* Activate flexbox for mobile to stack content */
     flex-direction: column; /* Stack content vertically */
     justify-content: flex-start; /* Align content to the top */
     align-items: center; /* Center items horizontally */
     padding-top: 4rem; /* Add padding at the top to push content down */
-    min-height: auto; /* Allow height to adjust to content */
+    min-height: 100vh; /* Use min-height instead of auto */
     height: auto; /* Ensure height is determined by content */
-    text-align: center; 
-   
+    text-align: center;
+    overflow-y: auto; /* Allow vertical scrolling */
   }
 
   .aboutUs_backgroundImg {

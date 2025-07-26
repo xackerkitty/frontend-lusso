@@ -174,6 +174,9 @@ function LussoMainPage() {
           // Prioritize "lusso-automobiles" to be first
           if (a.slug === 'lusso-automobiles') return -1;
           if (b.slug === 'lusso-automobiles') return 1;
+          // Prioritize "wfc-nike-lusso" to be second
+          if (a.slug === 'wfc-nike-lusso') return -1;
+          if (b.slug === 'wfc-nike-lusso') return 1;
           // Then sort by ID (lowest to highest)
           return a.id - b.id;
         });

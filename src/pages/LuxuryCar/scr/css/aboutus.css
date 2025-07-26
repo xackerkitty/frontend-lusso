@@ -1,3 +1,67 @@
+/* Ferrari Font Styles for About Us Page */
+
+/* Hero Section Title */
+.hero-title {
+    font-family: 'Ferrari-SansBold', Arial, sans-serif !important;
+    font-weight: bold !important;
+}
+
+/* Section Headings */
+#our-story-heading,
+#our-values-heading,
+#why-choose-us-heading {
+    font-family: 'Ferrari-SansBold', Arial, sans-serif !important;
+    font-weight: bold !important;
+}
+
+/* General headings (h1, h2, h3, h4, h5, h6) */
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Ferrari-SansBold', Arial, sans-serif !important;
+}
+
+/* Body text and paragraphs */
+.hero-description,
+.aboutUsSec p,
+.ourValues p {
+    font-family: 'Ferrari-SansRegular', Arial, sans-serif !important;
+}
+
+/* Button text */
+.hero-button,
+button,
+a[class*="button"],
+a[class*="btn"] {
+    font-family: 'Ferrari-SansRegular', Arial, sans-serif !important;
+    font-weight: normal !important;
+}
+
+/* Before footer section */
+.beforefooter_text {
+    font-family: 'Ferrari-SansBold', Arial, sans-serif !important;
+    font-weight: bold !important;
+}
+
+/* Value cards and why us items */
+.bg-white h3,
+.text-2xl,
+.text-lg,
+.text-xl {
+    font-family: 'Ferrari-SansRegular', Arial, sans-serif !important;
+}
+
+/* Light text for descriptions */
+.text-gray-700,
+.text-gray-200,
+.opacity-90 {
+    font-family: 'Ferrari-SansLight', Arial, sans-serif !important;
+}
+
+/* LUSSO watermark text */
+.lusso-blurry-text {
+    font-family: 'Ferrari-SansBold', Arial, sans-serif !important;
+    font-weight: bold !important;
+}
+
 .aboutusbg{
     height: 50vh !important;
 }

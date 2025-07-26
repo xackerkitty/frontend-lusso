@@ -375,7 +375,7 @@ const HeroSection: React.FC<{
 
             <div className="relative text-center z-10 max-w-5xl mx-auto flex flex-col px-4">
                 <h1
-                    className={`text-5xl md:text-6xl font-heading font-extrabold mb-8 ${COLORS.grayTextLight} drop-shadow-lg
+                    className={`text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-heading font-extrabold mb-6 sm:mb-8 ${COLORS.grayTextLight} drop-shadow-lg
                         animate-fade-in-up-custom animate-breathe text-shimmer-light`}
                     style={{ 
                         animationDelay: '200ms',
@@ -386,7 +386,7 @@ const HeroSection: React.FC<{
                     {mainTitle}
                 </h1>
                 <p
-                    className={`text-xl md:text-2xl ${COLORS.grayTextLight} mb-12 leading-relaxed max-w-3xl mx-auto
+                    className={`text-lg sm:text-xl md:text-2xl lg:text-2xl ${COLORS.grayTextLight} mb-8 sm:mb-12 leading-relaxed max-w-3xl mx-auto
                         animate-fade-in-up-custom`}
                     style={{ 
                         animationDelay: '600ms',
@@ -397,23 +397,23 @@ const HeroSection: React.FC<{
                     {mainDescription}
                 </p>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-6 mb-16">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6 mb-12 sm:mb-16">
                     {pillars.map((pillar, index) => (
                         <div
                             key={pillar.id || index}
-                            className={`p-6 rounded-lg backdrop-filter backdrop-blur-sm bg-white bg-opacity-10
+                            className={`p-4 sm:p-6 rounded-lg backdrop-filter backdrop-blur-sm bg-white bg-opacity-10
                                     shadow-lg border border-white border-opacity-20
                                     transform transition-all duration-500 ease-out
                                     hover:bg-opacity-20 hover:scale-[1.02] hover:shadow-xl hover:border-green-primary
                                     animate-fade-in-up-custom`}
                             style={{ animationDelay: `${800 + (100 * index)}ms` }}
                         >
-                            <h3 className={`text-2xl font-heading font-bold mb-2 ${COLORS.grayTextLight}`}
+                            <h3 className={`text-base sm:text-lg md:text-xl font-heading font-bold mb-2 ${COLORS.grayTextLight}`}
                                 style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 700 }}
                             >
                                 {pillar.Title}
                             </h3>
-                            <p className={`text-base ${COLORS.grayTextMedium}`}
+                            <p className={`text-sm sm:text-base ${COLORS.grayTextMedium}`}
                                style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 300 }}
                             >
                                 {pillar.Description}
@@ -469,7 +469,7 @@ const AboutSection: React.FC<{
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-30 group-hover:opacity-50 transition-opacity duration-500 rounded-lg z-10"></div>
                 <div className="absolute inset-0 flex items-center justify-center p-4 text-white text-center opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-20">
-                    <p className="text-3xl font-heading font-bold drop-shadow-md"
+                    <p className="text-xl sm:text-2xl md:text-3xl font-heading font-bold drop-shadow-md"
                        style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 700 }}
                     >
                         Discover the Difference
@@ -478,17 +478,17 @@ const AboutSection: React.FC<{
             </div>
 
             <div className="lg:w-1/2 text-left">
-                <h2 className={`text-5xl font-heading font-extrabold mb-6 ${COLORS.grayTextDark}`}
+                <h2 className={`text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-heading font-extrabold mb-4 sm:mb-6 ${COLORS.grayTextDark}`}
                     style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 700 }}
                 >
                     {title}
                 </h2>
-                <p className={`text-xl ${COLORS.grayTextDark} mb-6 leading-relaxed`}
+                <p className={`text-lg sm:text-xl md:text-xl ${COLORS.grayTextDark} mb-4 sm:mb-6 leading-relaxed`}
                    style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 400 }}
                 >
                     {paragraph1}
                 </p>
-                <p className={`text-lg ${COLORS.grayTextDark} leading-relaxed`}
+                <p className={`text-base sm:text-lg md:text-lg ${COLORS.grayTextDark} leading-relaxed`}
                    style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 300 }}
                 >
                     {paragraph2}
@@ -511,7 +511,7 @@ const GallerySection: React.FC<GallerySectionProps> = ({ galleryData, onImageCli
             style={{ backgroundColor: 'white' }}
         >
             <h2
-                className={`text-5xl font-heading font-extrabold mb-16 text-center ${COLORS.grayTextDark}`}
+                className={`text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-heading font-extrabold mb-12 sm:mb-16 text-center ${COLORS.grayTextDark}`}
                 style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 700 }}
             >
                 A Glimpse Inside Our World
@@ -543,12 +543,12 @@ const GallerySection: React.FC<GallerySectionProps> = ({ galleryData, onImageCli
 
                         <div className="absolute bottom-4 left-4 right-4 text-white p-2 opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500 ease-out">
                             <p
-                                className={`text-xl md:text-2xl font-bold font-heading tracking-wide ${COLORS.grayTextLight}`}
+                                className={`text-lg sm:text-xl md:text-2xl lg:text-2xl font-bold font-heading tracking-wide ${COLORS.grayTextLight}`}
                                 style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 700 }}
                             >
                                 {item.Title}
                             </p>
-                            <p className={`${COLORS.grayTextLighter} text-sm mt-1`}
+                            <p className={`${COLORS.grayTextLighter} text-xs sm:text-sm mt-1`}
                                style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 300 }}
                             >
                                 {item.Description}
@@ -558,7 +558,7 @@ const GallerySection: React.FC<GallerySectionProps> = ({ galleryData, onImageCli
                 ))}
             </div>
             <p
-                className={`text-center ${COLORS.grayTextMedium} mt-20 text-lg max-w-3xl mx-auto px-4`}
+                className={`text-center ${COLORS.grayTextMedium} mt-16 sm:mt-20 text-base sm:text-lg max-w-3xl mx-auto px-4`}
                 style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 300 }}
             >
                 Every detail, every corner, meticulously designed to elevate your senses
@@ -645,8 +645,8 @@ const ImageModal: React.FC<ImageModalProps> = ({ isOpen, onClose, imageUrl, imag
                 )}
 
                 {imageTitle && (
-                    <div className="mt-6 pt-4 border-t-2 border-green-400/60 text-center">
-                        <h3 className="text-green-200 text-3xl md:text-4xl font-heading font-extrabold drop-shadow-lg tracking-wide"
+                    <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t-2 border-green-400/60 text-center">
+                        <h3 className="text-green-200 text-2xl sm:text-3xl md:text-4xl lg:text-4xl font-heading font-extrabold drop-shadow-lg tracking-wide"
                             style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 700 }}
                         >
                             {imageTitle}

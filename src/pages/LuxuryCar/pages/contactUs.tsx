@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import LoadingScreen from '../components/LoadingScreen';
 import { motion } from "framer-motion";
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTiktok, faInstagram, faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 
 // --- Interface for Contact Us Page Data ---
 // This interface directly maps to the fields inside the 'data' object of your provided JSON response.
@@ -28,16 +30,12 @@ interface ContactUsApiResponse {
   meta: {};
 }
 
-// Media interfaces (kept for potential future use if strapiapp.com provides media)
 interface MediaAttributes {
   url: string;
 }
 interface MediaDataItem {
   id: number;
   attributes: MediaAttributes;
-}
-interface SingleMediaData {
-  data: MediaDataItem | null;
 }
 
 // This getMediaUrl will be primarily for *future* use if you fetch media from strapiapp.com
@@ -158,7 +156,7 @@ const ContactPage = () => {
 
 
   if (loading) {
-    return <LoadingScreen />;
+    return <LoadingScreen isVisible={true} />;
   }
 
   if (error) {
@@ -270,7 +268,7 @@ const ContactPage = () => {
                 className="w-9 h-9 flex items-center justify-center bg-gray-100 rounded-full hover:scale-110 transition duration-300"
                 aria-label="TikTok"
               >
-                <i className="fab fa-tiktok text-xl"></i>
+                <FontAwesomeIcon icon={faTiktok} className="text-xl" />
               </a>
               <a
                 href="https://www.instagram.com/lusso_georgia/?hl=en"
@@ -279,7 +277,7 @@ const ContactPage = () => {
                 className="w-9 h-9 flex items-center justify-center bg-gray-100 rounded-full hover:scale-110 transition duration-300"
                 aria-label="Instagram"
               >
-                <i className="fab fa-instagram text-xl"></i>
+                <FontAwesomeIcon icon={faInstagram} className="text-xl" />
               </a>
               <a
                 href="https://wa.me/995555188888"
@@ -288,7 +286,7 @@ const ContactPage = () => {
                 className="w-9 h-9 flex items-center justify-center bg-gray-100 rounded-full hover:scale-110 transition duration-300"
                 aria-label="WhatsApp"
               >
-                <i className="fab fa-whatsapp text-xl"></i>
+                <FontAwesomeIcon icon={faWhatsapp} className="text-xl" />
               </a>
             </div>
           </motion.div>

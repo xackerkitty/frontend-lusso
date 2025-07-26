@@ -300,7 +300,7 @@ const LuxuryHeroFetcher = () => {
         {/* Displays the main introductory section with a background video or image. */}
         <section
           id="home"
-          className="flex items-center justify-center relative bg-gradient-to-br from-primary/10 via-primary/20 to-primary/30 h-[calc(100vh-96px)] overflow-hidden"
+          className="flex items-center justify-center relative bg-gradient-to-br from-primary/10 via-primary/20 to-primary/30 h-screen overflow-hidden"
           style={{ scrollSnapAlign: "start" }}
         >
           {/* Video background */}
@@ -364,17 +364,17 @@ const LuxuryHeroFetcher = () => {
             </div>
           )}
           {/* Main content overlaying the hero media */}
-          <div className="relative z-10 flex justify-start items-center h-full w-full pl-12">
+          <div className="relative z-10 flex justify-start items-center h-full w-full px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16">
             <motion.div
-              className="text-left max-w-xl flex flex-col justify-start"
-              style={{ marginTop: '26vh' }}
+              className="text-left max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl flex flex-col justify-start"
+              style={{ marginTop: '20vh' }}
               initial={{ opacity: 0, y: 60 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1.8, ease: [0.22, 1, 0.36, 1] }} // cubic-bezier for smoother ease
             >
               <motion.h1
-                className="text-5xl md:text-7xl font-bold mb-2 drop-shadow-lg text-white"
-                style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 700 }}
+                className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-normal mb-2 sm:mb-3 md:mb-4 drop-shadow-lg text-white leading-tight"
+                style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 400 }}
                 initial={{ opacity: 0, y: 60 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 2.2, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
@@ -388,12 +388,12 @@ const LuxuryHeroFetcher = () => {
                 transition={{ duration: 1.7, delay: 1.1, ease: [0.22, 1, 0.36, 1] }}
               >
                 <button
-                  className="text-white px-5 py-2.5 rounded-md font-semibold text-base border border-white focus:outline-none focus:ring-2 focus:ring-green-900/40 flex items-center gap-2 mt-2 bg-transparent shadow-none hover:bg-transparent"
+                  className="text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-md font-semibold text-sm sm:text-base border border-white focus:outline-none focus:ring-2 focus:ring-green-900/40 flex items-center gap-2 mt-2 bg-transparent shadow-none hover:bg-transparent transition-all duration-300 hover:bg-white/10"
                   style={{ letterSpacing: '0.04em', fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 400 }}
                   onClick={handleLearnMoreClick}
                 >
                   Explore Our Showroom
-                  <svg className="w-5 h-5 text-white ml-1 transition-transform duration-300 group-hover:translate-x-2" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14M12 5l7 7-7 7"/></svg>
+                  <svg className="w-4 h-4 sm:w-5 sm:h-5 text-white ml-1 transition-transform duration-300 group-hover:translate-x-2" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14M12 5l7 7-7 7"/></svg>
                 </button>
               </motion.div>
             </motion.div>
@@ -410,7 +410,7 @@ const LuxuryHeroFetcher = () => {
         {/* { -------------------------|| about us begin || ---------------------------|| } */}
         <section
           id="about"
-          className="section-aboutus h-[calc(100vh-96px)] flex items-center justify-center bg-gray-600 text-white text-3xl"
+          className="section-aboutus h-screen flex items-center justify-center bg-gray-600 text-white text-3xl"
           style={{ scrollSnapAlign: "start" }}
         >
           {/* --- background image --- */}
@@ -450,7 +450,7 @@ const LuxuryHeroFetcher = () => {
         {/* Showcases a carousel of featured cars with navigation buttons. */}
         <section
           id="featured-cars"
-          className="section_cars_we_offer h-[calc(100vh-96px)] "
+          className="section_cars_we_offer h-screen"
           style={{
             scrollSnapAlign: "start",
             backgroundColor: currentCar?.backgroundColor || "",
@@ -562,7 +562,7 @@ const LuxuryHeroFetcher = () => {
 
         <section
           id="our_cars"
-          className="h-[calc(100vh-96px)] flex items-center justify-center bg-gray-700 text-white text-3xl"
+          className="h-screen flex items-center justify-center bg-gray-700 text-white text-3xl"
           style={{ scrollSnapAlign: "start" }}
         >
           <div className="relative w-full  h-[calc(100vh)] bg-white rounded-3xl overflow-hidden shadow-xl card-inner-shadow main-card-effect cursor-pointer flex items-center justify-center">
@@ -632,8 +632,7 @@ const LuxuryHeroFetcher = () => {
         {/* { -------------------------|| location begin || ---------------------------|| } */}
         <section
           id="location"
-          
-          className="location_section h-[calc(100vh-96px)] flex flex-col items-center justify-center text-black text-3xl p-4"
+          className="location_section h-screen flex flex-col items-center justify-center text-black text-3xl p-4"
           style={{ scrollSnapAlign: "start" }}
         >
           <div className="text-center mb-8">

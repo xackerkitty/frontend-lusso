@@ -1,5 +1,7 @@
 // src/components/Footer.tsx
 import React from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTiktok, faInstagram, faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 
 interface FooterProps {
   /**
@@ -81,7 +83,7 @@ const Footer: React.FC<FooterProps> = ({ logoUrl, className }) => {
                 className="w-9 h-9 flex items-center justify-center bg-black bg-opacity-30 rounded-full hover:bg-opacity-50 transition duration-300"
                 aria-label="TikTok"
               >
-                <i className="fab fa-tiktok text-xl"></i>
+                <FontAwesomeIcon icon={faTiktok} className="text-xl" />
               </a>
               <a
                 href="https://www.instagram.com/lusso_georgia/?hl=en"
@@ -90,7 +92,7 @@ const Footer: React.FC<FooterProps> = ({ logoUrl, className }) => {
                 className="w-9 h-9 flex items-center justify-center bg-black bg-opacity-30 rounded-full hover:bg-opacity-50 transition duration-300"
                 aria-label="Instagram"
               >
-                <i className="fab fa-instagram text-xl"></i>
+                <FontAwesomeIcon icon={faInstagram} className="text-xl" />
               </a>
               <a
                 href="https://wa.me/995555188888"
@@ -99,7 +101,7 @@ const Footer: React.FC<FooterProps> = ({ logoUrl, className }) => {
                 className="w-9 h-9 flex items-center justify-center bg-black bg-opacity-30 rounded-full hover:bg-opacity-50 transition duration-300"
                 aria-label="WhatsApp"
               >
-                <i className="fab fa-whatsapp text-xl"></i>
+                <FontAwesomeIcon icon={faWhatsapp} className="text-xl" />
               </a>
             </div>
           </div>

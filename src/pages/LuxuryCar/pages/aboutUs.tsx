@@ -265,7 +265,7 @@ const Aboutus: React.FC = () => {
                         {titleWords.map((word, index) => (
                             <span
                                 key={index}
-                                className={`inline-block overflow-visible animate-word-pop ${word.includes(',') ? 'text-emerald-300' : ''}`}
+                                className={`inline-block overflow-visible animate-word-pop ${word.toLowerCase().includes('excellence') ? 'text-emerald-300' : ''}`}
                                 style={{
                                     animationDelay: `${0.1 * index}s`,
                                     verticalAlign: 'baseline',
@@ -352,8 +352,8 @@ const Aboutus: React.FC = () => {
                         {Array.isArray(data?.ourValues) && data.ourValues.filter(v => v.valueTitle && v.valueDesc).length > 0 ? (
                             // ! Show each value in a nice card if available
                             data.ourValues.filter(v => v.valueTitle && v.valueDesc).map((value) => (
-                                <div key={value.id} className="bg-white p-8 rounded-2xl shadow-xl flex flex-col items-center justify-center text-center transform hover:scale-105 transition-all duration-500 hover:shadow-emerald-500/40 group border border-gray-200">
-                                    <h3 className="text-2xl font-bold mb-3 text-[#1e3a24] group-hover:text-emerald-700 transition-colors duration-300">{value.valueTitle}</h3>
+                                <div key={value.id} className="bg-white p-8 rounded-2xl shadow-xl flex flex-col items-center justify-center text-center border border-gray-200">
+                                    <h3 className="text-2xl font-bold mb-3 text-[#1e3a24]">{value.valueTitle}</h3>
                                     <p className="text-base text-gray-700 leading-relaxed">{value.valueDesc}</p>
                                 </div>
                             ))

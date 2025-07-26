@@ -122,10 +122,10 @@ const FALLBACK_VIDEO_MIME = "video/mp4";
 // This component fetches and displays hero data, including a dynamic featured car section.
 const LuxuryHeroFetcher = () => {
   // --- State Management ---
-  // Use cached data if available
+  // Always show loading screen initially, regardless of cached data
   const [heroData, setHeroData] = useState<any | null>(cachedHeroData);
-  const [loading, setLoading] = useState(!cachedHeroData);
-  const [loadingVisible, setLoadingVisible] = useState(!cachedHeroData);
+  const [loading, setLoading] = useState(true);
+  const [loadingVisible, setLoadingVisible] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [videoLoaded, setVideoLoaded] = useState(false);
   const [useFallbackVideo, setUseFallbackVideo] = useState(false);
@@ -184,42 +184,38 @@ const LuxuryHeroFetcher = () => {
   // --- useEffect Hook: Data Fetching and AOS Initialization ---
   // Handles data fetching and initializes the AOS library when the component mounts.
   useEffect(() => {
-    if (cachedHeroData && cachedLogoData && cachedFeaturedCars.length > 0) {
-      setHeroData(cachedHeroData);
-      setLogoData(cachedLogoData);
-      setFeaturedCars(cachedFeaturedCars);
-      // For cached data, show loading for minimum 2 seconds
-      setTimeout(() => {
-        setLoadingVisible(false);
-        setTimeout(() => setLoading(false), 1000); // Wait for fade to complete
-      }, 2000); // Minimum 2s for cached data
-      return;
-    }
-    
     const fetchData = async () => {
       setLoading(true);
       const startTime = Date.now(); // Track when loading started
       
       try {
-        // Fetch logo from /api/luxurycar?populate=*
-        const logoRes = await fetch(`${STRAPI_BASE_URL}/api/luxurycar?populate=*`);
-        if (!logoRes.ok) throw new Error(`HTTP error! Status: ${logoRes.status}`);
-        const logoJson = await logoRes.json();
-        setLogoData(logoJson.data);
-        cachedLogoData = logoJson.data;
-
-        const res = await fetch(`${STRAPI_BASE_URL}/api/luxurycars-home?populate[0]=mainBG&populate[1]=aboutUsBackground&populate[2]=carImg&populate[3]=featuredCar&populate[4]=featuredCar.carPhoto`);
-        if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
-        const json = await res.json();
-        setHeroData(json.data);
-        cachedHeroData = json.data;
-        // Featured cars extraction
-        if (json.data && json.data.featuredCar && Array.isArray(json.data.featuredCar)) {
-          setFeaturedCars(json.data.featuredCar);
-          cachedFeaturedCars = json.data.featuredCar;
+        if (cachedHeroData && cachedLogoData && cachedFeaturedCars.length > 0) {
+          // Use cached data but still show loading screen
+          setHeroData(cachedHeroData);
+          setLogoData(cachedLogoData);
+          setFeaturedCars(cachedFeaturedCars);
         } else {
-          setFeaturedCars([]);
-          cachedFeaturedCars = [];
+          // Fetch fresh data
+          // Fetch logo from /api/luxurycar?populate=*
+          const logoRes = await fetch(`${STRAPI_BASE_URL}/api/luxurycar?populate=*`);
+          if (!logoRes.ok) throw new Error(`HTTP error! Status: ${logoRes.status}`);
+          const logoJson = await logoRes.json();
+          setLogoData(logoJson.data);
+          cachedLogoData = logoJson.data;
+
+          const res = await fetch(`${STRAPI_BASE_URL}/api/luxurycars-home?populate[0]=mainBG&populate[1]=aboutUsBackground&populate[2]=carImg&populate[3]=featuredCar&populate[4]=featuredCar.carPhoto`);
+          if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
+          const json = await res.json();
+          setHeroData(json.data);
+          cachedHeroData = json.data;
+          // Featured cars extraction
+          if (json.data && json.data.featuredCar && Array.isArray(json.data.featuredCar)) {
+            setFeaturedCars(json.data.featuredCar);
+            cachedFeaturedCars = json.data.featuredCar;
+          } else {
+            setFeaturedCars([]);
+            cachedFeaturedCars = [];
+          }
         }
       } catch (err: any) {
         setError(`Failed to load content: ${err.message}`);

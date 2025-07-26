@@ -403,8 +403,6 @@ const HeroSection: React.FC<{
                             key={pillar.id || index}
                             className={`p-4 sm:p-6 rounded-lg backdrop-filter backdrop-blur-sm bg-white bg-opacity-10
                                     shadow-lg border border-white border-opacity-20
-                                    transform transition-all duration-500 ease-out
-                                    hover:bg-opacity-20 hover:scale-[1.02] hover:shadow-xl hover:border-green-primary
                                     animate-fade-in-up-custom`}
                             style={{ animationDelay: `${800 + (100 * index)}ms` }}
                         >
@@ -557,13 +555,13 @@ const GallerySection: React.FC<GallerySectionProps> = ({ galleryData, onImageCli
                     </div>
                 ))}
             </div>
-            <p
+            {/* <p
                 className={`text-center ${COLORS.grayTextMedium} mt-16 sm:mt-20 text-base sm:text-lg max-w-3xl mx-auto px-4`}
                 style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 300 }}
             >
                 Every detail, every corner, meticulously designed to elevate your senses
                 and connect you with the artistry of luxury automobiles.
-            </p>
+            </p> */}
         </div>
     );
 };

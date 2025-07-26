@@ -268,19 +268,20 @@ const CompanyDetailPage: React.FC = () => {
       <div className="min-h-screen bg-black text-gray-100 font-sans">
         <nav className="fixed w-full z-10 bg-black bg-opacity-30 backdrop-filter backdrop-blur-lg shadow-md">
           <div
-            className="mx-auto py-4 flex items-center"
-            style={{ paddingLeft: "5.5rem", paddingRight: "5.5rem" }}
+            className="mx-auto py-4 flex items-center justify-between px-4 sm:px-8 lg:px-20 xl:px-22"
           >
-            <div className="text-2xl font-bold text-white rounded-md">
+            {/* Logo Container */}
+            <div className="flex items-center">
               <img
                 src="/assets/logo/logo_blue_holding.png"
                 alt="Logo"
-                style={{ width: "100%", height: "50px" }}
+                className="h-8 sm:h-10 md:h-12 w-auto object-contain"
               />
             </div>
+            {/* Go Back Button */}
             <button
               onClick={() => navigate("/")}
-              className="text-white hover:text-green-400 transition duration-300 rounded-md px-3 py-1 border border-white hover:border-green-400 ml-auto"
+              className="text-white hover:text-green-400 transition duration-300 rounded-md px-3 py-1 border border-white hover:border-green-400"
             >
               Go Back
             </button>
@@ -432,6 +433,6 @@ const CompanyDetailPage: React.FC = () => {
         </main>
       </div>
     );
-    };
+};
 
 export default CompanyDetailPage;

@@ -2,8 +2,10 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-// Assuming Navbar and Footer components are available at these paths
 import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
+import LoadingScreen from '../components/LoadingScreen';
+import "../scr/css/style.css";
 
 // --- Logo Helper ---
 interface MediaDataItem {
@@ -61,9 +63,6 @@ const getMediaUrl = (mediaDataContent: any): string => {
     }
     return fullUrl;
 };
-import Footer from '../components/Footer';
-import LoadingScreen from '../components/LoadingScreen';
-import "../scr/css/style.css";
 // --- INTERFACES ---
 interface MediaAttributes {
     url: string;
@@ -153,7 +152,7 @@ const HeroSection: React.FC = () => (
     <header className="relative bg-gray-900 text-white py-24 md:py-32 overflow-hidden shadow-xl">
         {/* Blue Gradient Background */}
         <div className="absolute inset-0" style={{
-            background: "linear-gradient(to right,rgb(45, 58, 46),rgb(0, 27, 6))", marginTop: "3rem" /* Shades of blue */
+            background: "linear-gradient(to right,rgb(45, 58, 46),rgb(0, 27, 6))"
         }}>
             {/* Blurry "Lusso" Text */}
             <div
@@ -170,7 +169,7 @@ const HeroSection: React.FC = () => (
             </div>
             <div className="absolute inset-0 bg-black opacity-30"></div> {/* Subtle overlay for depth */}
         </div>
-        <div className="container mx-auto relative z-10 text-center px-4" style={{marginTop: "3rem"}}>
+        <div className="container mx-auto relative z-10 text-center px-4">
             <h1 className="text-4xl md:text-6xl font-bold mb-4 text-white" style={{ fontFamily: "'Ferrari-SansBold', sans-serif" }}>Our Cars</h1>
             <p className="text-lg md:text-xl opacity-90">Explore our exclusive collection of luxury vehicles.</p>
         </div>

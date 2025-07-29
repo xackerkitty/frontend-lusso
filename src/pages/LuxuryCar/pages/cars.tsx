@@ -133,12 +133,14 @@ interface FilterSidebarProps {
     onSoldStatusChange?: (status: 'all' | 'sold' | 'not-sold') => void;
     selectedCurrency: 'USD' | 'EUR';
     onCurrencyChange: (currency: 'USD' | 'EUR') => void;
+    t: (key: any) => string;
 }
 
 interface CarCardProps {
     car: Car;
     convertPrice: (price: number) => number;
     getCurrencySymbol: () => string;
+    t: (key: any) => string;
 }
 
 interface CarListingsProps {
@@ -148,7 +150,11 @@ interface CarListingsProps {
 }
 
 // --- Hero Section Component ---
-const HeroSection: React.FC = () => (
+interface HeroSectionProps {
+    t: (key: any) => string;
+}
+
+const HeroSection: React.FC<HeroSectionProps> = ({ t }) => (
   <section
     className="relative bg-gray-900 text-white overflow-hidden shadow-xl flex items-center justify-center"
     style={{
@@ -187,10 +193,10 @@ const HeroSection: React.FC = () => (
         className="text-2xl md:text-4xl font-bold mb-1 text-white"
         style={{ fontFamily: "'Ferrari-SansBold', sans-serif" }}
       >
-        Our Cars
+        {t('heroTitle')}
       </h1>
       <p className="text-sm md:text-base opacity-90">
-        Explore our exclusive collection of luxury vehicles.
+        {t('heroSubtitle')}
       </p>
     </div>
   </section>
@@ -202,7 +208,8 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
     minPrice, maxPrice, onMinPriceChange, onMaxPriceChange,
     selectedBrands, onBrandChange, availableBrands,
     selectedSoldStatus, onSoldStatusChange,
-    selectedCurrency, onCurrencyChange
+    selectedCurrency, onCurrencyChange,
+    t
 }) => {
     const [isPriceExpanded, setIsPriceExpanded] = useState(true);
     const [isBrandsExpanded, setIsBrandsExpanded] = useState(true);
@@ -218,15 +225,15 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
 
     return (
         <aside className="sticky top-2 w-full lg:w-[370px] bg-white p-4 rounded-xl shadow-lg h-fit mb-8 lg:mb-0 min-h-0">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">Filter</h2>
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">{t('filterTitle')}</h2>
 
             <div className="mb-6">
-                <label htmlFor="search-cars" className="block text-gray-700 text-sm font-medium mb-2">Search for cars or brand</label>
+                <label htmlFor="search-cars" className="block text-gray-700 text-sm font-medium mb-2">{t('searchPlaceholder')}</label>
                 <div className="relative">
                     <input
                         type="text"
                         id="search-cars"
-                        placeholder="Search for cars or brand"
+                        placeholder={t('searchPlaceholder')}
                         className="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 ease-in-out"
                         value={searchTerm}
                         onChange={onSearchChange}
@@ -243,7 +250,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
         className="flex justify-between items-center mb-2 cursor-pointer select-none"
         onClick={() => setIsPriceExpanded(!isPriceExpanded)}
     >
-        <label className="block text-gray-700 text-sm font-medium">Price</label>
+        <label className="block text-gray-700 text-sm font-medium">{t('priceLabel')}</label>
         <svg className={`w-4 h-4 text-gray-500 transform transition-transform duration-300 ${isPriceExpanded ? 'rotate-0' : '-rotate-90'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
         </svg>
@@ -252,7 +259,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
         <div className="border-t border-gray-200 pt-4">
             {/* Currency Filter Section (moved here) */}
             <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-medium mb-2">Currency</label>
+                <label className="block text-gray-700 text-sm font-medium mb-2">{t('currencyLabel')}</label>
                 <div className="flex gap-4">
                     <label className="flex items-center cursor-pointer">
                         <input
@@ -280,7 +287,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
             </div>
             <div className="flex items-center gap-4 mb-2">
                 <div className="flex flex-col flex-1">
-                    <label className="block text-gray-600 text-sm font-medium mb-1">Minimum Price</label>
+                    <label className="block text-gray-600 text-sm font-medium mb-1">{t('minimumPrice')}</label>
                     <input
                         type="number"
                         min={sliderMin}
@@ -299,7 +306,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
                     />
                 </div>
                 <div className="flex flex-col flex-1">
-                    <label className="block text-gray-600 text-sm font-medium mb-1">Maximum Price</label>
+                    <label className="block text-gray-600 text-sm font-medium mb-1">{t('maximumPrice')}</label>
                     <input
                         type="number"
                         min={displayMinPrice}
@@ -318,7 +325,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
                 </div>
             </div>
             <div className="mb-2">
-                <label className="block text-gray-600 text-sm font-medium mb-1">Minimum Price </label>
+                <label className="block text-gray-600 text-sm font-medium mb-1">{t('minimumPrice')} </label>
                 <input
                     type="range"
                     min={sliderMin}
@@ -337,7 +344,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
                 />
             </div>
             <div>
-                <label className="block text-gray-600 text-sm font-medium mb-1">Maximum Price</label>
+                <label className="block text-gray-600 text-sm font-medium mb-1">{t('maximumPrice')}</label>
                 <input
                     type="range"
                     min={sliderMin}
@@ -445,7 +452,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
                     className="flex justify-between items-center mb-2 cursor-pointer select-none"
                     onClick={() => setIsBrandsExpanded(!isBrandsExpanded)}
                 >
-                    <label className="block text-gray-700 text-sm font-medium">Brands</label>
+                    <label className="block text-gray-700 text-sm font-medium">{t('brandsLabel')}</label>
                     <svg className={`w-4 h-4 text-gray-500 transform transition-transform duration-300 ${isBrandsExpanded ? 'rotate-0' : '-rotate-90'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
                     </svg>
@@ -467,7 +474,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
                                 </div>
                             ))
                         ) : (
-                            <p className="text-gray-500 text-sm">No brands available (check hardcoded list).</p>
+                            <p className="text-gray-500 text-sm">{t('noBrandsAvailable')}</p>
                         )}
                     </div>
                 </div>
@@ -477,7 +484,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
 };
 
 // --- Car Card Component with Slider Logic ---
-const CarCard: React.FC<CarCardProps> = ({ car, convertPrice, getCurrencySymbol }) => {
+const CarCard: React.FC<CarCardProps> = ({ car, convertPrice, getCurrencySymbol, t }) => {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [imageError, setImageError] = useState(false);
     const [imageLoading, setImageLoading] = useState(true);
@@ -537,7 +544,7 @@ const CarCard: React.FC<CarCardProps> = ({ car, convertPrice, getCurrencySymbol 
             className="relative bg-white rounded-lg shadow-md overflow-hidden transform hover:scale-105 transition duration-300 ease-in-out w-full border border-gray-200 block"
         >
             {car.isSold && (
-                <div className="absolute top-3 right-3 bg-red-600 text-white text-sm font-bold px-3 py-1.5 rounded-full z-10 shadow-lg">Sold</div>
+                <div className="absolute top-3 right-3 bg-red-600 text-white text-sm font-bold px-3 py-1.5 rounded-full z-10 shadow-lg">{t('soldBadge')}</div>
             )}
 
             <div
@@ -549,7 +556,7 @@ const CarCard: React.FC<CarCardProps> = ({ car, convertPrice, getCurrencySymbol 
                 {(imageError || !displayImageUrl) ? (
                     <div className="w-full h-full bg-gray-300 flex flex-col items-center justify-center text-gray-600 text-center p-4">
                         <p className="font-bold text-lg mb-1">{car.model}</p>
-                        <p className="text-sm">Image not available</p>
+                        <p className="text-sm">{t('imageNotAvailable')}</p>
                     </div>
                 ) : (
                     <>
@@ -614,19 +621,20 @@ interface CarListingsProps {
     getCurrencySymbol: () => string;
     visibleCount: number;
     onLoadMore: () => void;
+    t: (key: any) => string;
 }
 
-const CarListings: React.FC<CarListingsProps> = ({ cars, convertPrice, getCurrencySymbol, visibleCount, onLoadMore }) => {
+const CarListings: React.FC<CarListingsProps> = ({ cars, convertPrice, getCurrencySymbol, visibleCount, onLoadMore, t }) => {
     const visibleCars = cars.slice(0, visibleCount);
     return (
         <div className="w-full lg:w-3/4 flex flex-col items-center">
             <section className="test2 w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-6 min-h-0">
                 {visibleCars.length > 0 ? visibleCars.map(car => (
                     <div key={car.id}>
-                        <CarCard car={car} convertPrice={convertPrice} getCurrencySymbol={getCurrencySymbol} />
+                        <CarCard car={car} convertPrice={convertPrice} getCurrencySymbol={getCurrencySymbol} t={t} />
                     </div>
                 )) : (
-                    <div className="col-span-full text-center py-10 text-gray-500 text-lg">No cars found matching your criteria.</div>
+                    <div className="col-span-full text-center py-10 text-gray-500 text-lg">{t('noCarsFound')}</div>
                 )}
             </section>
             {cars.length > visibleCount && (
@@ -634,7 +642,7 @@ const CarListings: React.FC<CarListingsProps> = ({ cars, convertPrice, getCurren
                     className="mt-8 px-6 py-2 bg-green-600 text-white font-semibold rounded-lg shadow hover:bg-green-700 transition"
                     onClick={onLoadMore}
                 >
-                    Load More
+                    {t('loadMore')}
                 </button>
             )}
         </div>
@@ -654,6 +662,63 @@ const LuxuryCar: React.FC = () => {
     const [loading, setLoading] = useState(cachedAllCars.length === 0);
     const [loadingVisible, setLoadingVisible] = useState(cachedAllCars.length === 0);
     const [error, setError] = useState<string | null>(null);
+    const [currentLocale, setCurrentLocale] = useState<string>('en');
+
+    const handleLocaleChange = (newLocale: string) => {
+        setCurrentLocale(newLocale);
+    };
+
+    // Translation object for static text
+    const translations = {
+        en: {
+            heroTitle: "Our Cars",
+            heroSubtitle: "Explore our exclusive collection of luxury vehicles.",
+            filterTitle: "Filter",
+            searchPlaceholder: "Search for cars or brand",
+            priceLabel: "Price",
+            currencyLabel: "Currency",
+            minimumPrice: "Minimum Price",
+            maximumPrice: "Maximum Price",
+            availabilityLabel: "Availability",
+            brandsLabel: "Brands",
+            allStatus: "All",
+            availableStatus: "Available",
+            soldStatus: "Sold",
+            soldBadge: "Sold",
+            imageNotAvailable: "Image not available",
+            noCarsFound: "No cars found matching your criteria.",
+            loadMore: "Load More",
+            errorLoading: "Error loading cars:",
+            checkStrapi: "Please check your Strapi server's status, API endpoint, and public permissions for the 'Luxurycars Home' collection.",
+            noBrandsAvailable: "No brands available (check hardcoded list)."
+        },
+        ka: {
+            heroTitle: "ჩვენი მანქანები",
+            heroSubtitle: "შეისწავლეთ ჩვენი ექსკლუზიური ძვირადღირებული მანქანების კოლექცია.",
+            filterTitle: "ფილტრი",
+            searchPlaceholder: "მოძებნეთ მანქანები ან ბრენდი",
+            priceLabel: "ფასი",
+            currencyLabel: "ვალუტა",
+            minimumPrice: "მინიმალური ფასი",
+            maximumPrice: "მაქსიმალური ფასი",
+            availabilityLabel: "ხელმისაწვდომობა",
+            brandsLabel: "ბრენდები",
+            allStatus: "ყველა",
+            availableStatus: "ხელმისაწვდომი",
+            soldStatus: "გაყიდული",
+            soldBadge: "გაყიდული",
+            imageNotAvailable: "სურათი მიუწვდომელია",
+            noCarsFound: "თქვენს კრიტერიუმებს შესაბამისი მანქანები ვერ მოიძებნა.",
+            loadMore: "მეტის ჩვენება",
+            errorLoading: "მანქანების ჩატვირთვისას შეცდომა:",
+            checkStrapi: "გთხოვთ, შეამოწმოთ თქვენი Strapi სერვერის სტატუსი, API endpoint და საჯარო ნებართვები 'Luxurycars Home' კოლექციისთვის.",
+            noBrandsAvailable: "ბრენდები მიუწვდომელია (შეამოწმეთ ჰარდკოდირებული სია)."
+        }
+    };
+
+    const t = (key: keyof typeof translations.en): string => {
+        return translations[currentLocale as keyof typeof translations]?.[key] || translations.en[key];
+    };
 
     const [searchTerm, setSearchTerm] = useState('');
     const [minPrice, setMinPrice] = useState(0);
@@ -671,7 +736,6 @@ const LuxuryCar: React.FC = () => {
 
     // --- Logo State ---
     const [logoData, setLogoData] = useState<LuxuryCarAttributes | null>(null);
-    const [logoLoading, setLogoLoading] = useState(true);
 
     // Define your hardcoded list of available brands here
     // IMPORTANT: These names MUST exactly match the brand names you have in Strapi (e.g., "Ferrari", not "ferrari")
@@ -812,7 +876,6 @@ const LuxuryCar: React.FC = () => {
         };
         // Fetch logo
         const fetchLogo = async () => {
-            setLogoLoading(true);
             try {
                 const logoApiUrl = `${strapiBaseUrl}/api/luxurycar?populate=*`;
                 const response = await fetch(logoApiUrl);
@@ -825,8 +888,6 @@ const LuxuryCar: React.FC = () => {
                 }
             } catch (e) {
                 // Optionally handle logo error
-            } finally {
-                setLogoLoading(false);
             }
         };
         fetchAllData();
@@ -921,16 +982,22 @@ const LuxuryCar: React.FC = () => {
                 </div>
             )}
 
-            <Navbar largeLogoSrc={logoUrl} smallLogoSrc={logoUrl} hideOnScrollDown={true} />
+            <Navbar 
+                largeLogoSrc={logoUrl} 
+                smallLogoSrc={logoUrl} 
+                hideOnScrollDown={true}
+                onLocaleChange={handleLocaleChange}
+                currentLocale={currentLocale}
+            />
             
             <div className="cars-page-content">
-                <HeroSection />
+                <HeroSection t={t} />
                 <main className="test2 container mx-auto py-8 px-4 flex flex-col lg:flex-row gap-8 flex-grow">
                 {error ? (
                     <div className="w-full text-center py-20 text-red-600 text-xl">
-                        Error loading cars: {error}
+                        {t('errorLoading')} {error}
                         <p className="text-base text-gray-700 mt-4">
-                            Please check your Strapi server's status, API endpoint, and public permissions for the 'Luxurycars Home' collection.
+                            {t('checkStrapi')}
                         </p>
                     </div>
                 ) : (
@@ -953,6 +1020,7 @@ const LuxuryCar: React.FC = () => {
                             // onSoldStatusChange={setSelectedSoldStatus} // SOLD FILTER DISABLED
                             selectedCurrency={selectedCurrency}
                             onCurrencyChange={setSelectedCurrency}
+                            t={t}
                         />
                         <CarListings
                             cars={filteredCars}
@@ -960,6 +1028,7 @@ const LuxuryCar: React.FC = () => {
                             getCurrencySymbol={getCurrencySymbol}
                             visibleCount={visibleCount}
                             onLoadMore={() => setVisibleCount(v => v + 6)}
+                            t={t}
                         />
                     </>
                 )}

@@ -603,25 +603,20 @@ const ImageModal: React.FC<ImageModalProps> = ({ isOpen, onClose, imageUrl, imag
 
     return (
         <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-80 backdrop-filter backdrop-blur-md transition-opacity duration-300 ease-out"
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-90 backdrop-filter backdrop-blur-md transition-opacity duration-300 ease-out"
             onClick={onClose}
         >
             <div
                 ref={modalRef}
-                className="relative bg-gray-900 p-10 rounded-3xl shadow-2xl border-4 border-green-500
-                            max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col
-                            transform transition-all duration-300 ease-out scale-95 opacity-0
-                            ring-4 ring-green-300/40 ring-offset-2
-                            before:absolute before:inset-0 before:rounded-3xl before:pointer-events-none
-                            before:border-8 before:border-green-300/60 before:opacity-30 before:z-10
-                            before:shadow-[0_0_40px_10px_rgba(16,185,129,0.25)]"
-                style={{ boxShadow: '0 0 40px 8px rgba(16, 185, 129, 0.18), 0 8px 32px 0 rgba(0,0,0,0.45)' }}
+                className="relative max-w-5xl w-full max-h-[90vh] overflow-hidden
+                           transform transition-all duration-300 ease-out scale-95 opacity-0"
                 onClick={(e) => e.stopPropagation()}
             >
                 <button
-                    className="absolute top-4 right-4 bg-gray-700 hover:bg-gray-600 text-white rounded-full
-                                w-10 h-10 flex items-center justify-center text-xl font-bold
-                                transition-all duration-200 ease-in-out transform hover:scale-110 hover:shadow-lg hover:text-green-400"
+                    className="absolute top-4 right-4 z-20 bg-black bg-opacity-60 hover:bg-opacity-80 text-white rounded-full
+                               w-12 h-12 flex items-center justify-center text-xl font-bold
+                               transition-all duration-200 ease-in-out transform hover:scale-110 backdrop-filter backdrop-blur-sm
+                               border border-white border-opacity-20"
                     onClick={onClose}
                     aria-label="Close Image"
                 >
@@ -630,27 +625,32 @@ const ImageModal: React.FC<ImageModalProps> = ({ isOpen, onClose, imageUrl, imag
                     </svg>
                 </button>
 
-                {imageUrl && (
-                    <img
-                        src={imageUrl}
-                        alt={imageTitle || "Gallery Image"}
-                        className="max-w-full max-h-[70vh] object-contain mx-auto rounded-2xl shadow-lg border-2 border-green-400/80"
-                        onError={(e) => {
-                            e.currentTarget.src = `https://placehold.co/600x400/555/EEE?text=Image+Load+Error`;
-                            e.currentTarget.alt = "Image failed to load";
-                        }}
-                    />
-                )}
+                <div className="relative">
+                    {imageUrl && (
+                        <img
+                            src={imageUrl}
+                            alt={imageTitle || "Gallery Image"}
+                            className="w-full h-auto max-h-[90vh] object-contain rounded-lg shadow-2xl"
+                            onError={(e) => {
+                                e.currentTarget.src = `https://placehold.co/600x400/555/EEE?text=Image+Load+Error`;
+                                e.currentTarget.alt = "Image failed to load";
+                            }}
+                        />
+                    )}
 
-                {imageTitle && (
-                    <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t-2 border-green-400/60 text-center">
-                        <h3 className="text-green-200 text-2xl sm:text-3xl md:text-4xl lg:text-4xl font-heading font-extrabold drop-shadow-lg tracking-wide"
-                            style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 700 }}
-                        >
-                            {imageTitle}
-                        </h3>
-                    </div>
-                )}
+                    {/* Overlay with title and description */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60 pointer-events-none rounded-lg"></div>
+                    
+                    {imageTitle && (
+                        <div className="absolute bottom-0 left-0 right-0 p-6 text-white z-10">
+                            <h3 className="text-2xl sm:text-3xl md:text-4xl font-heading font-extrabold mb-2 drop-shadow-lg"
+                                style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 700 }}
+                            >
+                                {imageTitle}
+                            </h3>
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );
@@ -664,6 +664,7 @@ let cachedLogoData: LuxuryCarAttributes | null = null;
 // --- Main ShowroomPage Component: Orchestrates the entire page layout ---
 const ShowroomPage: React.FC = () => {
     // Use cached data if available
+    const [currentLocale, setCurrentLocale] = useState<string>('en'); // Add locale state
     const [showroomData, setShowroomData] = useState<LuxuryCarsShowroomAttributes | null>(cachedShowroomData);
     const [logoData, setLogoData] = useState<LuxuryCarAttributes | null>(cachedLogoData);
     const [loading, setLoading] = useState(!(cachedShowroomData && cachedLogoData));
@@ -696,9 +697,111 @@ const ShowroomPage: React.FC = () => {
         setModalImageTitle(null);
     }, []);
 
+    // --- Function to handle locale change from Navbar ---
+    const handleLocaleChange = (locale: string) => {
+        setCurrentLocale(locale);
+        // Clear cache when locale changes to force refetch
+        if (locale !== 'en') {
+            cachedShowroomData = null;
+            cachedLogoData = null;
+        }
+        // Trigger data refetch
+        fetchData(locale);
+    };
+
+    // --- Data fetching function with locale support ---
+    const fetchData = async (locale: string = 'en') => {
+        setLoading(true);
+        const startTime = Date.now(); // Track when loading started
+        
+        try {
+            const STRAPI_BASE_URL = import.meta.env.VITE_API_URL || "https://accessible-charity-d22e30cd98.strapiapp.com";
+
+            // Determine locale parameter for API calls
+            const localeParam = locale === 'ka' ? '?locale=ka' : '';
+            const populateParam = locale === 'ka' ? '&populate' : '?populate';
+
+            try {
+                // --- Fetch Luxury Car Data (for logo) with locale ---
+                console.log('Fetching logo with URL:', `${STRAPI_BASE_URL}/api/luxurycar${localeParam}${locale === 'ka' ? '&' : '?'}populate=*`);
+                const luxuryCarApiUrl = `${STRAPI_BASE_URL}/api/luxurycar${localeParam}${locale === 'ka' ? '&' : '?'}populate=*`;
+                const luxuryCarResponse = await fetch(luxuryCarApiUrl);
+                
+                if (!luxuryCarResponse.ok) {
+                    console.warn(`Logo request failed with status ${luxuryCarResponse.status}, falling back to English`);
+                    // Fallback to English if Georgian content is not available
+                    const englishLogoRes = await fetch(`${STRAPI_BASE_URL}/api/luxurycar?populate=*`);
+                    if (!englishLogoRes.ok) throw new Error(`HTTP error! Status: ${englishLogoRes.status}`);
+                    const luxuryCarJson: StrapiLuxuryCarResponse = await englishLogoRes.json();
+                    if (luxuryCarJson?.data) {
+                        setLogoData(luxuryCarJson.data);
+                    }
+                } else {
+                    const luxuryCarJson: StrapiLuxuryCarResponse = await luxuryCarResponse.json();
+                    if (luxuryCarJson?.data) {
+                        setLogoData(luxuryCarJson.data);
+                        if (locale === 'en') cachedLogoData = luxuryCarJson.data;
+                    } else {
+                        console.warn("API returned no data for Luxury Car (logo). Ensure it's published.");
+                    }
+                }
+
+                // --- Fetch Showroom Page Data with locale ---
+                const showroomApiUrl = `${STRAPI_BASE_URL}/api/luxurycars-showroom${localeParam}${populateParam}[0]=mainBG&populate[1]=descriptionIMG&populate[2]=galleryCards.image&populate[3]=cards`;
+                console.log('Fetching showroom data with URL:', showroomApiUrl);
+                const showroomResponse = await fetch(showroomApiUrl);
+                
+                if (!showroomResponse.ok) {
+                    console.warn(`Showroom request failed with status ${showroomResponse.status}, falling back to English`);
+                    // Fallback to English if Georgian content is not available
+                    const englishShowroomRes = await fetch(`${STRAPI_BASE_URL}/api/luxurycars-showroom?populate[0]=mainBG&populate[1]=descriptionIMG&populate[2]=galleryCards.image&populate[3]=cards`);
+                    if (!englishShowroomRes.ok) throw new Error(`HTTP error! Status: ${englishShowroomRes.status}`);
+                    const showroomJson: any = await englishShowroomRes.json();
+                    if (showroomJson?.data) {
+                        setShowroomData(showroomJson.data);
+                        // Add a note that we're showing English content
+                        if (locale === 'ka') {
+                            console.log('Displaying English content as Georgian translation is not available yet');
+                        }
+                    }
+                } else {
+                    const showroomJson: any = await showroomResponse.json();
+                    if (showroomJson?.data) {
+                        setShowroomData(showroomJson.data);
+                        if (locale === 'en') cachedShowroomData = showroomJson.data;
+                    } else {
+                        setShowroomData(null);
+                        console.warn("API returned no data for Luxury Cars Showroom. Ensure it's published.");
+                    }
+                }
+
+            } catch (fetchError: any) {
+                console.error('Fetch error:', fetchError);
+                throw fetchError;
+            }
+
+        } catch (e: unknown) { // Use 'unknown' for type safety
+            if (e instanceof Error) {
+                setError(`Failed to load content: ${e.message}`);
+            } else {
+                setError("An unknown error occurred while fetching data.");
+            }
+            console.error("Error fetching data:", e);
+        } finally {
+            const loadTime = Date.now() - startTime;
+            const minLoadTime = 2000; // Minimum 2 seconds
+            const remainingTime = Math.max(0, minLoadTime - loadTime);
+            
+            setTimeout(() => {
+                setLoadingVisible(false);
+                setTimeout(() => setLoading(false), 1000); // Wait for fade to complete
+            }, remainingTime);
+        }
+    };
+
 
     useEffect(() => {
-        if (cachedShowroomData && cachedLogoData) {
+        if (cachedShowroomData && cachedLogoData && currentLocale === 'en') {
             setShowroomData(cachedShowroomData);
             setLogoData(cachedLogoData);
             // For cached data, show loading for minimum 2 seconds
@@ -709,65 +812,8 @@ const ShowroomPage: React.FC = () => {
             return;
         }
         
-        const fetchData = async () => {
-            setLoading(true);
-            const startTime = Date.now(); // Track when loading started
-            
-            try {
-                const STRAPI_BASE_URL = import.meta.env.VITE_API_URL || "https://accessible-charity-d22e30cd98.strapiapp.com";
-
-                // --- Fetch Luxury Car Data (for logo) ---
-                const luxuryCarApiUrl = `${STRAPI_BASE_URL}/api/luxurycar?populate=*`;
-                const luxuryCarResponse = await fetch(luxuryCarApiUrl);
-                if (!luxuryCarResponse.ok) {
-                    throw new Error(`HTTP error fetching luxury car data! Status: ${luxuryCarResponse.status}.`);
-                }
-                const luxuryCarJson: StrapiLuxuryCarResponse = await luxuryCarResponse.json();
-                if (luxuryCarJson?.data) {
-                    setLogoData(luxuryCarJson.data);
-                    cachedLogoData = luxuryCarJson.data;
-                } else {
-                    console.warn("API returned no data for Luxury Car (logo). Ensure it's published.");
-                }
-
-                // --- Fetch Showroom Page Data ---
-                // Use array-style population for Strapi v5
-                const showroomApiUrl = `${STRAPI_BASE_URL}/api/luxurycars-showroom?populate[0]=mainBG&populate[1]=descriptionIMG&populate[2]=galleryCards.image`;
-                const showroomResponse = await fetch(showroomApiUrl);
-                if (!showroomResponse.ok) {
-                    throw new Error(`HTTP error fetching showroom data! Status: ${showroomResponse.status}.`);
-                }
-                const showroomJson: any = await showroomResponse.json();
-
-                if (showroomJson?.data) {
-                    setShowroomData(showroomJson.data);
-                    cachedShowroomData = showroomJson.data;
-                } else {
-                    setShowroomData(null);
-                    console.warn("API returned no data for Luxury Cars Showroom. Ensure it's published.");
-                }
-
-            } catch (e: unknown) { // Use 'unknown' for type safety
-                if (e instanceof Error) {
-                    setError(`Failed to load content: ${e.message}`);
-                } else {
-                    setError("An unknown error occurred while fetching data.");
-                }
-                console.error("Error fetching data:", e);
-            } finally {
-                const loadTime = Date.now() - startTime;
-                const minLoadTime = 2000; // Minimum 2 seconds
-                const remainingTime = Math.max(0, minLoadTime - loadTime);
-                
-                setTimeout(() => {
-                    setLoadingVisible(false);
-                    setTimeout(() => setLoading(false), 1000); // Wait for fade to complete
-                }, remainingTime);
-            }
-        };
-
-        fetchData();
-    }, []);
+        fetchData(currentLocale);
+    }, []); // Don't include currentLocale in dependencies to prevent infinite loops
 
     // Derive URLs and content for components from fetched data
     // Logo URL now comes from `logoData`
@@ -843,7 +889,13 @@ const ShowroomPage: React.FC = () => {
                 </div>
             )}
 
-            <Navbar largeLogoSrc={logoUrl} smallLogoSrc={logoUrl} hideOnScrollDown={true}/>
+            <Navbar 
+                largeLogoSrc={logoUrl} 
+                smallLogoSrc={logoUrl} 
+                hideOnScrollDown={true}
+                onLocaleChange={handleLocaleChange}
+                currentLocale={currentLocale}
+            />
 
             <div className="w-full">
                 <HeroSection

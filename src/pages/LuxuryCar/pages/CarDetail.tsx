@@ -359,9 +359,10 @@ const HeroSection: React.FC<{ backgroundVID: string }> = ({ backgroundVID }) => 
 interface ModelSelectorProps {
     activeModel: string;
     setActiveModel: (model: string) => void;
+    t: (key: any) => string;
 }
 
-const ModelSelector: React.FC<ModelSelectorProps> = ({ activeModel, setActiveModel }) => {
+const ModelSelector: React.FC<ModelSelectorProps> = ({ activeModel, setActiveModel, t }) => {
     const buttonClass = (model: string) =>
         `px-4 py-2 text-sm md:px-6 md:py-3 md:text-base font-semibold rounded-full transition-colors duration-300 ${
             activeModel === model
@@ -376,21 +377,21 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({ activeModel, setActiveMod
                 style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 600 }}
                 onClick={() => setActiveModel('Overview')}
             >
-                Overview
+                {t('overview')}
             </button>
             <button
                 className={buttonClass('Gallery')}
                 style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 600 }}
                 onClick={() => setActiveModel('Gallery')}
             >
-                Gallery
+                {t('gallery')}
             </button>
             <button
                 className={buttonClass('3D Model')}
                 style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 600 }}
                 onClick={() => setActiveModel('3D Model')}
             >
-                3D model
+                {t('gallery3D')}
             </button>
         </div>
     );
@@ -433,6 +434,91 @@ const CarDetail: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
     const [activeModel, setActiveModel] = useState('Overview');
+    const [currentLocale, setCurrentLocale] = useState<string>('en');
+
+    const handleLocaleChange = (newLocale: string) => {
+        setCurrentLocale(newLocale);
+    };
+
+    // Translation object for static text
+    const translations = {
+        en: {
+            loadingDetails: "Loading Details...",
+            errorTitle: "Error:",
+            errorMessage: "There was a problem loading the page content. Please try again later.",
+            backToCars: "Back to Cars",
+            noCarDetails: "No Car Details Available",
+            carNotFound: "The car you are looking for could not be found.",
+            overview: "Overview",
+            gallery: "Gallery",
+            gallery3D: "3D model",
+            specifications: "SPECIFICATIONS",
+            year: "YEAR",
+            regYear: "REG YEAR",
+            numberOfOwners: "NUMBER OF OWNERS",
+            mileage: "MILEAGE",
+            exteriorColor: "EXTERIOR COLOUR",
+            interiorColor: "INTERIOR COLOUR",
+            gear: "GEAR",
+            horsepower: "HORSEPOWER",
+            fuelType: "FUEL TYPE",
+            priceOnRequest: "Price on Request",
+            contactUs: "Contact Us",
+            descriptionOfVehicle: "Description of vehicle",
+            engine: "Engine:",
+            fuelEconomy: "Fuel Economy:",
+            suspension: "Suspension:",
+            noAdditionalDetails: "No additional description details available.",
+            noGalleryImages: "No gallery images available for this car.",
+            model3DComingSoon: "3D Model Coming Soon!",
+            scrollToZoom: "Scroll to zoom, drag to pan, double click to zoom in/out",
+            closeModal: "Close modal",
+            previousImage: "Previous image",
+            nextImage: "Next image",
+            fullSizeImage: "Full size image",
+            galleryImage: "Gallery image"
+        },
+        ka: {
+            loadingDetails: "დეტალები იტვირთება...",
+            errorTitle: "შეცდომა:",
+            errorMessage: "გვერდის კონტენტის ჩატვირთვისას პრობლემა მოხდა. გთხოვთ, მოგვიანებით სცადოთ.",
+            backToCars: "მანქანებზე დაბრუნება",
+            noCarDetails: "მანქანის დეტალები მიუწვდომელია",
+            carNotFound: "თქვენს მიერ ძებნილი მანქანა ვერ მოიძებნა.",
+            overview: "მიმოხილვა",
+            gallery: "გალერეა",
+            gallery3D: "3D მოდელი",
+            specifications: "სპეციფიკაციები",
+            year: "წელი",
+            regYear: "რეგ. წელი",
+            numberOfOwners: "მფლობელების რაოდენობა",
+            mileage: "გარბენი",
+            exteriorColor: "გარე ფერი",
+            interiorColor: "შიდა ფერი",
+            gear: "გადაცემათა კოლოფი",
+            horsepower: "ცხენის ძალა",
+            fuelType: "საწვავის ტიპი",
+            priceOnRequest: "ფასი მოთხოვნით",
+            contactUs: "დაგვიკავშირდით",
+            descriptionOfVehicle: "მანქანის აღწერა",
+            engine: "ძრავა:",
+            fuelEconomy: "საწვავის ეკონომია:",
+            suspension: "სუსპენზია:",
+            noAdditionalDetails: "დამატებითი აღწერილობითი დეტალები მიუწვდომელია.",
+            noGalleryImages: "ამ მანქანისთვის გალერეის სურათები მიუწვდომელია.",
+            model3DComingSoon: "3D მოდელი მალე!",
+            scrollToZoom: "გადაადგილება მასშტაბირებისთვის, გადათრევა პანირებისთვის, ორმაგი დაწკაპუნება მასშტაბირებისთვის",
+            closeModal: "მოდალის დახურვა",
+            previousImage: "წინა სურათი",
+            nextImage: "შემდეგი სურათი",
+            fullSizeImage: "სრული ზომის სურათი",
+            galleryImage: "გალერეის სურათი"
+        }
+    };
+
+    const t = (key: keyof typeof translations.en) => {
+        return translations[currentLocale as keyof typeof translations]?.[key] || translations.en[key];
+    };
 
     // --- State for Image Modal ---
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -536,7 +622,7 @@ const CarDetail: React.FC = () => {
                     return;
                 }
 
-                const carApiUrl = `${strapiBaseUrl}/api/luxurycars-cars?filters[slug][$eq]=${slug}&populate=*`;
+                const carApiUrl = `${strapiBaseUrl}/api/luxurycars-cars?filters[slug][$eq]=${slug}&populate=*&locale=${currentLocale}`;
                 const carResponse = await fetch(carApiUrl);
                 if (!carResponse.ok) {
                     setError("Car not found.");
@@ -669,7 +755,7 @@ const CarDetail: React.FC = () => {
         };
 
         fetchData();
-    }, [slug, strapiBaseUrl]); // Added strapiBaseUrl to dependency array
+    }, [slug, strapiBaseUrl, currentLocale]); // Added currentLocale to refetch when language changes
 
     // Use logo from /api/luxurycar for Navbar and Footer
     const logoUrl = logoData?.logo?.url
@@ -681,7 +767,7 @@ const CarDetail: React.FC = () => {
             <div className="flex flex-col items-center justify-center h-screen bg-gray-900 text-white p-4"
                  style={{ fontFamily: 'Ferrari Sans, sans-serif' }}
             >
-                <h2 className="text-3xl font-bold mb-4" style={{ fontWeight: 700 }}>Loading Details...</h2>
+                <h2 className="text-3xl font-bold mb-4" style={{ fontWeight: 700 }}>{t('loadingDetails')}</h2>
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500"></div>
             </div>
         );
@@ -692,14 +778,14 @@ const CarDetail: React.FC = () => {
             <div className="flex flex-col items-center justify-center h-screen bg-gray-900 text-white p-4"
                  style={{ fontFamily: 'Ferrari Sans, sans-serif' }}
             >
-                <h2 className="text-3xl font-bold mb-4 text-red-500" style={{ fontWeight: 700 }}>Error: {error}</h2>
-                <p className="text-lg text-gray-400" style={{ fontWeight: 300 }}>There was a problem loading the page content. Please try again later.</p>
+                <h2 className="text-3xl font-bold mb-4 text-red-500" style={{ fontWeight: 700 }}>{t('errorTitle')} {error}</h2>
+                <p className="text-lg text-gray-400" style={{ fontWeight: 300 }}>{t('errorMessage')}</p>
                 <button
                     onClick={() => navigate('/luxurycars/cars')}
                     className="mt-6 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-semibold text-lg shadow-lg transition-all duration-300"
                     style={{ fontWeight: 600 }}
                 >
-                    Back to Cars
+                    {t('backToCars')}
                 </button>
             </div>
         );
@@ -710,14 +796,14 @@ const CarDetail: React.FC = () => {
             <div className="flex flex-col items-center justify-center h-screen bg-gray-900 text-white p-4"
                  style={{ fontFamily: 'Ferrari Sans, sans-serif' }}
             >
-                <h2 className="text-3xl font-bold mb-4" style={{ fontWeight: 700 }}>No Car Details Available</h2>
-                <p className="text-lg text-gray-400" style={{ fontWeight: 300 }}>The car you are looking for could not be found.</p>
+                <h2 className="text-3xl font-bold mb-4" style={{ fontWeight: 700 }}>{t('noCarDetails')}</h2>
+                <p className="text-lg text-gray-400" style={{ fontWeight: 300 }}>{t('carNotFound')}</p>
                 <button
                     onClick={() => navigate('/luxurycars/cars')}
                     className="mt-6 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-semibold text-lg shadow-lg transition-all duration-300"
                     style={{ fontWeight: 600 }}
                 >
-                    Back to Cars
+                    {t('backToCars')}
                 </button>
             </div>
         );
@@ -727,7 +813,13 @@ const CarDetail: React.FC = () => {
         <div className="min-h-screen bg-white text-gray-800 flex flex-col items-center"
              style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 400 }}
         >
-            <Navbar largeLogoSrc={logoUrl} smallLogoSrc={logoUrl} hideOnScrollDown={true} />
+            <Navbar 
+                largeLogoSrc={logoUrl} 
+                smallLogoSrc={logoUrl} 
+                hideOnScrollDown={true}
+                onLocaleChange={handleLocaleChange}
+                currentLocale={currentLocale}
+            />
 
             <HeroSection backgroundVID={car.backgroundVID} />
 
@@ -764,7 +856,7 @@ const CarDetail: React.FC = () => {
                 />
             </div>
 
-            <ModelSelector activeModel={activeModel} setActiveModel={setActiveModel} />
+            <ModelSelector activeModel={activeModel} setActiveModel={setActiveModel} t={t} />
 
             <div className="w-full max-w-7xl mx-auto py-8 px-4 flex flex-col lg:flex-row gap-8 flex-grow">
                 {activeModel === 'Overview' && (
@@ -783,7 +875,7 @@ const CarDetail: React.FC = () => {
                                 <h2 className="text-3xl font-bold text-gray-800 mb-4 border-b pb-2 border-gray-200"
                                     style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 700 }}
                                 >
-                                    Overview
+                                    {t('overview')}
                                 </h2>
                                 <p className="text-base md:text-lg text-gray-700 leading-relaxed mb-4 keep-original-font">
                                     {car.overviewP1}
@@ -801,7 +893,7 @@ const CarDetail: React.FC = () => {
                                     <h3 className="text-lg font-semibold text-gray-800"
                                         style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 600 }}
                                     >
-                                        Description of vehicle
+                                        {t('descriptionOfVehicle')}
                                     </h3>
                                     <svg className={`w-5 h-5 text-gray-600 transform transition-transform duration-300 ${isDescriptionExpanded ? 'rotate-0' : '-rotate-90'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
@@ -809,11 +901,11 @@ const CarDetail: React.FC = () => {
                                 </div>
                                 <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isDescriptionExpanded ? 'max-h-96 opacity-100 py-4' : 'max-h-0 opacity-0'}`}>
                                     <div className="px-4 text-gray-700 space-y-3 keep-original-font">
-                                        {car.engineDescription && <p><strong>Engine:</strong> {car.engineDescription}</p>}
-                                        {car.fuelEconomyRange && <p><strong>Fuel Economy:</strong> {car.fuelEconomyRange}</p>}
-                                        {car.suspension && <p><strong>Suspension:</strong> {car.suspension}</p>}
+                                        {car.engineDescription && <p><strong>{t('engine')}</strong> {car.engineDescription}</p>}
+                                        {car.fuelEconomyRange && <p><strong>{t('fuelEconomy')}</strong> {car.fuelEconomyRange}</p>}
+                                        {car.suspension && <p><strong>{t('suspension')}</strong> {car.suspension}</p>}
                                         {!car.engineDescription && !car.fuelEconomyRange && !car.suspension && (
-                                            <p>No additional description details available.</p>
+                                            <p>{t('noAdditionalDetails')}</p>
                                         )}
                                     </div>
                                 </div>
@@ -824,7 +916,7 @@ const CarDetail: React.FC = () => {
                                 className="mt-auto bg-gray-800 hover:bg-gray-700 text-white px-8 py-3 rounded-xl font-semibold text-lg shadow-lg transition-all duration-300 self-center"
                                 style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 600 }}
                             >
-                                Back to Cars
+                                {t('backToCars')}
                             </button>
                         </div>
 
@@ -833,7 +925,7 @@ const CarDetail: React.FC = () => {
                                 <h2 className="text-2xl font-bold mb-4 text-center text-gray-800 border-b border-gray-200 pb-3"
                                     style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 700 }}
                                 >
-                                    SPECIFICATIONS
+                                    {t('specifications')}
                                 </h2>
                                 <div className="flex-grow">
                                     <ul className="w-full space-y-2">
@@ -842,7 +934,7 @@ const CarDetail: React.FC = () => {
                                                 <svg className="w-4 h-4 md:w-5 md:h-5 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                                                 </svg>
-                                                YEAR
+                                                {t('year')}
                                             </span>
                                             <span className="font-semibold text-base md:text-lg text-gray-800">{car.year}</span>
                                         </li>
@@ -851,7 +943,7 @@ const CarDetail: React.FC = () => {
                                                 <svg className="w-4 h-4 md:w-5 md:h-5 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                                                 </svg>
-                                                REG YEAR
+                                                {t('regYear')}
                                             </span>
                                             <span className="font-semibold text-base md:text-lg text-gray-800">{car.regYear}</span>
                                         </li>
@@ -860,7 +952,7 @@ const CarDetail: React.FC = () => {
                                                 <svg className="w-4 h-4 md:w-5 md:h-5 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                                                 </svg>
-                                                NUMBER OF OWNERS
+                                                {t('numberOfOwners')}
                                             </span>
                                             <span className="font-semibold text-base md:text-lg text-gray-800">{car.numberOfOwners}</span>
                                         </li>
@@ -869,7 +961,7 @@ const CarDetail: React.FC = () => {
                                                 <svg className="w-4 h-4 md:w-5 md:h-5 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2-1.343-2-3-2zM12 18c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2-1.343-2-3-2zM12 2c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2-1.343-2-3-2zM4 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2-1.343-2-3-2zM20 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2-1.343-2-3-2z"></path>
                                                 </svg>
-                                                MILEAGE
+                                                {t('mileage')}
                                             </span>
                                             <span className="font-semibold text-base md:text-lg text-gray-800">{car.mileage}</span>
                                         </li>
@@ -878,7 +970,7 @@ const CarDetail: React.FC = () => {
                                                 <svg className="w-4 h-4 md:w-5 md:h-5 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 17A.999.999 0 018 16V8.5L14 3v5.5a1 1 0 01-1 1H9z"></path>
                                                 </svg>
-                                                EXTERIOR COLOUR
+                                                {t('exteriorColor')}
                                             </span>
                                             <span className="font-semibold text-base md:text-lg text-gray-800">{car.exteriorColor}</span>
                                         </li>
@@ -887,7 +979,7 @@ const CarDetail: React.FC = () => {
                                                 <svg className="w-4 h-4 md:w-5 md:h-5 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 17A.999.999 0 018 16V8.5L14 3v5.5a1 1 0 01-1 1H9z"></path>
                                                 </svg>
-                                                INTERIOR COLOUR
+                                                {t('interiorColor')}
                                             </span>
                                             <span className="font-semibold text-base md:text-lg text-gray-800">{car.interiorColor}</span>
                                         </li>
@@ -896,7 +988,7 @@ const CarDetail: React.FC = () => {
                                                 <svg className="w-4 h-4 md:w-5 md:h-5 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 10l-2 2m0 0l-2-2m2 2V3"></path>
                                                 </svg>
-                                                GEAR
+                                                {t('gear')}
                                             </span>
                                             <span className="font-semibold text-base md:text-lg text-gray-800">{car.gearType}</span>
                                         </li>
@@ -905,7 +997,7 @@ const CarDetail: React.FC = () => {
                                                 <svg className="w-4 h-4 md:w-5 md:h-5 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                                                 </svg>
-                                                HORSEPOWER
+                                                {t('horsepower')}
                                             </span>
                                             <span className="font-semibold text-base md:text-lg text-gray-800">{car.power}</span>
                                         </li>
@@ -914,7 +1006,7 @@ const CarDetail: React.FC = () => {
                                                 <svg className="w-4 h-4 md:w-5 md:h-5 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 7h10m-1 5l-1 1H8l-1-1m0 0V9m0 0L4 7m0 0l-1-2M4 7V3m0 0h2m0 4V3m0"></path>
                                                 </svg>
-                                                FUEL TYPE
+                                                {t('fuelType')}
                                             </span>
                                             <span className="font-semibold text-base md:text-lg text-gray-800">{car.fuelType}</span>
                                         </li>
@@ -923,14 +1015,14 @@ const CarDetail: React.FC = () => {
                                 <div className="mt-6 flex flex-col gap-3">
                                     {/* Price tag above Contact Us button */}
                                     <span className="block w-full text-center text-emerald-700 font-bold text-2xl mb-2 bg-emerald-100 rounded-lg py-2 shadow-sm">
-                                        {car.price > 0 ? car.price.toLocaleString() : 'Price on Request'}
+                                        {car.price > 0 ? car.price.toLocaleString() : t('priceOnRequest')}
                                     </span>
                                     <button
                                         onClick={handleEnquireClick}
                                         className="w-full bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-semibold text-lg shadow-lg transition-all duration-300"
                                         style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 600 }}
                                     >
-                                        Contact Us
+                                        {t('contactUs')}
                                     </button>
                                 </div>
                             </div>
@@ -943,7 +1035,7 @@ const CarDetail: React.FC = () => {
                         <h2 className="text-3xl font-bold text-gray-800 mb-6 border-b pb-2 border-gray-200"
                             style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 700 }}
                         >
-                            Gallery
+                            {t('gallery')}
                         </h2>
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                             {car.galleryImages.map((image, index) => (
@@ -954,7 +1046,7 @@ const CarDetail: React.FC = () => {
                                 >
                                     <img
                                         src={image}
-                                        alt={`Gallery image ${index + 1}`}
+                                        alt={`${t('galleryImage')} ${index + 1}`}
                                         className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-125"
                                         loading="lazy"
                                     />

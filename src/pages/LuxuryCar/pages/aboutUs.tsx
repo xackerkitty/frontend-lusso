@@ -60,8 +60,6 @@ interface AboutUsData {
 
 // ! This is the base URL for the API, set in your environment variables
 const STRAPI_BASE_URL = import.meta.env.VITE_API_URL;
-// * This is the full API endpoint to get all About Us data, including images
-const API_URL = `${STRAPI_BASE_URL}/api/luxurycars-aboutus?populate=*`;
 
 // * Helper function to get the correct image URL from the API response
 // ? This makes sure we always show the best quality image available
@@ -104,6 +102,7 @@ let cachedLogoData: any | null = null;
 const Aboutus: React.FC = () => {
     // * These are React state variables to keep track of our data and UI state
     // ? 'data' holds all the info for the page, 'loading' shows a spinner, 'error' shows if something went wrong
+    const [currentLocale, setCurrentLocale] = useState<string>('en'); // Add locale state
     const [data, setData] = useState<AboutUsData | null>(cachedAboutData);
     const [loading, setLoading] = useState(!cachedAboutData);
     const [loadingVisible, setLoadingVisible] = useState(!cachedAboutData);
@@ -120,10 +119,68 @@ const Aboutus: React.FC = () => {
         return () => window.removeEventListener('scroll', () => setScrollY(window.scrollY));
     }, []);
 
+    // --- Function to handle locale change from Navbar ---
+    const handleLocaleChange = (locale: string) => {
+        setCurrentLocale(locale);
+        // Clear cache when locale changes to force refetch
+        if (locale !== 'en') {
+            cachedAboutData = null;
+            cachedLogoData = null;
+        }
+        // Trigger data refetch
+        fetchData(locale);
+    };
+
+    // --- Data fetching function with locale support ---
+    const fetchData = async (locale: string = 'en') => {
+        setLoading(true);
+        setError(null);
+        const startTime = Date.now(); // Track when loading started
+        
+        try {
+            // Determine locale parameter for API calls
+            const localeParam = locale === 'ka' ? '?locale=ka' : '';
+            const populateParam = locale === 'ka' ? '&populate=*' : '?populate=*';
+            
+            const aboutUsUrl = `${STRAPI_BASE_URL}/api/luxurycars-aboutus${localeParam}${populateParam}`;
+            console.log('Fetching about us data with URL:', aboutUsUrl);
+            
+            const res = await fetch(aboutUsUrl);
+            
+            if (!res.ok) {
+                console.warn(`About Us request failed with status ${res.status}, falling back to English`);
+                // Fallback to English if Georgian content is not available
+                const englishRes = await fetch(`${STRAPI_BASE_URL}/api/luxurycars-aboutus?populate=*`);
+                if (!englishRes.ok) throw new Error('Failed to fetch');
+                const json = await englishRes.json();
+                setData(json.data);
+                // Add a note that we're showing English content
+                if (locale === 'ka') {
+                    console.log('Displaying English content as Georgian translation is not available yet');
+                }
+            } else {
+                const json = await res.json();
+                setData(json.data);
+                if (locale === 'en') cachedAboutData = json.data;
+            }
+        } catch (err: any) {
+            setError(err.message);
+        } finally {
+            const loadTime = Date.now() - startTime;
+            const minLoadTime = 2000; // Minimum 2 seconds
+            const remainingTime = Math.max(0, minLoadTime - loadTime);
+            
+            setTimeout(() => {
+                setLoadingVisible(false);
+                setTimeout(() => setLoading(false), 1000); // Wait for fade to complete
+            }, remainingTime);
+        }
+    };
+
 
     // ! This effect fetches the About Us data from the API when the page loads
     useEffect(() => {
-        if (cachedAboutData) {
+        if (cachedAboutData && currentLocale === 'en') {
             setData(cachedAboutData);
             // For cached data, show loading for minimum 2 seconds
             setTimeout(() => {
@@ -133,36 +190,13 @@ const Aboutus: React.FC = () => {
             return;
         }
         
-        setLoading(true);
-        setError(null);
-        const startTime = Date.now(); // Track when loading started
-        
-        fetch(API_URL)
-            .then(res => {
-                if (!res.ok) throw new Error('Failed to fetch');
-                return res.json();
-            })
-            .then(json => {
-                setData(json.data);
-                cachedAboutData = json.data;
-            })
-            .catch(err => setError(err.message))
-            .finally(() => {
-                const loadTime = Date.now() - startTime;
-                const minLoadTime = 2000; // Minimum 2 seconds
-                const remainingTime = Math.max(0, minLoadTime - loadTime);
-                
-                setTimeout(() => {
-                    setLoadingVisible(false);
-                    setTimeout(() => setLoading(false), 1000); // Wait for fade to complete
-                }, remainingTime);
-            });
-    }, []);
+        fetchData(currentLocale);
+    }, []); // Don't include currentLocale in dependencies to prevent infinite loops
 
 
     // * This effect fetches the logo image from the API (used in the navbar and footer)
     useEffect(() => {
-        if (cachedLogoData) {
+        if (cachedLogoData && currentLocale === 'en') {
             setLogoData(cachedLogoData);
             return;
         }
@@ -170,18 +204,29 @@ const Aboutus: React.FC = () => {
             try {
                 // ? We use a separate API endpoint just for the logo
                 const STRAPI_BASE_URL = import.meta.env.VITE_API_URL;
-                const luxuryCarApiUrl = `${STRAPI_BASE_URL}/api/luxurycar?populate=*`;
+                const localeParam = currentLocale === 'ka' ? '?locale=ka' : '';
+                const populateParam = currentLocale === 'ka' ? '&populate=*' : '?populate=*';
+                const luxuryCarApiUrl = `${STRAPI_BASE_URL}/api/luxurycar${localeParam}${populateParam}`;
+                console.log('Fetching logo with URL:', luxuryCarApiUrl);
+                
                 const luxuryCarResponse = await fetch(luxuryCarApiUrl);
-                if (!luxuryCarResponse.ok) throw new Error('Failed to fetch logo');
-                const luxuryCarJson = await luxuryCarResponse.json();
-                setLogoData(luxuryCarJson?.data || null);
-                cachedLogoData = luxuryCarJson?.data || null;
+                if (!luxuryCarResponse.ok) {
+                    // Fallback to English logo
+                    const englishLogoRes = await fetch(`${STRAPI_BASE_URL}/api/luxurycar?populate=*`);
+                    if (!englishLogoRes.ok) throw new Error('Failed to fetch logo');
+                    const luxuryCarJson = await englishLogoRes.json();
+                    setLogoData(luxuryCarJson?.data || null);
+                } else {
+                    const luxuryCarJson = await luxuryCarResponse.json();
+                    setLogoData(luxuryCarJson?.data || null);
+                    if (currentLocale === 'en') cachedLogoData = luxuryCarJson?.data || null;
+                }
             } catch (e) {
                 setLogoData(null);
             }
         };
         fetchLogo();
-    }, []);
+    }, [currentLocale]); // Include currentLocale in dependencies for logo
 
 
     // * Get the logo image URL using our helper
@@ -221,7 +266,13 @@ const Aboutus: React.FC = () => {
                 <>
                     {/* //////////////////////////////////////////////////////////////////////////// */}
                     {/* { -------------------------|| Navbar begin || ---------------------------|| } */}
-                    <Navbar largeLogoSrc={logoUrl} smallLogoSrc={logoUrl} hideOnScrollDown={true}/>
+                    <Navbar 
+                        largeLogoSrc={logoUrl} 
+                        smallLogoSrc={logoUrl} 
+                        hideOnScrollDown={true}
+                        onLocaleChange={handleLocaleChange}
+                        currentLocale={currentLocale}
+                    />
                     {/* ---------------------------|| Navbar End || ---------------------------||  */}
                     {/*////////////////////////////////////////////////////////////////////////////*/}
 

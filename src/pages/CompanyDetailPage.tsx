@@ -307,7 +307,7 @@ const CompanyDetailPage: React.FC = () => {
                 company.buttonTxt && (
                   <button
                     onClick={handleDiscoverWebsite}
-                    className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-300 ease-in-out transform hover:scale-105 mb-8"
+                    className="border-2 border-white hover:bg-white/10  text-white font-light py-3 px-6 rounded-lg shadow-lg transition duration-300 ease-in-out transform hover:scale-105 mb-8"
                   >
                     {company.buttonTxt}
                   </button>

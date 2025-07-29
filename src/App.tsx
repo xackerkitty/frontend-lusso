@@ -20,6 +20,7 @@ import AthleteDetailPage from './pages/wfcnikelusso/AthleteDetailPage';
 import NewsPage_new from './pages/wfcnikelusso/NewsPage_new';
 import GalleryPage from './pages/wfcnikelusso/GalleryPage';
 import FixturesPage from './pages/wfcnikelusso/FixturesPage';
+import RemoveBGApp from './pages/removeBG';
 import "./style.css";
 
 // Router Helper Component - Simplified as per your original code
@@ -401,6 +402,7 @@ function App() {
       <Route path="/luxurycars/car" element={<UserRoute path="/luxurycars/cars" element={<Cars />} />} />
       <Route path="/luxurycars/ourcars" element={<UserRoute path="/luxurycars/cars" element={<Cars />} />} />
       <Route path="/luxurycars/cardetails/:slug" element={<CarDetail />} />  
+      <Route path="/removebg" element={<RemoveBGApp />} />
     </Routes>
   );
 }

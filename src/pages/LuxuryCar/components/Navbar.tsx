@@ -7,11 +7,19 @@ interface NavbarProps {
   smallLogoSrc?: string;
   alwaysShowBackground?: boolean;
   hideOnScrollDown?: boolean; // Prop to enable scroll direction detection
+  onLocaleChange?: (locale: string) => void; // New prop for locale change callback
+  currentLocale?: string; // New prop for current locale
 }
 
-const Navbar: React.FC<NavbarProps> = ({ largeLogoSrc, smallLogoSrc, alwaysShowBackground = false, hideOnScrollDown = false }) => {
+const Navbar: React.FC<NavbarProps> = ({ 
+  largeLogoSrc, 
+  smallLogoSrc, 
+  alwaysShowBackground = false, 
+  hideOnScrollDown = false,
+  onLocaleChange,
+  currentLocale = 'en'
+}) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [selectedLanguage, setSelectedLanguage] = useState('en');
   const [scrolled, setScrolled] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
@@ -81,8 +89,11 @@ const Navbar: React.FC<NavbarProps> = ({ largeLogoSrc, smallLogoSrc, alwaysShowB
   };
 
   const handleLanguageChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedLanguage(event.target.value);
-    console.log(`Language changed to: ${event.target.value}`);
+    const newLocale = event.target.value;
+    if (onLocaleChange) {
+      onLocaleChange(newLocale);
+    }
+    console.log(`Language changed to: ${newLocale}`);
   };
 
   return (
@@ -155,7 +166,7 @@ const Navbar: React.FC<NavbarProps> = ({ largeLogoSrc, smallLogoSrc, alwaysShowB
           }
           .mobile-menu-content {
             position: absolute !important;
-            right: 0 !important;
+            left: 0 !important;
             top: 0 !important;
             height: 100% !important;
             z-index: 10000 !important;
@@ -179,8 +190,8 @@ const Navbar: React.FC<NavbarProps> = ({ largeLogoSrc, smallLogoSrc, alwaysShowB
           ...(hideOnScrollDown
             ? (scrolled && isVisible)
               ? {
-                  backgroundColor: 'rgba(33, 51, 43, 0.5)',
-                  boxShadow: 'inset -10px -10px 60px rgba(0, 0, 0, 0.2), inset -10px -10px 80px rgba(0, 0, 0, 0.2)',
+                  background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.2) 70%, transparent 100%)',
+                  boxShadow: 'none',
                   borderBottomLeftRadius: '25px',
                   borderBottomRightRadius: '25px',
                   transition: 'background 0.3s, box-shadow 0.3s, transform 0.3s ease-in-out',
@@ -194,8 +205,8 @@ const Navbar: React.FC<NavbarProps> = ({ largeLogoSrc, smallLogoSrc, alwaysShowB
                 }
             : (scrolled || alwaysShowBackground)
               ? {
-                  backgroundColor: 'rgba(33, 51, 43, 0.5)',
-                  boxShadow: 'inset -10px -10px 60px rgba(0, 0, 0, 0.2), inset -10px -10px 80px rgba(0, 0, 0, 0.2)',
+                  background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.2) 70%, transparent 100%)',
+                  boxShadow: 'none',
                   borderBottomLeftRadius: '25px',
                   borderBottomRightRadius: '25px',
                   transition: 'background 0.3s, box-shadow 0.3s, transform 0.3s ease-in-out',
@@ -209,81 +220,46 @@ const Navbar: React.FC<NavbarProps> = ({ largeLogoSrc, smallLogoSrc, alwaysShowB
                 })
         }}
       >
-        <div className="flex flex-wrap items-center justify-between gap-x-10 max-w-screen-xl mx-auto w-full h-full py-4 px-4 sm:px-6 lg:px-8">
-          {/* --- DESKTOP LEFT NAVIGATION --- */}
-          <div className="max-lg:hidden flex items-center">
-            <ul className="flex gap-x-6" style={{ marginTop: '0.5rem' }}>
-              <li className="px-3">
-                <Link
-                  to='/luxurycars'
-                  className="relative text-gray-100 block font-medium text-lg group transition-all duration-300 ease-out hover:text-gray-200 group-hover:text-xl"
-                >
-                  Home
-                  <span className="absolute left-0 bottom-[-4px] w-full h-0.5 bg-gray-200 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out"></span>
-                </Link>
-              </li>
-              <li className="px-3">
-                <Link
-                  to='/luxurycars/showroom'
-                  className="relative text-gray-100 block font-medium text-lg group transition-all duration-300 ease-out hover:text-gray-200 group-hover:text-xl"
-                >
-                  Showroom
-                  <span className="absolute left-0 bottom-[-4px] w-full h-0.5 bg-gray-200 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out"></span>
-                </Link>
-              </li>
-              <li className="px-3">
-                <Link
-                  to='/luxurycars/cars'
-                  className="relative text-gray-100 block font-medium text-lg group transition-all duration-300 ease-out hover:text-gray-200 group-hover:text-xl"
-                >
-                  Cars
-                  <span className="absolute left-0 bottom-[-4px] w-full h-0.5 bg-gray-200 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out"></span>
-                </Link>
-              </li>
-            </ul>
+        <div className="flex items-center justify-between max-w-screen-xl mx-auto w-full h-full py-4 px-4 sm:px-6 lg:px-8">
+          {/* --- LEFT SIDE: HAMBURGER MENU --- */}
+          <div className="flex items-center">
+            {/* --- HAMBURGER BUTTON (VISIBLE ON ALL SCREENS) --- */}
+            {!isMenuOpen && (
+              <button
+                onClick={toggleMenu}
+                className="cursor-pointer relative z-[9999]"
+                aria-label="Open menu"
+                style={{ zIndex: 9999 }}
+              >
+                <svg className="w-8 h-8 fill-white" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                  <path fillRule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd"></path>
+                </svg>
+              </button>
+            )}
           </div>
 
-          {/* --- LARGE SCREEN LOGO --- */}
-          <Link to="/luxurycars" className="max-lg:hidden flex-shrink-0" style={{ marginTop: '0.5rem' }}>
-            {largeLogoSrc && <img src={largeLogoSrc} alt="logo" className="w-56 drop-shadow-lg" />}
+          {/* --- CENTER: LOGO --- */}
+          <Link to="/luxurycars" className="flex-shrink-0 absolute left-1/2 transform -translate-x-1/2" style={{ marginTop: '0.5rem' }}>
+            {/* Use large logo on desktop, small logo on mobile */}
+            <img 
+              src={window.innerWidth >= 1024 ? largeLogoSrc : smallLogoSrc} 
+              alt="logo" 
+              className="w-32 sm:w-36 md:w-40 lg:w-56 drop-shadow-lg" 
+            />
           </Link>
 
-          {/* --- SMALL SCREEN LOGO --- */}
-          <Link to="/luxurycars" className="hidden max-lg:block">
-            {smallLogoSrc && <img src={smallLogoSrc} alt="logo" className="w-32 sm:w-36 md:w-40 lg:w-44" />}
-          </Link>
-
-          {/* --- DESKTOP RIGHT NAVIGATION --- */}
-          <div className="max-lg:hidden flex items-center gap-x-6">
-            <ul className="flex gap-x-6" style={{ marginTop: '0.5rem' }}>
-              <li className="px-3">
-                <Link
-                  to='/luxurycars/aboutus'
-                  className="relative text-gray-100 block font-medium text-lg group transition-all duration-300 ease-out hover:text-gray-200 group-hover:text-xl"
-                >
-                  About Us
-                  <span className="absolute left-0 bottom-[-4px] w-full h-0.5 bg-gray-200 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out"></span>
-                </Link>
-              </li>
-              <li className="px-3">
-                <Link
-                  to='/luxurycars/contactus'
-                  className="relative text-gray-100 block font-medium text-lg group transition-all duration-300 ease-out hover:text-gray-200 group-hover:text-xl"
-                >
-                  Contact
-                  <span className="absolute left-0 bottom-[-4px] w-full h-0.5 bg-gray-200 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out"></span>
-                </Link>
-              </li>
-            </ul>
-            {/* Language Selector for Desktop */}
+          {/* --- RIGHT SIDE: LANGUAGE SELECTOR --- */}
+          <div className="flex items-center">
+            {/* Language Selector (Visible on all screens) */}
             <div className="relative" style={{ marginTop: '0.5rem' }}>
               <select
                 id="language-select-desktop"
-                value={selectedLanguage}
+                value={currentLocale}
                 onChange={handleLanguageChange}
                 className="block appearance-none bg-transparent border border-gray-600 px-3 py-1.5 pr-6 rounded-md text-gray-100 text-base focus:outline-none focus:ring-1 focus:ring-gray-400 cursor-pointer"
               >
-                <option value="en" className="bg-[#21332B]">English</option>
+                <option value="en" className="bg-[#21332B]">Eng</option>
+                <option value="ka" className="bg-[#21332B]">ქარ</option>
               </select>
               {/* Custom arrow for the select dropdown */}
               <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-1.5 text-gray-400">
@@ -294,40 +270,26 @@ const Navbar: React.FC<NavbarProps> = ({ largeLogoSrc, smallLogoSrc, alwaysShowB
             </div>
           </div>
 
-          {/* --- MOBILE HAMBURGER BUTTON --- */}
-          {!isMenuOpen && (
-            <button
-              onClick={toggleMenu}
-              className="lg:hidden ml-auto cursor-pointer relative z-[9999]"
-              aria-label="Open menu"
-              style={{ zIndex: 9999 }}
-            >
-              <svg className="w-8 h-8 fill-white" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                <path fillRule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd"></path>
-              </svg>
-            </button>
-          )}
-
           {/* Mobile Menu Conditional Rendering */}
           {isMenuOpen && (
             <div
-              className={`mobile-menu-overlay fixed inset-0 bg-black bg-opacity-50 z-[9999] lg:hidden transition-opacity duration-300 ${
+              className={`mobile-menu-overlay fixed inset-0 bg-black bg-opacity-50 z-[9999] transition-opacity duration-300 ${
                 isMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
               }`}
               onClick={toggleMenu}
             >
               <ul
-                className="mobile-menu-content absolute right-0 top-0 h-full bg-[#21332B] w-full max-w-xs sm:max-w-sm md:max-w-md p-8 overflow-y-auto shadow-md transform transition-transform duration-300 ease-out"
+                className="mobile-menu-content absolute left-0 top-0 h-full bg-[#21332B] w-full max-w-xs sm:max-w-sm md:max-w-md p-8 overflow-y-auto shadow-md transform transition-transform duration-300 ease-out"
                 onClick={(e) => e.stopPropagation()}
                 style={{
-                  transform: isMenuOpen ? 'translateX(0)' : 'translateX(100%)',
+                  transform: isMenuOpen ? 'translateX(0)' : 'translateX(-100%)',
                   zIndex: 10000
                 }}
               >
                 {/* Close Button for Mobile Menu */}
                 <button
                   onClick={toggleMenu}
-                  className="absolute top-4 right-4 z-[100] rounded-full bg-[#21332B] w-10 h-10 flex items-center justify-center border border-gray-200 cursor-pointer"
+                  className="absolute top-4 left-4 z-[100] rounded-full bg-[#21332B] w-10 h-10 flex items-center justify-center border border-gray-200 cursor-pointer"
                   aria-label="Close menu"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 fill-white" viewBox="0 0 320.591 320.591">
@@ -337,7 +299,7 @@ const Navbar: React.FC<NavbarProps> = ({ largeLogoSrc, smallLogoSrc, alwaysShowB
                 </button>
 
                 {/* Mobile Logo inside menu */}
-                <li className="mb-8 hidden max-lg:block">
+                <li className="mb-8 block">
                   <Link to="/luxurycars" onClick={toggleMenu}>
                     {largeLogoSrc && <img src={largeLogoSrc} alt="logo" className="w-44 drop-shadow-lg" />}
                   </Link>
@@ -395,24 +357,7 @@ const Navbar: React.FC<NavbarProps> = ({ largeLogoSrc, smallLogoSrc, alwaysShowB
                   </Link>
                 </li>
 
-                {/* Language Selector for Mobile */}
-                <li className="py-4 px-3 relative">
-                  <label htmlFor="language-select-mobile" className="sr-only">Select Language</label>
-                  <select
-                    id="language-select-mobile"
-                    value={selectedLanguage}
-                    onChange={handleLanguageChange}
-                    className="block w-full appearance-none bg-transparent border border-gray-600 px-3 py-1.5 pr-6 rounded-md text-gray-100 text-base focus:outline-none focus:ring-1 focus:ring-gray-400 cursor-pointer"
-                  >
-                    <option value="en" className="bg-[#21332B]">English</option>
-                  </select>
-                  {/* Custom arrow for the select dropdown (mobile) */}
-                  <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center px-1.5 text-gray-400">
-                    <svg className="fill-current h-3 w-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                      <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 6.757 7.586 5.343 9l4.95 4.95z"/>
-                    </svg>
-                  </div>
-                </li>
+                {/* Language Selector for Mobile - Removed since it's now in main navbar */}
               </ul>
             </div>
           )}

@@ -79,7 +79,7 @@ interface aboutUsSection {
 
 interface LuxuryHeroAttributes {
   title?: string;
-  subtitle?: string;
+  subTitle?: string;
   cta?: string;
   videoUrl?: SingleMediaData;
   videoPoster?: {
@@ -129,6 +129,7 @@ const LuxuryHeroFetcher = () => {
 
   // --- State Management ---
   // Always show loading screen initially, regardless of cached data
+  const [currentLocale, setCurrentLocale] = useState<string>('en'); // Add locale state
   const [heroData, setHeroData] = useState<any | null>(cachedHeroData);
   const [loading, setLoading] = useState(true);
   const [loadingVisible, setLoadingVisible] = useState(true);
@@ -187,59 +188,147 @@ const LuxuryHeroFetcher = () => {
     return url;
   };
 
+  // --- Data fetching function ---
+  const fetchData = async (locale: string = 'en') => {
+    setLoading(true);
+    const startTime = Date.now(); // Track when loading started
+    
+    try {
+      if (cachedHeroData && cachedLogoData && cachedFeaturedCars.length > 0 && locale === 'en') {
+        // Use cached data but still show loading screen (only for English)
+        setHeroData(cachedHeroData);
+        setLogoData(cachedLogoData);
+        setFeaturedCars(cachedFeaturedCars);
+      } else {
+        // Fetch fresh data
+        // Determine locale parameter for API calls
+        const localeParam = locale === 'ka' ? '?locale=ka' : '';
+        const populateParam = locale === 'ka' ? '&populate' : '?populate';
+        
+        try {
+          // Fetch logo from /api/luxurycar with locale
+          console.log('Fetching logo with URL:', `${STRAPI_BASE_URL}/api/luxurycar${localeParam}${locale === 'ka' ? '&' : '?'}populate=*`);
+          const logoRes = await fetch(`${STRAPI_BASE_URL}/api/luxurycar${localeParam}${locale === 'ka' ? '&' : '?'}populate=*`);
+          
+          if (!logoRes.ok) {
+            console.warn(`Logo request failed with status ${logoRes.status}, falling back to English`);
+            // Fallback to English if Georgian content is not available
+            const englishLogoRes = await fetch(`${STRAPI_BASE_URL}/api/luxurycar?populate=*`);
+            if (!englishLogoRes.ok) throw new Error(`HTTP error! Status: ${englishLogoRes.status}`);
+            const logoJson = await englishLogoRes.json();
+            setLogoData(logoJson.data);
+          } else {
+            const logoJson = await logoRes.json();
+            setLogoData(logoJson.data);
+            if (locale === 'en') cachedLogoData = logoJson.data;
+          }
+
+          // Fetch main content with locale
+          const mainUrl = `${STRAPI_BASE_URL}/api/luxurycars-home${localeParam}${populateParam}[0]=mainBG&populate[1]=aboutUsBackground&populate[2]=carImg&populate[3]=featuredCar&populate[4]=featuredCar.carPhoto`;
+          console.log('Fetching main content with URL:', mainUrl);
+          const res = await fetch(mainUrl);
+          
+          if (!res.ok) {
+            console.warn(`Main content request failed with status ${res.status}, falling back to English`);
+            // Fallback to English if Georgian content is not available
+            const englishRes = await fetch(`${STRAPI_BASE_URL}/api/luxurycars-home?populate[0]=mainBG&populate[1]=aboutUsBackground&populate[2]=carImg&populate[3]=featuredCar&populate[4]=featuredCar.carPhoto`);
+            if (!englishRes.ok) throw new Error(`HTTP error! Status: ${englishRes.status}`);
+            const json = await englishRes.json();
+            setHeroData(json.data);
+            // Add a note that we're showing English content
+            if (locale === 'ka') {
+              console.log('Displaying English content as Georgian translation is not available yet');
+            }
+            
+            // Featured cars extraction for fallback
+            if (json.data && json.data.featuredCar && Array.isArray(json.data.featuredCar)) {
+              setFeaturedCars(json.data.featuredCar);
+            } else {
+              setFeaturedCars([]);
+            }
+          } else {
+            const json = await res.json();
+            setHeroData(json.data);
+            if (locale === 'en') cachedHeroData = json.data;
+            
+            // Featured cars extraction
+            if (json.data && json.data.featuredCar && Array.isArray(json.data.featuredCar)) {
+              setFeaturedCars(json.data.featuredCar);
+              if (locale === 'en') cachedFeaturedCars = json.data.featuredCar;
+            } else {
+              setFeaturedCars([]);
+              if (locale === 'en') cachedFeaturedCars = [];
+            }
+          }
+        } catch (fetchError: any) {
+          console.error('Fetch error:', fetchError);
+          throw fetchError;
+        }
+      }
+    } catch (err: any) {
+      setError(`Failed to load content: ${err.message}`);
+      setFeaturedCars([]);
+      if (locale === 'en') cachedFeaturedCars = [];
+    } finally {
+      const loadTime = Date.now() - startTime;
+      const minLoadTime = 2000; // Minimum 2 seconds
+      const remainingTime = Math.max(0, minLoadTime - loadTime);
+      
+      setTimeout(() => {
+        setLoadingVisible(false);
+        setTimeout(() => setLoading(false), 1000); // Wait for fade to complete
+      }, remainingTime);
+    }
+  };
+
+  // --- Function to handle locale change from Navbar ---
+  const handleLocaleChange = (locale: string) => {
+    setCurrentLocale(locale);
+    // Clear cache when locale changes to force refetch
+    if (locale !== 'en') {
+      cachedHeroData = null;
+      cachedLogoData = null;
+      cachedFeaturedCars = [];
+    }
+    // Trigger data refetch
+    fetchData(locale);
+  };
+
+  // Translation object for static text
+  const translations = {
+    en: {
+      ourFeaturedCars: "Our Featured Cars",
+      seeMore: "See more",
+      contact: "Contact",
+      noFeaturedCars: "No featured cars available.",
+      ourCars: "Our Cars",
+      ourCarsDesc: "Explore our exclusive collection of luxury vehicles.",
+      explore: "Explore",
+      loadingVideo: "Loading video...",
+      fallbackBackground: "Fallback Background"
+    },
+    ka: {
+      ourFeaturedCars: "ჩვენი გამორჩეული მანქანები",
+      seeMore: "მეტის ნახვა",
+      contact: "კონტაქტი",
+      noFeaturedCars: "გამორჩეული მანქანები მიუწვდომელია.",
+      ourCars: "ჩვენი მანქანები",
+      ourCarsDesc: "შეისწავლეთ ჩვენი ექსკლუზიური ძვირადღირებული მანქანების კოლექცია.",
+      explore: "შესწავლა",
+      loadingVideo: "ვიდეო იტვირთება...",
+      fallbackBackground: "სათადარიგო ფონი"
+    }
+  };
+
+  const t = (key: keyof typeof translations.en) => {
+    return translations[currentLocale as keyof typeof translations]?.[key] || translations.en[key];
+  };
+
   // --- useEffect Hook: Data Fetching and AOS Initialization ---
   // Handles data fetching and initializes the AOS library when the component mounts.
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      const startTime = Date.now(); // Track when loading started
-      
-      try {
-        if (cachedHeroData && cachedLogoData && cachedFeaturedCars.length > 0) {
-          // Use cached data but still show loading screen
-          setHeroData(cachedHeroData);
-          setLogoData(cachedLogoData);
-          setFeaturedCars(cachedFeaturedCars);
-        } else {
-          // Fetch fresh data
-          // Fetch logo from /api/luxurycar?populate=*
-          const logoRes = await fetch(`${STRAPI_BASE_URL}/api/luxurycar?populate=*`);
-          if (!logoRes.ok) throw new Error(`HTTP error! Status: ${logoRes.status}`);
-          const logoJson = await logoRes.json();
-          setLogoData(logoJson.data);
-          cachedLogoData = logoJson.data;
-
-          const res = await fetch(`${STRAPI_BASE_URL}/api/luxurycars-home?populate[0]=mainBG&populate[1]=aboutUsBackground&populate[2]=carImg&populate[3]=featuredCar&populate[4]=featuredCar.carPhoto`);
-          if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
-          const json = await res.json();
-          setHeroData(json.data);
-          cachedHeroData = json.data;
-          // Featured cars extraction
-          if (json.data && json.data.featuredCar && Array.isArray(json.data.featuredCar)) {
-            setFeaturedCars(json.data.featuredCar);
-            cachedFeaturedCars = json.data.featuredCar;
-          } else {
-            setFeaturedCars([]);
-            cachedFeaturedCars = [];
-          }
-        }
-      } catch (err: any) {
-        setError(`Failed to load content: ${err.message}`);
-        setFeaturedCars([]);
-        cachedFeaturedCars = [];
-      } finally {
-        const loadTime = Date.now() - startTime;
-        const minLoadTime = 2000; // Minimum 2 seconds
-        const remainingTime = Math.max(0, minLoadTime - loadTime);
-        
-        setTimeout(() => {
-          setLoadingVisible(false);
-          setTimeout(() => setLoading(false), 1000); // Wait for fade to complete
-        }, remainingTime);
-      }
-    };
-    fetchData();
-  }, []);
+    fetchData(currentLocale);
+  }, []); // Remove currentLocale from dependencies to prevent infinite loops
 
   // Button navigation handlers
   const navigate = useNavigate();
@@ -284,7 +373,13 @@ const LuxuryHeroFetcher = () => {
       {/* //////////////////////////////////////////////////////////////////////////// */}
       {/* { -------------------------|| Navbar begin || ---------------------------|| } */}
 
-      <Navbar largeLogoSrc={logoUrl} smallLogoSrc={logoUrl} hideOnScrollDown={true}/>
+      <Navbar 
+        largeLogoSrc={logoUrl} 
+        smallLogoSrc={logoUrl} 
+        hideOnScrollDown={true}
+        onLocaleChange={handleLocaleChange}
+        currentLocale={currentLocale}
+      />
 
       {/* ---------------------------|| Navbar End || ---------------------------||  */}
       {/*////////////////////////////////////////////////////////////////////////////*/}
@@ -353,7 +448,7 @@ const LuxuryHeroFetcher = () => {
             <>
               <img
                 src={getImageUrl(heroData.aboutUsBackground) || logoUrl}
-                alt="Fallback Background"
+                alt={t('fallbackBackground')}
                 className="absolute inset-0 w-full h-full object-cover z-0"
                 style={{ pointerEvents: "none" }}
               />
@@ -370,30 +465,31 @@ const LuxuryHeroFetcher = () => {
           {!videoLoaded && !videoFailed && (
             <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/40">
               <span className="text-heading text-lg animate-pulse text-white" style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 300 }}>
-                Loading video...
+                {t('loadingVideo')}
               </span>
             </div>
           )}
           {/* Main content overlaying the hero media */}
           <div className="relative z-10 flex justify-start items-center h-full w-full px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16">
             <motion.div
-              className="text-left max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl flex flex-col justify-start"
-              style={{ marginTop: '20vh' }}
+              className="text-left max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl flex flex-col justify-start uppercase"
+            
+               style={{marginTop: '35vh', letterSpacing: '0.04em', fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 400 }}
               initial={{ opacity: 0, y: 60 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1.8, ease: [0.22, 1, 0.36, 1] }} // cubic-bezier for smoother ease
             >
               <motion.h1
-                className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-normal mb-2 sm:mb-3 md:mb-4 drop-shadow-lg text-white leading-tight"
-                style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 400 }}
+                className="text-3xl sm:text-4xl md:text-5xl lg:text-4xl xl:text-5xl mb-4 sm:mb-5 md:mb-6 lg:mb-4 xl:mb-5 drop-shadow-lg text-white leading-relaxed"
+                style={{ fontFamily: 'Ferrari Sans, sans-serif !important', fontWeight: '300 !important', fontStyle: 'normal !important', letterSpacing: '0.07em', paddingBottom: '1rem', marginBottom: '0.5rem', lineHeight: '1.2' }}
                 initial={{ opacity: 0, y: 60 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 2.2, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
               >
-                Experience the Pinnacle of Luxury Cars
+                {heroData?.subTitle || "Experience the Pinnacle of Luxury Cars"}
               </motion.h1>
               <motion.div
-                className="flex justify-start w-full"
+                className="flex justify-start w-full mt-2 sm:mt-3 md:mt-4"
                 initial={{ opacity: 0, y: 60 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 1.7, delay: 1.1, ease: [0.22, 1, 0.36, 1] }}
@@ -403,7 +499,7 @@ const LuxuryHeroFetcher = () => {
                   style={{ letterSpacing: '0.04em', fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 400 }}
                   onClick={handleLearnMoreClick}
                 >
-                  Explore Our Showroom
+                  {heroData?.mainBtnText || "Explore Our Showroom"}
                   <svg className="w-4 h-4 sm:w-5 sm:h-5 text-white ml-1 transition-transform duration-300 group-hover:translate-x-2" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14M12 5l7 7-7 7"/></svg>
                 </button>
               </motion.div>
@@ -475,7 +571,7 @@ const LuxuryHeroFetcher = () => {
             scrollSnapStop: isMobileDevice() ? "normal" : "always"
           }}
         >
-          <h2 className="cwo_title">Our Featured Cars</h2>
+          <h2 className="cwo_title">{t('ourFeaturedCars')}</h2>
           <div className="cwo-content">
             <div className="cwo-text">
               {currentCar ? (
@@ -484,17 +580,17 @@ const LuxuryHeroFetcher = () => {
                   <p className="gradient-text-desc ">{currentCar.carDesc}</p>
                 </div>
               ) : (
-                <p className="text-xl">No featured cars available.</p>
+                <p className="text-xl">{t('noFeaturedCars')}</p>
               )}
             </div>
             <div className="cwo-buttons">
               {currentCar && featuredCars.length > 1 ? (
                 <>
-                  <button className="button_elegant button_v1 get-bigger" onClick={handleOurCarsClick}>See more</button>
-                  <button className="button_elegant button_v2 get-bigger" onClick={handleContactUsClick}>Contact</button>
+                  <button className="button_elegant button_v1 get-bigger" onClick={handleOurCarsClick}>{t('seeMore')}</button>
+                  <button className="button_elegant button_v2 get-bigger" onClick={handleContactUsClick}>{t('contact')}</button>
                 </>
               ) : (
-                <p className="text-xl">No featured cars available.</p>
+                <p className="text-xl">{t('noFeaturedCars')}</p>
               )}
             </div>
           </div>
@@ -597,10 +693,10 @@ const LuxuryHeroFetcher = () => {
             <div className="absolute inset-0 bg-black bg-opacity-40 flex flex-col items-center justify-center p-6 rounded-3xl">
               <div className="text-center w-full">
                 <h1 className="text-white text-4xl sm:text-5xl lg:text-6xl font-bold mb-4 tracking-wide" style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 700 }}>
-                  Our Cars
+                  {t('ourCars')}
                 </h1>
                 <p className="text-white text-lg sm:text-xl mb-8 max-w-2xl mx-auto" style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 300 }}>
-                  Explore our exclusive collection of luxury vehicles.
+                  {t('ourCarsDesc')}
                 </p>
                 <div className="flex flex-wrap justify-center items-center gap-4 sm:gap-6 md:gap-8 mb-12 px-2">
                   <img
@@ -635,7 +731,7 @@ const LuxuryHeroFetcher = () => {
                   />
                 </div>
                 <button className="bg-white text-gray-800 px-8 py-3 rounded-full text-lg font-semibold hover:text-gray-900 explore-button shadow-lg" style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 400 }} onClick={handleOurCarsClick}>
-                  Explore
+                  {t('explore')}
                 </button>
               </div>
             </div>

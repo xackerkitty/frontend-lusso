@@ -84,12 +84,21 @@ const ContactPage = () => {
   const [loading, setLoading] = useState<boolean>(!cachedContactData);
   const [error, setError] = useState<string | null>(null);
   const [logoData, setLogoData] = useState<any | null>(cachedLogoData);
+  const [currentLocale, setCurrentLocale] = useState<string>('en');
+
+  const handleLocaleChange = (newLocale: string) => {
+    setCurrentLocale(newLocale);
+    // Clear cached data when locale changes
+    cachedContactData = null;
+    setContactData(null);
+    setLoading(true);
+  };
 
   // Access the base Strapi API URL from environment variables
   const STRAPI_BASE_API_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
-    if (cachedContactData) {
+    if (cachedContactData && currentLocale === 'en') {
       setContactData(cachedContactData);
       setLoading(false);
       return;
@@ -100,15 +109,38 @@ const ContactPage = () => {
         if (!STRAPI_BASE_API_URL) {
           throw new Error("VITE_API_URL is not defined in environment variables. Please check your .env file.");
         }
-        const contactApiUrl = `${STRAPI_BASE_API_URL}/api/luxurycars-contactus`;
+        
+        // Try Georgian first if locale is 'ka', fallback to English
+        let contactApiUrl = `${STRAPI_BASE_API_URL}/api/luxurycars-contactus`;
+        if (currentLocale === 'ka') {
+          contactApiUrl += `?locale=ka`;
+        }
+        
+        console.log('Fetching contact data from:', contactApiUrl);
+        
         const contactResponse = await fetch(contactApiUrl);
         if (!contactResponse.ok) {
           throw new Error(`HTTP error fetching contact data! Status: ${contactResponse.status} from ${contactApiUrl}`);
         }
         const contactJson: ContactUsApiResponse = await contactResponse.json();
-        if (contactJson?.data) {
+        
+        // If Georgian request fails or returns no data, fallback to English
+        if (!contactJson?.data && currentLocale === 'ka') {
+          console.log('No Georgian data found, falling back to English');
+          const englishApiUrl = `${STRAPI_BASE_API_URL}/api/luxurycars-contactus`;
+          const englishResponse = await fetch(englishApiUrl);
+          if (englishResponse.ok) {
+            const englishJson: ContactUsApiResponse = await englishResponse.json();
+            if (englishJson?.data) {
+              setContactData(englishJson.data);
+            }
+          }
+        } else if (contactJson?.data) {
           setContactData(contactJson.data);
-          cachedContactData = contactJson.data;
+          // Only cache English data
+          if (currentLocale === 'en') {
+            cachedContactData = contactJson.data;
+          }
         } else {
           console.warn("API returned no data for Contact Us Page.");
         }
@@ -119,29 +151,53 @@ const ContactPage = () => {
       }
     };
     fetchData();
-  }, [STRAPI_BASE_API_URL]);
+  }, [STRAPI_BASE_API_URL, currentLocale]);
 
   // Fetch logo in a separate useEffect (like aboutUs.tsx)
   useEffect(() => {
-    if (cachedLogoData) {
+    if (cachedLogoData && currentLocale === 'en') {
       setLogoData(cachedLogoData);
       return;
     }
     const fetchLogo = async () => {
       try {
         const STRAPI_BASE_URL = import.meta.env.VITE_API_URL;
-        const luxuryCarApiUrl = `${STRAPI_BASE_URL}/api/luxurycar?populate=*`;
+        let luxuryCarApiUrl = `${STRAPI_BASE_URL}/api/luxurycar?populate=*`;
+        if (currentLocale === 'ka') {
+          luxuryCarApiUrl += `&locale=ka`;
+        }
+        
+        console.log('Fetching logo from:', luxuryCarApiUrl);
+        
         const luxuryCarResponse = await fetch(luxuryCarApiUrl);
         if (!luxuryCarResponse.ok) throw new Error('Failed to fetch logo');
         const luxuryCarJson = await luxuryCarResponse.json();
-        setLogoData(luxuryCarJson?.data || null);
-        cachedLogoData = luxuryCarJson?.data || null;
+        
+        // If Georgian request fails or returns no data, fallback to English
+        if (!luxuryCarJson?.data && currentLocale === 'ka') {
+          console.log('No Georgian logo data found, falling back to English');
+          const englishLogoUrl = `${STRAPI_BASE_URL}/api/luxurycar?populate=*`;
+          const englishLogoResponse = await fetch(englishLogoUrl);
+          if (englishLogoResponse.ok) {
+            const englishLogoJson = await englishLogoResponse.json();
+            setLogoData(englishLogoJson?.data || null);
+          } else {
+            setLogoData(null);
+          }
+        } else {
+          setLogoData(luxuryCarJson?.data || null);
+          // Only cache English data
+          if (currentLocale === 'en') {
+            cachedLogoData = luxuryCarJson?.data || null;
+          }
+        }
       } catch (e) {
+        console.error('Error fetching logo:', e);
         setLogoData(null);
       }
     };
     fetchLogo();
-  }, []);
+  }, [currentLocale]);
 
   // Robust logo URL extraction (check formats and fallback to url)
   let logoUrl = "";
@@ -169,7 +225,13 @@ const ContactPage = () => {
 
   return (
     <div className="min-h-screen bg-white text-[#013220] font-sans overflow-hidden">
-      <Navbar largeLogoSrc={logoUrl} smallLogoSrc={logoUrl} alwaysShowBackground={true} />
+      <Navbar 
+        largeLogoSrc={logoUrl} 
+        smallLogoSrc={logoUrl} 
+        alwaysShowBackground={true}
+        onLocaleChange={handleLocaleChange}
+        currentLocale={currentLocale}
+      />
 
       <div
         className="max-w-6xl mx-auto px-6 py-20"

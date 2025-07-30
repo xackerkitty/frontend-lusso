@@ -3,6 +3,7 @@
 
 // We need some tools from React to make things work (like showing/hiding things, remembering stuff, etc)
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useLanguage } from '../../../contexts/LanguageContext';
 
 // This is a special pop-up for looking at car pictures up close
 // You can zoom in, zoom out, and go to the next or previous picture
@@ -424,6 +425,7 @@ interface StrapiLuxuryCarLogoResponse {
 const CarDetail: React.FC = () => {
     const { slug } = useParams<{ slug: string }>();
     const navigate = useNavigate();
+    const { currentLocale, setLocale } = useLanguage();
     // Set base URL from environment variable
     const strapiBaseUrl = import.meta.env.VITE_API_URL;
 
@@ -434,10 +436,9 @@ const CarDetail: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
     const [activeModel, setActiveModel] = useState('Overview');
-    const [currentLocale, setCurrentLocale] = useState<string>('en');
 
     const handleLocaleChange = (newLocale: string) => {
-        setCurrentLocale(newLocale);
+        setLocale(newLocale);
     };
 
     // Translation object for static text

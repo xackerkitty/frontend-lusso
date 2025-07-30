@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
+import { LanguageProvider } from './contexts/LanguageContext';
 import CompanyDetailPage from './pages/CompanyDetailPage';
 import BluControl from './pages/BluControl';
 import Construction from './pages/Construction';
@@ -356,54 +357,56 @@ function PageLayout({ children, section }: { children: React.ReactNode; section?
 // Main application component
 function App() {
   return (
-    <Routes>
-      <Route path="/" element={<LussoMainPage />} />
+    <LanguageProvider>
+      <Routes>
+        <Route path="/" element={<LussoMainPage />} />
 
-      {/* Dynamic route for individual company pages, now using ':slug' */}
-      <Route path="/companies/:slug" element={<CompanyDetailPage />} />
+        {/* Dynamic route for individual company pages, now using ':slug' */}
+        <Route path="/companies/:slug" element={<CompanyDetailPage />} />
 
-      All other routes are commented out as their components are not imported in your original code
-        <Route path="/wfcnikelusso/*" element={<WfcNikeLussoLayout />}>
-        <Route path="" element={<WfcNikeLusso />} />
-        <Route path="team" element={<TeamPage />} />
-        <Route path="team/:documentId" element={<AthleteDetailPage />} />
-        <Route path="team/detail/:documentId" element={<AthleteDetailPage />} />
-        <Route path="news" element={<NewsPage_new />} />
-      
-        <Route path="gallery" element={<GalleryPage />} />
-        <Route path="gallery/:documentId" element={<GalleryPage />} />
-        <Route path="fixtures" element={<FixturesPage />} />
+        All other routes are commented out as their components are not imported in your original code
+          <Route path="/wfcnikelusso/*" element={<WfcNikeLussoLayout />}>
+          <Route path="" element={<WfcNikeLusso />} />
+          <Route path="team" element={<TeamPage />} />
+          <Route path="team/:documentId" element={<AthleteDetailPage />} />
+          <Route path="team/detail/:documentId" element={<AthleteDetailPage />} />
+          <Route path="news" element={<NewsPage_new />} />
         
+          <Route path="gallery" element={<GalleryPage />} />
+          <Route path="gallery/:documentId" element={<GalleryPage />} />
+          <Route path="fixtures" element={<FixturesPage />} />
+          
 
-        
-      </Route>
+          
+        </Route>
 
 
-       <Route path="/construction" element={<UserRoute path="/construction" element={<Construction />} />} />
-      <Route path="/construction/*" element={<UserRoute path="/construction" element={<Construction />} />} />
-      <Route path="/smartdevelopment" element={<UserRoute path="/smartdevelopment" element={<SmartDevelopment />} />} />
-      <Route path="/smartdevelopment/*" element={<UserRoute path="/smartdevelopment" element={<SmartDevelopment />} />} />
-      <Route path="/lussoinvest" element={<UserRoute path="/lussoinvest" element={<LussoInvest />} />} />
-      <Route path="/lussoinvest/*" element={<UserRoute path="/lussoinvest" element={<LussoInvest />} />} />
-      <Route path="/blucontrol" element={<UserRoute path="/blucontrol" element={<BluControl />} />} />
-      <Route path="/blucontrol/*" element={<UserRoute path="/blucontrol" element={<BluControl />} />} />
-      <Route path="/luxurycar" element={<UserRoute path="/luxurycar" element={<LuxuryCar />} />} />
-      <Route path="/luxurycars/test" element={<UserRoute path="/luxurycars/test" element={<LuxuryCarTest />} />} />
-      <Route path="/luxurycar/*" element={<UserRoute path="/luxurycar" element={<LuxuryCar />} />} />
-      <Route path="/luxurycars" element={<UserRoute path="/luxurycar" element={<LuxuryCar />} />} />
-      <Route path="/luxurycars/*" element={<UserRoute path="/luxurycar" element={<LuxuryCar />} />} />
-      <Route path="/lussoautogallery" element={<UserRoute path="/lussoautogallery" element={<LussoAutoGallery />} />} />
-      <Route path="/luxurycars/showroom" element={<UserRoute path="/luxurycars/showroom" element={<Showroom />} />} />
-      <Route path="/luxurycars/aboutus" element={<UserRoute path="/luxurycars/about_us" element={<Aboutus />} />} />
-      <Route path="/luxurycars/contactus" element={<UserRoute path="/luxurycars/contact_us" element={<Contactus />} />} />
-      <Route path="/luxurycars/contact" element={<UserRoute path="/luxurycars/contact_us" element={<Contactus />} />} />
-      <Route path="/luxurycars/contact_us" element={<UserRoute path="/luxurycars/contact_us" element={<Contactus />} />} />
-      <Route path="/luxurycars/cars" element={<UserRoute path="/luxurycars/cars" element={<Cars />} />} />
-      <Route path="/luxurycars/car" element={<UserRoute path="/luxurycars/cars" element={<Cars />} />} />
-      <Route path="/luxurycars/ourcars" element={<UserRoute path="/luxurycars/cars" element={<Cars />} />} />
-      <Route path="/luxurycars/cardetails/:slug" element={<CarDetail />} />  
-      <Route path="/removebg" element={<RemoveBGApp />} />
-    </Routes>
+         <Route path="/construction" element={<UserRoute path="/construction" element={<Construction />} />} />
+        <Route path="/construction/*" element={<UserRoute path="/construction" element={<Construction />} />} />
+        <Route path="/smartdevelopment" element={<UserRoute path="/smartdevelopment" element={<SmartDevelopment />} />} />
+        <Route path="/smartdevelopment/*" element={<UserRoute path="/smartdevelopment" element={<SmartDevelopment />} />} />
+        <Route path="/lussoinvest" element={<UserRoute path="/lussoinvest" element={<LussoInvest />} />} />
+        <Route path="/lussoinvest/*" element={<UserRoute path="/lussoinvest" element={<LussoInvest />} />} />
+        <Route path="/blucontrol" element={<UserRoute path="/blucontrol" element={<BluControl />} />} />
+        <Route path="/blucontrol/*" element={<UserRoute path="/blucontrol" element={<BluControl />} />} />
+        <Route path="/luxurycar" element={<UserRoute path="/luxurycar" element={<LuxuryCar />} />} />
+        <Route path="/luxurycars/test" element={<UserRoute path="/luxurycars/test" element={<LuxuryCarTest />} />} />
+        <Route path="/luxurycar/*" element={<UserRoute path="/luxurycar" element={<LuxuryCar />} />} />
+        <Route path="/luxurycars" element={<UserRoute path="/luxurycar" element={<LuxuryCar />} />} />
+        <Route path="/luxurycars/*" element={<UserRoute path="/luxurycar" element={<LuxuryCar />} />} />
+        <Route path="/lussoautogallery" element={<UserRoute path="/lussoautogallery" element={<LussoAutoGallery />} />} />
+        <Route path="/luxurycars/showroom" element={<UserRoute path="/luxurycars/showroom" element={<Showroom />} />} />
+        <Route path="/luxurycars/aboutus" element={<UserRoute path="/luxurycars/about_us" element={<Aboutus />} />} />
+        <Route path="/luxurycars/contactus" element={<UserRoute path="/luxurycars/contact_us" element={<Contactus />} />} />
+        <Route path="/luxurycars/contact" element={<UserRoute path="/luxurycars/contact_us" element={<Contactus />} />} />
+        <Route path="/luxurycars/contact_us" element={<UserRoute path="/luxurycars/contact_us" element={<Contactus />} />} />
+        <Route path="/luxurycars/cars" element={<UserRoute path="/luxurycars/cars" element={<Cars />} />} />
+        <Route path="/luxurycars/car" element={<UserRoute path="/luxurycars/cars" element={<Cars />} />} />
+        <Route path="/luxurycars/ourcars" element={<UserRoute path="/luxurycars/cars" element={<Cars />} />} />
+        <Route path="/luxurycars/cardetails/:slug" element={<CarDetail />} />  
+        <Route path="/removebg" element={<RemoveBGApp />} />
+      </Routes>
+    </LanguageProvider>
   );
 }
 

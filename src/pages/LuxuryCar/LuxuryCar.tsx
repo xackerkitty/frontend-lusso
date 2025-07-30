@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useLanguage } from '../../contexts/LanguageContext';
 
 // --- Simple in-memory cache for SPA navigation ---
 let cachedHeroData: any | null = null;
@@ -129,7 +130,7 @@ const LuxuryHeroFetcher = () => {
 
   // --- State Management ---
   // Always show loading screen initially, regardless of cached data
-  const [currentLocale, setCurrentLocale] = useState<string>('en'); // Add locale state
+  const { currentLocale, setLocale } = useLanguage();
   const [heroData, setHeroData] = useState<any | null>(cachedHeroData);
   const [loading, setLoading] = useState(true);
   const [loadingVisible, setLoadingVisible] = useState(true);
@@ -283,7 +284,7 @@ const LuxuryHeroFetcher = () => {
 
   // --- Function to handle locale change from Navbar ---
   const handleLocaleChange = (locale: string) => {
-    setCurrentLocale(locale);
+    setLocale(locale);
     // Clear cache when locale changes to force refetch
     if (locale !== 'en') {
       cachedHeroData = null;

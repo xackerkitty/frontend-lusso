@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import { useLanguage } from '../../../contexts/LanguageContext';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import LoadingScreen from '../components/LoadingScreen';
@@ -662,10 +663,10 @@ const LuxuryCar: React.FC = () => {
     const [loading, setLoading] = useState(cachedAllCars.length === 0);
     const [loadingVisible, setLoadingVisible] = useState(cachedAllCars.length === 0);
     const [error, setError] = useState<string | null>(null);
-    const [currentLocale, setCurrentLocale] = useState<string>('en');
+    const { currentLocale, setLocale } = useLanguage();
 
     const handleLocaleChange = (newLocale: string) => {
-        setCurrentLocale(newLocale);
+        setLocale(newLocale);
     };
 
     // Translation object for static text

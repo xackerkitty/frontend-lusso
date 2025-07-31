@@ -173,19 +173,6 @@ const HeroSection: React.FC<HeroSectionProps> = ({ t }) => (
         background: "linear-gradient(to right,rgb(45, 58, 46),rgb(0, 27, 6))",
       }}
     >
-      {/* Blurry "Lusso" Text */}
-      <div
-        className="absolute inset-0 flex items-center justify-center pointer-events-none"
-        style={{
-          fontSize: "4rem", // Much smaller font size
-          fontWeight: "bold",
-          color: "rgba(255, 255, 255, 0.33)", // Very light white for the blurry effect
-          filter: "blur(3px)", // Adjust blur amount as needed
-          zIndex: 0, // Ensure it's behind the main content
-        }}
-      >
-        Lusso
-      </div>
       <div className="absolute inset-0 bg-black opacity-30"></div>{" "}
       {/* Subtle overlay for depth */}
     </div>
@@ -341,7 +328,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
                         });
                     }}
                     className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                    style={{ accentColor: '#22c55e' }}
+                    style={{ accentColor: '#6b7280' }}
                 />
             </div>
             <div>
@@ -360,29 +347,29 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
                         });
                     }}
                     className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                    style={{ accentColor: '#22c55e' }}
+                    style={{ accentColor: '#6b7280' }}
                 />
                 <style>{`
                     input[type='range']::-webkit-slider-thumb {
                         width: 18px;
                         height: 18px;
-                        background: #22c55e;
+                        background: #6b7280;
                         border-radius: 50%;
                         box-shadow: 0 0 2px #333;
                         border: 2px solid #fff;
                     }
                     input[type='range']:focus::-webkit-slider-thumb {
-                        outline: 2px solid #22c55e;
+                        outline: 2px solid #6b7280;
                     }
                     input[type='range']::-moz-range-thumb {
                         width: 18px;
                         height: 18px;
-                        background: #22c55e;
+                        background: #6b7280;
                         border-radius: 50%;
                         border: 2px solid #fff;
                     }
                     input[type='range']:focus::-moz-range-thumb {
-                        outline: 2px solid #22c55e;
+                        outline: 2px solid #6b7280;
                     }
                 `}</style>
             </div>

@@ -731,9 +731,11 @@ const LuxuryHeroFetcher = () => {
                     className="h-20 w-20 object-contain logo-item cursor-pointer"
                   />
                 </div>
-                <button className="bg-white text-gray-800 px-8 py-3 rounded-full text-lg font-semibold hover:text-gray-900 explore-button shadow-lg" style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 400 }} onClick={handleOurCarsClick}>
-                  {t('explore')}
-                </button>
+                <div className="flex justify-center">
+                  <button className="text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-md font-semibold text-sm sm:text-base border border-white focus:outline-none focus:ring-2 focus:ring-green-900/40 mt-2 bg-transparent shadow-none hover:bg-transparent transition-all duration-300 hover:bg-white/10" style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 400 }} onClick={handleOurCarsClick}>
+                    {t('explore')}
+                  </button>
+                </div>
               </div>
             </div>
           </div>

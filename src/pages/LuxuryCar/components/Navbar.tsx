@@ -130,13 +130,13 @@ const Navbar: React.FC<NavbarProps> = ({
             margin: 0 !important;
             padding: 0 !important;
           }
-          /* Ensure navbar content is visible and properly centered */
+          /* Ensure navbar content is visible and properly aligned */
           header > div {
             display: flex !important;
             visibility: visible !important;
             width: 100% !important;
-            margin: 0 auto !important;
-            max-width: 1280px !important; /* Allow max-width for centering on desktop */
+            margin: 0 !important;
+            max-width: none !important;
           }
           /* Force hamburger button visibility only on mobile */
           header button.lg\\:hidden {
@@ -220,7 +220,7 @@ const Navbar: React.FC<NavbarProps> = ({
                 })
         }}
       >
-        <div className="flex items-center justify-between max-w-screen-xl mx-auto w-full h-full py-4 px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between w-full h-full py-4 px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16">
           {/* --- LEFT SIDE: HAMBURGER MENU --- */}
           <div className="flex items-center">
             {/* --- HAMBURGER BUTTON (VISIBLE ON ALL SCREENS) --- */}
@@ -239,7 +239,7 @@ const Navbar: React.FC<NavbarProps> = ({
           </div>
 
           {/* --- CENTER: LOGO --- */}
-          <Link to="/luxurycars" className="flex-shrink-0 absolute left-1/2 transform -translate-x-1/2" style={{ marginTop: '0.5rem' }}>
+          <Link to="/luxurycars" className="flex-shrink-0 ml-4" style={{ marginTop: '0.5rem' }}>
             {/* Use large logo on desktop, small logo on mobile */}
             <img 
               src={window.innerWidth >= 1024 ? largeLogoSrc : smallLogoSrc} 

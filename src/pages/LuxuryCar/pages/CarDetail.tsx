@@ -215,6 +215,7 @@ interface CarDetailData {
     model: string;
     brand: string;
     price: number;
+    originalPrice: string; // Keep the original price string with currency symbol
     slug: string;
     imageUrl: string;
     carPicUrl: string;
@@ -721,6 +722,7 @@ const CarDetail: React.FC = () => {
                         model: item.carName || '',
                         brand: Brand,
                         price: price,
+                        originalPrice: priceString, // Keep the original price string with currency symbol
                         slug: carSlug,
                         imageUrl: imageUrl,
                         carPicUrl: imageUrl, // carPicUrl will use the same as imageUrl
@@ -845,8 +847,8 @@ const CarDetail: React.FC = () => {
                     }
                 `}</style>
                 <h2
-                    className="car-text text-6xl md:text-7xl lg:text-8xl font-extrabold text-white uppercase tracking-tight leading-none mb-4 md:mb-6 z-40 drop-shadow-lg"
-                    style={{ fontFamily: "'Dancing Script', cursive", textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', paddingTop: '10px', paddingBottom: '30px' }}
+                    className="car-text text-6xl md:text-7xl lg:text-8xl font-extrabold text-white uppercase tracking-wide leading-relaxed mb-4 md:mb-6 z-40 drop-shadow-lg"
+                    style={{ fontFamily: "'Dancing Script', cursive", textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', paddingTop: '10px', paddingBottom: '30px', letterSpacing: '0.05em', lineHeight: '1.2' }}
                 >
                     {car.model}
                 </h2>
@@ -1014,13 +1016,14 @@ const CarDetail: React.FC = () => {
                                     </ul>
                                 </div>
                                 <div className="mt-6 flex flex-col gap-3">
+                                    {/* Currency selector */}
                                     {/* Price tag above Contact Us button */}
                                     <span className="block w-full text-center text-emerald-700 font-bold text-2xl mb-2 bg-emerald-100 rounded-lg py-2 shadow-sm">
-                                        {car.price > 0 ? car.price.toLocaleString() : t('priceOnRequest')}
+                                        {car.originalPrice || t('priceOnRequest')}
                                     </span>
                                     <button
                                         onClick={handleEnquireClick}
-                                        className="w-full bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-semibold text-lg shadow-lg transition-all duration-300"
+                                        className="w-full bg-[#1a362f] hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-semibold text-lg shadow-lg transition-all duration-300"
                                         style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 600 }}
                                     >
                                         {t('contactUs')}

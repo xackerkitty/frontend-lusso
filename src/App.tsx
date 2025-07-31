@@ -285,8 +285,9 @@ function LussoMainPage() {
           </div>
         ) : companies && companies.length > 0 ? (
           <>
+            {/* First row: companies 0-5 */}
             <div className="flex flex-wrap justify-center gap-6 z-10 mb-6">
-              {companies.slice(0, 6).map((company, index) => (
+              {companies.slice(0, 6).map((company) => (
                 <div
                   key={company.id}
                   onClick={() => handleCardClick(company.slug)}
@@ -305,8 +306,10 @@ function LussoMainPage() {
                 </div>
               ))}
             </div>
-            <div className="flex flex-wrap justify-center gap-6 z-10">
-              {companies.slice(6, 12).map((company, index) => (
+            
+            {/* Second row: companies 6-11 */}
+            <div className="flex flex-wrap justify-center gap-6 z-10 mb-6">
+              {companies.slice(6, 12).map((company) => (
                 <div
                   key={company.id}
                   onClick={() => handleCardClick(company.slug)}
@@ -325,6 +328,34 @@ function LussoMainPage() {
                 </div>
               ))}
             </div>
+
+            {/* Third row: companies 12+ (aligned to left edge of grid) */}
+            {companies.length > 12 && (
+              <div className="flex justify-start gap-6 z-10 mb-6 w-full max-w-6xl">
+                <div className="flex justify-center flex-1">
+                  <div className="grid grid-cols-6 gap-6">
+                    {companies.slice(12).map((company) => (
+                      <div
+                        key={company.id}
+                        onClick={() => handleCardClick(company.slug)}
+                        className="w-28 h-28 md:w-36 md:h-36 lg:w-40 lg:h-40 rounded-xl flex items-center justify-center p-0 shadow-lg transform-gpu transition-all duration-200 ease-out hover:scale-105 hover:shadow-2xl hover:-translate-y-1 cursor-pointer bg-transparent"
+                      >
+                        <img
+                          src={company.companyLogo?.url || `https://placehold.co/200x200/CCCCCC/333333?text=No+Logo`}
+                          alt={company.companyName || 'Company Logo'}
+                          className="w-[90%] h-[90%] object-contain"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.onerror = null;
+                            target.src = "https://placehold.co/100x100/E0E0E0/000000?text=Error";
+                          }}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
           </>
         ) : (
           <div className="flex items-center justify-center w-full h-full min-h-[200px] bg-gray-100 font-inter">

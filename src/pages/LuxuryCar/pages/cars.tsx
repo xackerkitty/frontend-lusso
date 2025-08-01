@@ -558,7 +558,7 @@ const CarCard: React.FC<CarCardProps> = ({ car, convertPrice, getCurrencySymbol,
     return (
         <Link
             to={`/luxurycars/cardetails/${car.slug}`}
-            className={`relative bg-white rounded-lg shadow-md overflow-hidden transform hover:scale-105 transition-all duration-500 ease-in-out w-full border border-gray-200 block h-80 ${isImageExpanded ? 'image-expanded' : ''}`}
+            className={`relative bg-white rounded-lg shadow-md overflow-hidden transform hover:scale-105 transition-all duration-500 ease-in-out w-full border border-gray-200 block h-56 sm:h-60 md:h-64 lg:h-60 xl:h-64 group ${isImageExpanded ? 'image-expanded' : ''}`}
         >
             {car.isSold && (
                 <div className={`absolute top-3 right-3 bg-red-600 text-white text-sm font-bold px-3 py-1.5 rounded-full z-20 shadow-lg transition-opacity duration-300 ${isImageExpanded ? 'opacity-0' : 'opacity-100'}`}>{t('soldBadge')}</div>
@@ -589,7 +589,7 @@ const CarCard: React.FC<CarCardProps> = ({ car, convertPrice, getCurrencySymbol,
                         <img
                             src={displayImageUrl}
                             alt={`${car.model} - ${currentImageIndex + 1}`}
-                            className={`w-full h-full object-cover transition-all duration-500 ease-in-out ${imageLoading ? 'opacity-0' : 'opacity-100'}`}
+                            className={`w-full h-full object-cover object-center transition-all duration-500 ease-in-out ${imageLoading ? 'opacity-0' : 'opacity-100'}`}
                             onLoad={handleImageLoad}
                             onError={handleImageError}
                             loading="lazy"
@@ -608,25 +608,27 @@ const CarCard: React.FC<CarCardProps> = ({ car, convertPrice, getCurrencySymbol,
                     </div>
                 )}
             </div>
-            <div className="absolute bottom-0 left-0 right-0 z-20 bg-gradient-to-t from-black/80 to-transparent text-white p-3">
-                <div className="flex items-center mb-0.5">
-                    {brandLogoError || !car.brandLogoUrl ? (
-                        <div className="w-6 h-6 mr-2 flex items-center justify-center rounded-full text-xs bg-white/20 text-white">
-                            {car.Brand ? car.Brand.charAt(0) : ''}
-                        </div>
-                    ) : (
-                        <img
-                            src={car.brandLogoUrl}
-                            alt={`${car.Brand} Logo`} 
-                            className="w-6 h-6 mr-2 object-contain"
-                            onError={handleBrandLogoError}
-                        />
-                    )}
-                    <h3 className="text-lg font-semibold leading-tight text-white" style={{ fontFamily: "'Ferrari-SansRegular', sans-serif" }}>
-                        {car.model}
-                    </h3>
+            <div className="absolute bottom-0 left-0 right-0 z-20 bg-gradient-to-t from-black/80 to-transparent text-white p-3 opacity-0 group-hover:opacity-100 transition-all duration-700 ease-out transform translate-y-2 group-hover:translate-y-0">
+                <div className="flex flex-col items-start">
+                    <div className="flex items-center mb-2">
+                        {brandLogoError || !car.brandLogoUrl ? (
+                            <div className="w-6 h-6 flex items-center justify-center rounded-full text-xs bg-white/20 text-white mr-3">
+                                {car.Brand ? car.Brand.charAt(0) : ''}
+                            </div>
+                        ) : (
+                            <img
+                                src={car.brandLogoUrl}
+                                alt={`${car.Brand} Logo`} 
+                                className="w-6 h-6 object-contain mr-3"
+                                onError={handleBrandLogoError}
+                            />
+                        )}
+                        <h3 className="text-lg font-semibold leading-tight text-white transform transition-transform duration-700 ease-out group-hover:scale-105" style={{ fontFamily: "'Ferrari-SansRegular', sans-serif" }}>
+                            {car.model}
+                        </h3>
+                    </div>
+                    <p className="text-lg font-bold text-white transform transition-transform duration-700 ease-out delay-75 group-hover:scale-105">{getCurrencySymbol()}{convertPrice(car.price).toLocaleString(undefined, {maximumFractionDigits: 0})}</p>
                 </div>
-                <p className="text-lg font-bold text-white">{getCurrencySymbol()}{convertPrice(car.price).toLocaleString(undefined, {maximumFractionDigits: 0})}</p>
             </div>
         </Link>
     );
@@ -646,7 +648,7 @@ const CarListings: React.FC<CarListingsProps> = ({ cars, convertPrice, getCurren
     const visibleCars = cars.slice(0, visibleCount);
     return (
         <div className="w-full lg:flex-1 flex flex-col items-center">
-            <section className="test2 w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-6 min-h-0">
+            <section className="test2 w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-4 min-h-0">
                 {visibleCars.length > 0 ? visibleCars.map(car => (
                     <div key={car.id}>
                         <CarCard car={car} convertPrice={convertPrice} getCurrencySymbol={getCurrencySymbol} t={t} />
@@ -993,8 +995,8 @@ const LuxuryCar: React.FC = () => {
                 /* Browser-specific grid fixes */
                 .test2 {
                     display: grid !important;
-                    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)) !important;
-                    gap: 2rem !important;
+                    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
+                    gap: 1rem !important;
                     width: 100% !important;
                     box-sizing: border-box !important;
                 }
@@ -1002,21 +1004,21 @@ const LuxuryCar: React.FC = () => {
                 @media (min-width: 640px) {
                     .test2 {
                         grid-template-columns: repeat(2, 1fr) !important;
-                        gap: 2rem !important;
+                        gap: 1.25rem !important;
                     }
                 }
                 
                 @media (min-width: 1024px) {
                     .test2 {
                         grid-template-columns: repeat(2, 1fr) !important;
-                        gap: 2.5rem !important;
+                        gap: 1.5rem !important;
                     }
                 }
                 
                 @media (min-width: 1280px) {
                     .test2 {
                         grid-template-columns: repeat(2, 1fr) !important;
-                        gap: 2.5rem !important;
+                        gap: 1.75rem !important;
                     }
                 }
                 

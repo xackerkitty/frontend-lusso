@@ -694,7 +694,7 @@ const LuxuryCar: React.FC = () => {
             heroTitle: "Our Cars",
             heroSubtitle: "Explore our exclusive collection of luxury vehicles.",
             filterTitle: "Filter",
-            searchPlaceholder: "Search for cars or brand",
+            searchPlaceholder: "Search",
             priceLabel: "Price",
             currencyLabel: "Currency",
             minimumPrice: "Minimum Price",

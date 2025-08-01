@@ -558,7 +558,7 @@ const CarCard: React.FC<CarCardProps> = ({ car, convertPrice, getCurrencySymbol,
     return (
         <Link
             to={`/luxurycars/cardetails/${car.slug}`}
-            className={`relative bg-white rounded-lg shadow-md overflow-hidden transform hover:scale-105 transition-all duration-500 ease-in-out w-full border border-gray-200 block h-80 sm:h-96 lg:h-96 xl:h-96 2xl:h-64 group ${isImageExpanded ? 'image-expanded' : ''}`}
+            className={`relative bg-white rounded-lg shadow-md overflow-hidden transform hover:scale-105 transition-all duration-500 ease-in-out w-full border border-gray-200 block h-80 sm:h-96 lg:h-96 xl:h-60 2xl:h-64 group ${isImageExpanded ? 'image-expanded' : ''}`}
         >
             {car.isSold && (
                 <div className={`absolute top-3 right-3 bg-red-600 text-white text-sm font-bold px-3 py-1.5 rounded-full z-20 shadow-lg transition-opacity duration-300 ${isImageExpanded ? 'opacity-0' : 'opacity-100'}`}>{t('soldBadge')}</div>

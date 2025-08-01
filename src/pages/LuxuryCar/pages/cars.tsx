@@ -212,10 +212,10 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
     const displayMaxPrice = selectedCurrency === 'EUR' ? Math.round(maxPrice * USD_TO_EUR) : maxPrice;
 
     return (
-        <aside className="sticky top-2 w-full lg:w-[320px] bg-white p-4 rounded-xl shadow-lg h-fit mb-8 lg:mb-0 min-h-0">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">{t('filterTitle')}</h2>
+        <aside className="sticky top-2 w-full lg:w-[280px] bg-white p-3 rounded-xl shadow-lg h-fit mb-6 lg:mb-0 min-h-0">
+            <h2 className="text-xl font-bold text-gray-800 mb-4">{t('filterTitle')}</h2>
 
-            <div className="mb-6">
+            <div className="mb-4">
                 <label htmlFor="search-cars" className="block text-gray-700 text-sm font-medium mb-2">{t('searchPlaceholder')}</label>
                 <div className="relative">
                     <input
@@ -233,7 +233,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
             </div>
 
           
-<div className="mb-6">
+<div className="mb-4">
     <div
         className="flex justify-between items-center mb-2 cursor-pointer select-none"
         onClick={() => setIsPriceExpanded(!isPriceExpanded)}
@@ -244,9 +244,9 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
         </svg>
     </div>
     <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isPriceExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
-        <div className="border-t border-gray-200 pt-4">
+        <div className="border-t border-gray-200 pt-3">
             {/* Currency Filter Section (moved here) */}
-            <div className="mb-4">
+            <div className="mb-3">
                 <label className="block text-gray-700 text-sm font-medium mb-2">{t('currencyLabel')}</label>
                 <div className="flex gap-4">
                     <label className="flex items-center cursor-pointer">
@@ -273,7 +273,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
                     </label>
                 </div>
             </div>
-            <div className="flex items-center gap-4 mb-2">
+            <div className="flex items-center gap-3 mb-2">
                 <div className="flex flex-col flex-1">
                     <label className="block text-gray-600 text-sm font-medium mb-1">{t('minimumPrice')}</label>
                     <input
@@ -290,7 +290,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
                                 target: { ...e.target, value: usdVal.toString() }
                             });
                         }}
-                        className="w-full px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-right text-gray-800 bg-white"
+                        className="w-full px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-right text-gray-800 bg-white text-sm"
                     />
                 </div>
                 <div className="flex flex-col flex-1">
@@ -308,7 +308,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
                                 target: { ...e.target, value: usdVal.toString() }
                             });
                         }}
-                        className="w-full px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-right text-gray-800 bg-white"
+                        className="w-full px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-right text-gray-800 bg-white text-sm"
                     />
                 </div>
             </div>
@@ -446,7 +446,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
                     </svg>
                 </div>
                 <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isBrandsExpanded ? 'max-h-48 opacity-100' : 'max-h-0 opacity-0'}`}>
-                    <div className="border-t border-gray-200 pt-4 custom-scrollbar max-h-40 overflow-y-auto">
+                    <div className="border-t border-gray-200 pt-3 custom-scrollbar max-h-32 overflow-y-auto">
                         {availableBrands.length > 0 ? (
                             availableBrands.map(Brand => ( // Use Brand here for mapping and key
                                 <div key={Brand} className="flex items-center mb-2">
@@ -558,7 +558,7 @@ const CarCard: React.FC<CarCardProps> = ({ car, convertPrice, getCurrencySymbol,
     return (
         <Link
             to={`/luxurycars/cardetails/${car.slug}`}
-            className={`relative bg-white rounded-lg shadow-md overflow-hidden transform hover:scale-105 transition-all duration-500 ease-in-out w-full border border-gray-200 block h-56 sm:h-60 md:h-64 lg:h-60 xl:h-64 group ${isImageExpanded ? 'image-expanded' : ''}`}
+            className={`relative bg-white rounded-lg shadow-md overflow-hidden transform hover:scale-105 transition-all duration-500 ease-in-out w-full border border-gray-200 block h-72 sm:h-80 md:h-72 lg:h-60 xl:h-64 group ${isImageExpanded ? 'image-expanded' : ''}`}
         >
             {car.isSold && (
                 <div className={`absolute top-3 right-3 bg-red-600 text-white text-sm font-bold px-3 py-1.5 rounded-full z-20 shadow-lg transition-opacity duration-300 ${isImageExpanded ? 'opacity-0' : 'opacity-100'}`}>{t('soldBadge')}</div>
@@ -648,7 +648,7 @@ const CarListings: React.FC<CarListingsProps> = ({ cars, convertPrice, getCurren
     const visibleCars = cars.slice(0, visibleCount);
     return (
         <div className="w-full lg:flex-1 flex flex-col items-center">
-            <section className="test2 w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-4 min-h-0">
+            <section className="test2 w-full grid grid-cols-1 gap-4 min-h-0">
                 {visibleCars.length > 0 ? visibleCars.map(car => (
                     <div key={car.id}>
                         <CarCard car={car} convertPrice={convertPrice} getCurrencySymbol={getCurrencySymbol} t={t} />
@@ -995,20 +995,13 @@ const LuxuryCar: React.FC = () => {
                 /* Browser-specific grid fixes */
                 .test2 {
                     display: grid !important;
-                    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
+                    grid-template-columns: 1fr !important;
                     gap: 1rem !important;
                     width: 100% !important;
                     box-sizing: border-box !important;
                 }
                 
-                @media (min-width: 640px) {
-                    .test2 {
-                        grid-template-columns: repeat(2, 1fr) !important;
-                        gap: 1.25rem !important;
-                    }
-                }
-                
-                @media (min-width: 1024px) {
+                @media (min-width: 1200px) {
                     .test2 {
                         grid-template-columns: repeat(2, 1fr) !important;
                         gap: 1.5rem !important;
@@ -1054,8 +1047,18 @@ const LuxuryCar: React.FC = () => {
                 @supports (-ms-ime-align: auto) {
                     .test2 {
                         display: -ms-grid !important;
-                        -ms-grid-columns: 1fr 2.5rem 1fr !important;
-                        gap: 2.5rem !important;
+                        -ms-grid-columns: 1fr !important;
+                        gap: 1rem !important;
+                    }
+                }
+                
+                @media (min-width: 1200px) {
+                    @supports (-ms-ime-align: auto) {
+                        .test2 {
+                            display: -ms-grid !important;
+                            -ms-grid-columns: 1fr 1.5rem 1fr !important;
+                            gap: 1.5rem !important;
+                        }
                     }
                 }
                 
@@ -1063,8 +1066,18 @@ const LuxuryCar: React.FC = () => {
                 @-moz-document url-prefix() {
                     .test2 {
                         display: grid !important;
-                        grid-template-columns: repeat(2, 1fr) !important;
-                        gap: 2.5rem !important;
+                        grid-template-columns: 1fr !important;
+                        gap: 1rem !important;
+                    }
+                }
+                
+                @media (min-width: 1200px) {
+                    @-moz-document url-prefix() {
+                        .test2 {
+                            display: grid !important;
+                            grid-template-columns: repeat(2, 1fr) !important;
+                            gap: 1.5rem !important;
+                        }
                     }
                 }
                 
@@ -1072,8 +1085,18 @@ const LuxuryCar: React.FC = () => {
                 @media screen and (-webkit-min-device-pixel-ratio: 0) {
                     .test2 {
                         display: grid !important;
-                        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-                        gap: 2.5rem !important;
+                        grid-template-columns: 1fr !important;
+                        gap: 1rem !important;
+                    }
+                }
+                
+                @media (min-width: 1200px) {
+                    @media screen and (-webkit-min-device-pixel-ratio: 0) {
+                        .test2 {
+                            display: grid !important;
+                            grid-template-columns: repeat(2, 1fr) !important;
+                            gap: 1.5rem !important;
+                        }
                     }
                 }
                 

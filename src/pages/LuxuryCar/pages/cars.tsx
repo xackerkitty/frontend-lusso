@@ -212,7 +212,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
     const displayMaxPrice = selectedCurrency === 'EUR' ? Math.round(maxPrice * USD_TO_EUR) : maxPrice;
 
     return (
-        <aside className="sticky top-2 w-full lg:w-[370px] bg-white p-4 rounded-xl shadow-lg h-fit mb-8 lg:mb-0 min-h-0">
+        <aside className="sticky top-2 w-full lg:w-[320px] bg-white p-4 rounded-xl shadow-lg h-fit mb-8 lg:mb-0 min-h-0">
             <h2 className="text-2xl font-bold text-gray-800 mb-6">{t('filterTitle')}</h2>
 
             <div className="mb-6">
@@ -477,6 +477,8 @@ const CarCard: React.FC<CarCardProps> = ({ car, convertPrice, getCurrencySymbol,
     const [imageError, setImageError] = useState(false);
     const [imageLoading, setImageLoading] = useState(true);
     const [preloadedImages, setPreloadedImages] = useState<{ [key: number]: boolean }>({});
+    const [isImageExpanded, setIsImageExpanded] = useState(false);
+    const [expansionTimer, setExpansionTimer] = useState<NodeJS.Timeout | null>(null);
     const handleImageError = () => setImageError(true);
     const [brandLogoError, setBrandLogoError] = useState(false);
     const handleBrandLogoError = () => setBrandLogoError(true);
@@ -521,25 +523,53 @@ const CarCard: React.FC<CarCardProps> = ({ car, convertPrice, getCurrencySymbol,
     };
 
     const handleMouseLeave = () => {
+        // Clear any pending expansion timer
+        if (expansionTimer) {
+            clearTimeout(expansionTimer);
+            setExpansionTimer(null);
+        }
         setCurrentImageIndex(0);
+        setIsImageExpanded(false);
     };
+
+    const handleMouseEnter = () => {
+        if (car.sliderImages.length > 1 && !expansionTimer) {
+            // Start a timer for delayed expansion (1 second delay)
+            const timer = setTimeout(() => {
+                setIsImageExpanded(true);
+                setExpansionTimer(null);
+            }, 1000); // 1 second delay
+            
+            setExpansionTimer(timer);
+        }
+    };
+
+    // Clean up timer on unmount
+    useEffect(() => {
+        return () => {
+            if (expansionTimer) {
+                clearTimeout(expansionTimer);
+            }
+        };
+    }, [expansionTimer]);
 
     const displayImageUrl = car.sliderImages[currentImageIndex] || car.imageUrl;
 
     return (
         <Link
             to={`/luxurycars/cardetails/${car.slug}`}
-            className="relative bg-white rounded-lg shadow-md overflow-hidden transform hover:scale-105 transition duration-300 ease-in-out w-full border border-gray-200 block"
+            className={`relative bg-white rounded-lg shadow-md overflow-hidden transform hover:scale-105 transition-all duration-500 ease-in-out w-full border border-gray-200 block h-80 ${isImageExpanded ? 'image-expanded' : ''}`}
         >
             {car.isSold && (
-                <div className="absolute top-3 right-3 bg-red-600 text-white text-sm font-bold px-3 py-1.5 rounded-full z-10 shadow-lg">{t('soldBadge')}</div>
+                <div className={`absolute top-3 right-3 bg-red-600 text-white text-sm font-bold px-3 py-1.5 rounded-full z-20 shadow-lg transition-opacity duration-300 ${isImageExpanded ? 'opacity-0' : 'opacity-100'}`}>{t('soldBadge')}</div>
             )}
 
             <div
                 ref={imageContainerRef}
-                className="relative w-full h-48 overflow-hidden"
+                className={`relative w-full overflow-hidden transition-all duration-500 ease-in-out ${isImageExpanded ? 'h-full absolute inset-0 z-10' : 'h-56'}`}
                 onMouseMove={handleMouseMove}
                 onMouseLeave={handleMouseLeave}
+                onMouseEnter={handleMouseEnter}
             >
                 {(imageError || !displayImageUrl) ? (
                     <div className="w-full h-full bg-gray-300 flex flex-col items-center justify-center text-gray-600 text-center p-4">
@@ -559,7 +589,7 @@ const CarCard: React.FC<CarCardProps> = ({ car, convertPrice, getCurrencySymbol,
                         <img
                             src={displayImageUrl}
                             alt={`${car.model} - ${currentImageIndex + 1}`}
-                            className={`w-full h-full object-cover transition-opacity duration-500 ease-in-out ${imageLoading ? 'opacity-0' : 'opacity-100'}`}
+                            className={`w-full h-full object-cover transition-all duration-500 ease-in-out ${imageLoading ? 'opacity-0' : 'opacity-100'}`}
                             onLoad={handleImageLoad}
                             onError={handleImageError}
                             loading="lazy"
@@ -568,20 +598,20 @@ const CarCard: React.FC<CarCardProps> = ({ car, convertPrice, getCurrencySymbol,
                 )}
 
                 {car.sliderImages.length > 1 && (
-                    <div className="absolute bottom-2 left-0 right-0 flex justify-center space-x-1">
+                    <div className={`absolute bottom-2 left-0 right-0 flex justify-center space-x-1 transition-opacity duration-300 ${isImageExpanded ? 'opacity-80' : 'opacity-100'}`}>
                         {car.sliderImages.map((_, idx) => (
                             <span
                                 key={idx}
-                                className={`block w-2 h-2 rounded-full ${idx === currentImageIndex ? 'bg-white' : 'bg-gray-400 opacity-75'}`}
+                                className={`block w-2 h-2 rounded-full transition-all duration-300 ${idx === currentImageIndex ? 'bg-white shadow-md' : 'bg-gray-400 opacity-75'}`}
                             ></span>
                         ))}
                     </div>
                 )}
             </div>
-            <div className="p-3">
+            <div className={`p-3 transition-all duration-500 ease-in-out ${isImageExpanded ? 'absolute bottom-0 left-0 right-0 z-20 bg-gradient-to-t from-black/80 to-transparent text-white' : 'bg-white text-gray-800'}`}>
                 <div className="flex items-center mb-0.5">
                     {brandLogoError || !car.brandLogoUrl ? (
-                        <div className="w-6 h-6 mr-2 flex items-center justify-center bg-gray-200 rounded-full text-gray-500 text-xs">
+                        <div className={`w-6 h-6 mr-2 flex items-center justify-center rounded-full text-xs transition-colors duration-300 ${isImageExpanded ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-500'}`}>
                             {car.Brand ? car.Brand.charAt(0) : ''}
                         </div>
                     ) : (
@@ -592,11 +622,11 @@ const CarCard: React.FC<CarCardProps> = ({ car, convertPrice, getCurrencySymbol,
                             onError={handleBrandLogoError}
                         />
                     )}
-                    <h3 className="text-lg font-semibold text-gray-900 leading-tight" style={{ fontFamily: "'Ferrari-SansRegular', sans-serif" }}>
+                    <h3 className={`text-lg font-semibold leading-tight transition-colors duration-300 ${isImageExpanded ? 'text-white' : 'text-gray-900'}`} style={{ fontFamily: "'Ferrari-SansRegular', sans-serif" }}>
                         {car.model}
                     </h3>
                 </div>
-                <p className="text-lg font-bold text-gray-800">{getCurrencySymbol()}{convertPrice(car.price).toLocaleString(undefined, {maximumFractionDigits: 0})}</p>
+                <p className={`text-lg font-bold transition-colors duration-300 ${isImageExpanded ? 'text-white' : 'text-gray-800'}`}>{getCurrencySymbol()}{convertPrice(car.price).toLocaleString(undefined, {maximumFractionDigits: 0})}</p>
             </div>
         </Link>
     );
@@ -615,7 +645,7 @@ interface CarListingsProps {
 const CarListings: React.FC<CarListingsProps> = ({ cars, convertPrice, getCurrencySymbol, visibleCount, onLoadMore, t }) => {
     const visibleCars = cars.slice(0, visibleCount);
     return (
-        <div className="w-full lg:w-3/4 flex flex-col items-center">
+        <div className="w-full lg:flex-1 flex flex-col items-center">
             <section className="test2 w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-6 min-h-0">
                 {visibleCars.length > 0 ? visibleCars.map(car => (
                     <div key={car.id}>
@@ -627,7 +657,7 @@ const CarListings: React.FC<CarListingsProps> = ({ cars, convertPrice, getCurren
             </section>
             {cars.length > visibleCount && (
                 <button
-                    className="mt-8 px-6 py-2 bg-green-600 text-white font-semibold rounded-lg shadow hover:bg-green-700 transition"
+                    className="mt-8 px-6 py-2 bg-[#1a362f] text-white font-semibold rounded-lg shadow hover:bg-green-700 transition"
                     onClick={onLoadMore}
                 >
                     {t('loadMore')}
@@ -929,8 +959,14 @@ const LuxuryCar: React.FC = () => {
             className="text-gray-800 bg-gray-100 min-h-screen flex flex-col"
             style={{ fontFamily: "'Playfair Display', serif" }}
         >
-            {/* Custom scrollbar styling */}
+            {/* Custom scrollbar styling and browser compatibility fixes */}
             <style>{`
+                /* Browser compatibility reset */
+                * {
+                    box-sizing: border-box;
+                }
+                
+                /* Custom scrollbar styling */
                 .custom-scrollbar::-webkit-scrollbar {
                     width: 8px;
                 }
@@ -950,11 +986,123 @@ const LuxuryCar: React.FC = () => {
                 /* Ensure navbar is always visible */
                 body {
                     overflow-x: hidden !important;
+                    margin: 0;
+                    padding: 0;
+                }
+                
+                /* Browser-specific grid fixes */
+                .test2 {
+                    display: grid !important;
+                    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)) !important;
+                    gap: 2rem !important;
+                    width: 100% !important;
+                    box-sizing: border-box !important;
+                }
+                
+                @media (min-width: 640px) {
+                    .test2 {
+                        grid-template-columns: repeat(2, 1fr) !important;
+                        gap: 2rem !important;
+                    }
+                }
+                
+                @media (min-width: 1024px) {
+                    .test2 {
+                        grid-template-columns: repeat(2, 1fr) !important;
+                        gap: 2.5rem !important;
+                    }
+                }
+                
+                @media (min-width: 1280px) {
+                    .test2 {
+                        grid-template-columns: repeat(2, 1fr) !important;
+                        gap: 2.5rem !important;
+                    }
+                }
+                
+                /* Ensure consistent card sizing across browsers */
+                .test2 > div {
+                    width: 100% !important;
+                    min-width: 0 !important;
+                    display: flex !important;
+                    flex-direction: column !important;
+                }
+                
+                /* Car card image expansion animation */
+                .image-expanded {
+                    z-index: 5 !important;
+                }
+                
+                .image-expanded .relative {
+                    border-radius: 0.5rem !important;
+                }
+                
+                /* Smooth transitions for all card elements */
+                .test2 > div > a {
+                    position: relative;
+                    overflow: hidden;
+                }
+                
+                .test2 > div > a:hover {
+                    transform: scale(1.02) !important;
+                    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+                }
+                
+                /* Fix Edge/IE flexbox issues */
+                @supports (-ms-ime-align: auto) {
+                    .test2 {
+                        display: -ms-grid !important;
+                        -ms-grid-columns: 1fr 2.5rem 1fr !important;
+                        gap: 2.5rem !important;
+                    }
+                }
+                
+                /* Firefox-specific fixes */
+                @-moz-document url-prefix() {
+                    .test2 {
+                        display: grid !important;
+                        grid-template-columns: repeat(2, 1fr) !important;
+                        gap: 2.5rem !important;
+                    }
+                }
+                
+                /* Safari-specific fixes */
+                @media screen and (-webkit-min-device-pixel-ratio: 0) {
+                    .test2 {
+                        display: grid !important;
+                        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+                        gap: 2.5rem !important;
+                    }
                 }
                 
                 /* Ensure proper spacing for fixed navbar */
                 .cars-page-content {
                     padding-top: 0;
+                    width: 100%;
+                    box-sizing: border-box;
+                }
+                
+                /* Fix container spacing consistency - Remove max-width for full width */
+                .container {
+                    max-width: none !important;
+                    margin-left: auto !important;
+                    margin-right: auto !important;
+                    padding-left: 1rem !important;
+                    padding-right: 1rem !important;
+                    width: 100% !important;
+                }
+                
+                /* Add padding to match navbar menu position */
+                main {
+                    padding-left: 2rem !important;
+                    padding-right: 2rem !important;
+                }
+                
+                @media (min-width: 1024px) {
+                    main {
+                        padding-left: 4rem !important;
+                        padding-right: 4rem !important;
+                    }
                 }
             `}</style>
             {/* Navbar component with logo */}
@@ -980,7 +1128,7 @@ const LuxuryCar: React.FC = () => {
             
             <div className="cars-page-content">
                 <HeroSection t={t} />
-                <main className="test2 container mx-auto py-8 px-4 flex flex-col lg:flex-row gap-8 flex-grow">
+                <main className="w-full py-8 px-4 flex flex-col lg:flex-row gap-8 flex-grow" style={{ maxWidth: 'none', margin: '0 auto' }}>
                 {error ? (
                     <div className="w-full text-center py-20 text-red-600 text-xl">
                         {t('errorLoading')} {error}

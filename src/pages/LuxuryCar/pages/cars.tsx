@@ -566,7 +566,7 @@ const CarCard: React.FC<CarCardProps> = ({ car, convertPrice, getCurrencySymbol,
 
             <div
                 ref={imageContainerRef}
-                className={`relative w-full overflow-hidden transition-all duration-500 ease-in-out ${isImageExpanded ? 'h-full absolute inset-0 z-10' : 'h-56'}`}
+                className="relative w-full h-full overflow-hidden transition-all duration-500 ease-in-out"
                 onMouseMove={handleMouseMove}
                 onMouseLeave={handleMouseLeave}
                 onMouseEnter={handleMouseEnter}
@@ -608,10 +608,10 @@ const CarCard: React.FC<CarCardProps> = ({ car, convertPrice, getCurrencySymbol,
                     </div>
                 )}
             </div>
-            <div className={`p-3 transition-all duration-500 ease-in-out ${isImageExpanded ? 'absolute bottom-0 left-0 right-0 z-20 bg-gradient-to-t from-black/80 to-transparent text-white' : 'bg-white text-gray-800'}`}>
+            <div className="absolute bottom-0 left-0 right-0 z-20 bg-gradient-to-t from-black/80 to-transparent text-white p-3">
                 <div className="flex items-center mb-0.5">
                     {brandLogoError || !car.brandLogoUrl ? (
-                        <div className={`w-6 h-6 mr-2 flex items-center justify-center rounded-full text-xs transition-colors duration-300 ${isImageExpanded ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-500'}`}>
+                        <div className="w-6 h-6 mr-2 flex items-center justify-center rounded-full text-xs bg-white/20 text-white">
                             {car.Brand ? car.Brand.charAt(0) : ''}
                         </div>
                     ) : (
@@ -622,11 +622,11 @@ const CarCard: React.FC<CarCardProps> = ({ car, convertPrice, getCurrencySymbol,
                             onError={handleBrandLogoError}
                         />
                     )}
-                    <h3 className={`text-lg font-semibold leading-tight transition-colors duration-300 ${isImageExpanded ? 'text-white' : 'text-gray-900'}`} style={{ fontFamily: "'Ferrari-SansRegular', sans-serif" }}>
+                    <h3 className="text-lg font-semibold leading-tight text-white" style={{ fontFamily: "'Ferrari-SansRegular', sans-serif" }}>
                         {car.model}
                     </h3>
                 </div>
-                <p className={`text-lg font-bold transition-colors duration-300 ${isImageExpanded ? 'text-white' : 'text-gray-800'}`}>{getCurrencySymbol()}{convertPrice(car.price).toLocaleString(undefined, {maximumFractionDigits: 0})}</p>
+                <p className="text-lg font-bold text-white">{getCurrencySymbol()}{convertPrice(car.price).toLocaleString(undefined, {maximumFractionDigits: 0})}</p>
             </div>
         </Link>
     );

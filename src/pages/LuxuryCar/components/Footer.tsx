@@ -40,7 +40,7 @@ const Footer: React.FC<FooterProps> = ({ logoUrl, className }) => {
               <h4 className="font-semibold text-lg text-white mb-1">
                 <span style={{ fontFamily: "'Playfair Display', serif" }}>Call us</span>
               </h4>
-              <p>+995 555188888</p>
+              <p>+995 555 18 88 88</p>
             </div>
           </div>
           {/* Mail us */}

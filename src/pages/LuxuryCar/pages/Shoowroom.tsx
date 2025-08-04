@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import LoadingScreen from '../components/LoadingScreen';
 
-// --- ABSOLUTELY CRITICAL: IMPORT LOCAL PLACEHOLDER IMAGES ---
+// Local placeholder images
 import defaultMainImage from '../scr/images/gallery01.png';
 import defaultAboutImage from '../scr/images/gallery01.png';
 
@@ -151,7 +151,7 @@ interface StrapiCollectionResponse<T> {
 
 
 
-// --- Tailwind CSS Color Utility Classes (unchanged) ---
+// Tailwind CSS Color Utility Classes
 // Type alias for all possible media data shapes used in getMediaUrl
 type MediaDataContent =
     | string
@@ -172,7 +172,7 @@ const COLORS = {
     grayTextLighter: 'text-gray-400',
 };
 
-// --- Helper function to construct full media URL from Strapi data (unchanged logic) ---
+// Helper function to construct full media URL from Strapi data
 const getMediaUrl = (
     mediaDataContent: MediaDataContent
 ): string => {
@@ -239,7 +239,7 @@ const getMediaUrl = (
 };
 
 
-// --- Intersection Observer Hook for animations (unchanged) ---
+// Intersection Observer Hook for animations
 const useIntersectionObserver = (
     ref: React.RefObject<HTMLElement>,
     options: IntersectionObserverInit = { threshold: 0.1 }
@@ -268,7 +268,7 @@ const useIntersectionObserver = (
     return isVisible;
 };
 
-// --- Animated Section Component (unchanged) ---
+// Animated Section Component
 const AnimatedSection: React.FC<{
     children: React.ReactNode;
     className?: string;
@@ -293,7 +293,7 @@ const AnimatedSection: React.FC<{
     );
 };
 
-// --- Hero Section Component (MODIFIED FOR HEIGHT AND LAYOUT - logic untouched) ---
+// Hero Section Component
 const HeroSection: React.FC<{
     videoSrc: string;
     posterSrc: string;
@@ -441,7 +441,7 @@ const HeroSection: React.FC<{
     );
 };
 
-// --- About Section Component (unchanged logic, dynamic content) ---
+// About Section Component
 const AboutSection: React.FC<{
     title: string;
     paragraph1: string;
@@ -496,7 +496,7 @@ const AboutSection: React.FC<{
     );
 };
 
-// --- Gallery Section Component (MODIFIED to include onImageClick prop) ---
+// Gallery Section Component
 interface GallerySectionProps {
     galleryData: GalleryImageCard[];
     onImageClick: (imageUrl: string, imageTitle: string) => void; // New prop for click handler
@@ -567,7 +567,7 @@ const GallerySection: React.FC<GallerySectionProps> = ({ galleryData, onImageCli
 };
 
 
-// --- ImageModal Component (UPDATED DESIGN) ---
+// Image modal component for gallery images
 interface ImageModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -576,7 +576,6 @@ interface ImageModalProps {
 }
 
 const ImageModal: React.FC<ImageModalProps> = ({ isOpen, onClose, imageUrl, imageTitle }) => {
-    // State for mount/unmount animation
     const [shouldRender, setShouldRender] = useState(isOpen);
     const modalRef = useRef<HTMLDivElement>(null);
 
@@ -603,7 +602,7 @@ const ImageModal: React.FC<ImageModalProps> = ({ isOpen, onClose, imageUrl, imag
 
     return (
         <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-90 backdrop-filter backdrop-blur-md transition-opacity duration-300 ease-out"
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-95 backdrop-filter backdrop-blur-lg transition-opacity duration-300 ease-out"
             onClick={onClose}
         >
             <div
@@ -613,10 +612,10 @@ const ImageModal: React.FC<ImageModalProps> = ({ isOpen, onClose, imageUrl, imag
                 onClick={(e) => e.stopPropagation()}
             >
                 <button
-                    className="absolute top-4 right-4 z-20 bg-black bg-opacity-60 hover:bg-opacity-80 text-white rounded-full
+                    className="absolute top-4 right-4 z-20 bg-black bg-opacity-80 hover:bg-opacity-100 text-white rounded-full
                                w-12 h-12 flex items-center justify-center text-xl font-bold
                                transition-all duration-200 ease-in-out transform hover:scale-110 backdrop-filter backdrop-blur-sm
-                               border border-white border-opacity-20"
+                               border border-white border-opacity-30"
                     onClick={onClose}
                     aria-label="Close Image"
                 >
@@ -638,12 +637,11 @@ const ImageModal: React.FC<ImageModalProps> = ({ isOpen, onClose, imageUrl, imag
                         />
                     )}
 
-                    {/* Overlay with title and description */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60 pointer-events-none rounded-lg"></div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-70 pointer-events-none rounded-lg"></div>
                     
                     {imageTitle && (
                         <div className="absolute bottom-0 left-0 right-0 p-6 text-white z-10">
-                            <h3 className="text-2xl sm:text-3xl md:text-4xl font-heading font-extrabold mb-2 drop-shadow-lg"
+                            <h3 className="text-2xl sm:text-3xl md:text-4xl font-heading font-extrabold mb-2 drop-shadow-2xl text-white"
                                 style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 700 }}
                             >
                                 {imageTitle}
@@ -657,21 +655,20 @@ const ImageModal: React.FC<ImageModalProps> = ({ isOpen, onClose, imageUrl, imag
 };
 
 
-// --- Simple in-memory cache for SPA navigation ---
+// Simple in-memory cache for SPA navigation
 let cachedShowroomData: LuxuryCarsShowroomAttributes | null = null;
 let cachedLogoData: LuxuryCarAttributes | null = null;
 
-// --- Main ShowroomPage Component: Orchestrates the entire page layout ---
+// Main ShowroomPage Component
 const ShowroomPage: React.FC = () => {
-    // Use cached data if available
-    const [currentLocale, setCurrentLocale] = useState<string>('en'); // Add locale state
+    const [currentLocale, setCurrentLocale] = useState<string>('en');
     const [showroomData, setShowroomData] = useState<LuxuryCarsShowroomAttributes | null>(cachedShowroomData);
     const [logoData, setLogoData] = useState<LuxuryCarAttributes | null>(cachedLogoData);
     const [loading, setLoading] = useState(!(cachedShowroomData && cachedLogoData));
     const [loadingVisible, setLoadingVisible] = useState(!(cachedShowroomData && cachedLogoData));
     const [error, setError] = useState<string | null>(null);
 
-    // NEW STATES for the Image Modal
+    // States for the Image Modal
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalImageUrl, setModalImageUrl] = useState<string | null>(null);
     const [modalImageTitle, setModalImageTitle] = useState<string | null>(null);
@@ -684,7 +681,7 @@ const ShowroomPage: React.FC = () => {
         }
     }, []);
 
-    // NEW: Handlers for the Image Modal
+    // Handlers for the Image Modal
     const handleImageClick = useCallback((imageUrl: string, imageTitle: string) => {
         setModalImageUrl(imageUrl);
         setModalImageTitle(imageTitle);
@@ -697,7 +694,7 @@ const ShowroomPage: React.FC = () => {
         setModalImageTitle(null);
     }, []);
 
-    // --- Function to handle locale change from Navbar ---
+    // Function to handle locale change from Navbar
     const handleLocaleChange = (locale: string) => {
         setCurrentLocale(locale);
         // Clear cache when locale changes to force refetch
@@ -709,7 +706,7 @@ const ShowroomPage: React.FC = () => {
         fetchData(locale);
     };
 
-    // --- Data fetching function with locale support ---
+    // Data fetching function with locale support
     const fetchData = async (locale: string = 'en') => {
         setLoading(true);
         const startTime = Date.now(); // Track when loading started
@@ -722,7 +719,7 @@ const ShowroomPage: React.FC = () => {
             const populateParam = locale === 'ka' ? '&populate' : '?populate';
 
             try {
-                // --- Fetch Luxury Car Data (for logo) with locale ---
+                // Fetch Luxury Car Data (for logo) with locale
                 console.log('Fetching logo with URL:', `${STRAPI_BASE_URL}/api/luxurycar${localeParam}${locale === 'ka' ? '&' : '?'}populate=*`);
                 const luxuryCarApiUrl = `${STRAPI_BASE_URL}/api/luxurycar${localeParam}${locale === 'ka' ? '&' : '?'}populate=*`;
                 const luxuryCarResponse = await fetch(luxuryCarApiUrl);
@@ -746,7 +743,7 @@ const ShowroomPage: React.FC = () => {
                     }
                 }
 
-                // --- Fetch Showroom Page Data with locale ---
+                // Fetch Showroom Page Data with locale
                 const showroomApiUrl = `${STRAPI_BASE_URL}/api/luxurycars-showroom${localeParam}${populateParam}[0]=mainBG&populate[1]=descriptionIMG&populate[2]=galleryCards.image&populate[3]=cards`;
                 console.log('Fetching showroom data with URL:', showroomApiUrl);
                 const showroomResponse = await fetch(showroomApiUrl);
@@ -780,7 +777,7 @@ const ShowroomPage: React.FC = () => {
                 throw fetchError;
             }
 
-        } catch (e: unknown) { // Use 'unknown' for type safety
+        } catch (e: unknown) {
             if (e instanceof Error) {
                 setError(`Failed to load content: ${e.message}`);
             } else {
@@ -861,7 +858,7 @@ const ShowroomPage: React.FC = () => {
         : [];
 
 
-    // --- Loading and Error States ---
+    // Loading and Error States
     if (error) {
         return (
             <div className="flex items-center justify-center min-h-screen bg-red-800 text-white p-4 text-center">
@@ -871,7 +868,6 @@ const ShowroomPage: React.FC = () => {
         );
     }
 
-    // --- Main Render ---
     return (
         <div
             className={`min-h-screen ${COLORS.grayTextLight} flex flex-col items-center overflow-hidden font-body ${COLORS.mainDarkGreen}`}

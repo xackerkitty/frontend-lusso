@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useLanguage } from '../../contexts/LanguageContext';
 
 // --- Simple in-memory cache for SPA navigation ---
@@ -11,8 +11,6 @@ import LoadingScreen from "./components/LoadingScreen";
 import "./components/navbar.css";
 import "./scr/css/style.css";
 import { useNavigate } from 'react-router-dom';
-import AOS from "aos";
-import "aos/dist/aos.css";
 import { motion } from "framer-motion";
 // --- Interface Definitions ---
 
@@ -115,9 +113,8 @@ interface LuxuryHeroAttributes {
   ourCars?: ourCars;
 }
 
-// Fallback video source for robustness.
-const FALLBACK_VIDEO_URL = "/images/car/For Website 30SEC - Trim.mp4";
-const FALLBACK_VIDEO_MIME = "video/mp4";
+// Local video source
+const LOCAL_VIDEO_URL = "/images/car/For Website 30SEC - Trim.mp4";
 
 // --- LuxuryHeroFetcher Component ---
 // This component fetches and displays hero data, including a dynamic featured car section.
@@ -136,8 +133,6 @@ const LuxuryHeroFetcher = () => {
   const [loadingVisible, setLoadingVisible] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [videoLoaded, setVideoLoaded] = useState(false);
-  const [useFallbackVideo, setUseFallbackVideo] = useState(false);
-  const [videoFailed, setVideoFailed] = useState(false); // If both videos fail
   // Featured cars state
   const [featuredCars, setFeaturedCars] = useState<FeaturedCar[]>(cachedFeaturedCars);
   const [currentCarIndex, setCurrentCarIndex] = useState(0);
@@ -192,7 +187,7 @@ const LuxuryHeroFetcher = () => {
   // --- Data fetching function ---
   const fetchData = async (locale: string = 'en') => {
     setLoading(true);
-    const startTime = Date.now(); // Track when loading started
+    const startTime = Date.now();
     
     try {
       if (cachedHeroData && cachedLogoData && cachedFeaturedCars.length > 0 && locale === 'en') {
@@ -224,15 +219,15 @@ const LuxuryHeroFetcher = () => {
             if (locale === 'en') cachedLogoData = logoJson.data;
           }
 
-          // Fetch main content with locale
-          const mainUrl = `${STRAPI_BASE_URL}/api/luxurycars-home${localeParam}${populateParam}[0]=mainBG&populate[1]=aboutUsBackground&populate[2]=carImg&populate[3]=featuredCar&populate[4]=featuredCar.carPhoto`;
+          // Fetch main content with locale (excluding video data since we use local video)
+          const mainUrl = `${STRAPI_BASE_URL}/api/luxurycars-home${localeParam}${populateParam}[0]=aboutUsBackground&populate[1]=carImg&populate[2]=featuredCar&populate[3]=featuredCar.carPhoto`;
           console.log('Fetching main content with URL:', mainUrl);
           const res = await fetch(mainUrl);
           
           if (!res.ok) {
             console.warn(`Main content request failed with status ${res.status}, falling back to English`);
             // Fallback to English if Georgian content is not available
-            const englishRes = await fetch(`${STRAPI_BASE_URL}/api/luxurycars-home?populate[0]=mainBG&populate[1]=aboutUsBackground&populate[2]=carImg&populate[3]=featuredCar&populate[4]=featuredCar.carPhoto`);
+            const englishRes = await fetch(`${STRAPI_BASE_URL}/api/luxurycars-home?populate[0]=aboutUsBackground&populate[1]=carImg&populate[2]=featuredCar&populate[3]=featuredCar.carPhoto`);
             if (!englishRes.ok) throw new Error(`HTTP error! Status: ${englishRes.status}`);
             const json = await englishRes.json();
             setHeroData(json.data);
@@ -271,13 +266,14 @@ const LuxuryHeroFetcher = () => {
       setFeaturedCars([]);
       if (locale === 'en') cachedFeaturedCars = [];
     } finally {
+      // Hide loading after minimum time regardless of video status
       const loadTime = Date.now() - startTime;
       const minLoadTime = 2000; // Minimum 2 seconds
       const remainingTime = Math.max(0, minLoadTime - loadTime);
       
       setTimeout(() => {
         setLoadingVisible(false);
-        setTimeout(() => setLoading(false), 1000); // Wait for fade to complete
+        setTimeout(() => setLoading(false), 1000);
       }, remainingTime);
     }
   };
@@ -411,44 +407,30 @@ const LuxuryHeroFetcher = () => {
           }}
         >
           {/* Video background */}
-          {/* Video background with fallback logic */}
-          {/* Main video with preload and improved error handling */}
-          {heroData?.mainBG && !useFallbackVideo && !videoFailed && (
-            <video
-              autoPlay
-              loop
-              muted
-              playsInline
-              preload="auto"
-              poster={getImageUrl(heroData.aboutUsBackground)}
-              className="absolute inset-0 w-full h-full object-cover z-0"
-              style={{ pointerEvents: "none", display: videoLoaded ? "block" : "none" }}
-              src={getImageUrl(heroData.mainBG)}
-              onLoadedData={() => setVideoLoaded(true)}
-              onError={() => { setUseFallbackVideo(true); setVideoLoaded(false); }}
-            />
-          )}
-          {/* Fallback video if main video fails */}
-          {useFallbackVideo && !videoFailed && (
-            <video
-              autoPlay
-              loop
-              muted
-              playsInline
-              preload="auto"
-              poster={getImageUrl(heroData.aboutUsBackground)}
-              className="absolute inset-0 w-full h-full object-cover z-0"
-              style={{ pointerEvents: "none", display: videoLoaded ? "block" : "none" }}
-              src={FALLBACK_VIDEO_URL}
-              onLoadedData={() => setVideoLoaded(true)}
-              onError={() => { setVideoLoaded(false); setVideoFailed(true); }}
-            />
-          )}
-          {/* Fallback image if both videos fail */}
-          {videoFailed && (
+          {/* Local video background */}
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="metadata"
+            poster={getImageUrl(heroData?.aboutUsBackground)}
+            className="absolute inset-0 w-full h-full object-cover z-0"
+            style={{ pointerEvents: "none" }}
+            src={LOCAL_VIDEO_URL}
+            onCanPlay={() => setVideoLoaded(true)}
+            onLoadedData={() => setVideoLoaded(true)}
+            onError={() => {
+              console.error('Video failed to load');
+              setVideoLoaded(false);
+            }}
+          />
+          
+          {/* Fallback image if video fails to load */}
+          {!videoLoaded && (
             <>
               <img
-                src={getImageUrl(heroData.aboutUsBackground) || logoUrl}
+                src={getImageUrl(heroData?.aboutUsBackground) || logoUrl}
                 alt={t('fallbackBackground')}
                 className="absolute inset-0 w-full h-full object-cover z-0"
                 style={{ pointerEvents: "none" }}
@@ -462,14 +444,6 @@ const LuxuryHeroFetcher = () => {
           <div className="absolute top-0 left-0 w-full h-1/5 z-10 pointer-events-none" style={{background: 'linear-gradient(to bottom, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.0) 100%)'}} />
           <div className="absolute bottom-0 left-0 w-full h-1/5 z-10 pointer-events-none" style={{background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.0) 100%)'}} />
           <div className="absolute inset-0 bg-black/30 z-10 pointer-events-none" />
-          {/* Loading overlay until video or fallback image is ready */}
-          {!videoLoaded && !videoFailed && (
-            <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/40">
-              <span className="text-heading text-lg animate-pulse text-white" style={{ fontFamily: 'Ferrari Sans, sans-serif', fontWeight: 300 }}>
-                {t('loadingVideo')}
-              </span>
-            </div>
-          )}
           {/* Main content overlaying the hero media */}
           <div className="relative z-10 flex justify-start items-center h-full w-full px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16">
             <motion.div

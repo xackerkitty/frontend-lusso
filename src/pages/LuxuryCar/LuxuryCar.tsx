@@ -133,6 +133,7 @@ const LuxuryHeroFetcher = () => {
   const [loadingVisible, setLoadingVisible] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [videoLoaded, setVideoLoaded] = useState(false);
+  const [videoPlaying, setVideoPlaying] = useState(false);
   // Featured cars state
   const [featuredCars, setFeaturedCars] = useState<FeaturedCar[]>(cachedFeaturedCars);
   const [currentCarIndex, setCurrentCarIndex] = useState(0);
@@ -266,7 +267,7 @@ const LuxuryHeroFetcher = () => {
       setFeaturedCars([]);
       if (locale === 'en') cachedFeaturedCars = [];
     } finally {
-      // Hide loading after minimum time regardless of video status
+      // Hide loading after minimum time has passed
       const loadTime = Date.now() - startTime;
       const minLoadTime = 2000; // Minimum 2 seconds
       const remainingTime = Math.max(0, minLoadTime - loadTime);
@@ -300,9 +301,7 @@ const LuxuryHeroFetcher = () => {
       noFeaturedCars: "No featured cars available.",
       ourCars: "Our Cars",
       ourCarsDesc: "Explore our exclusive collection of luxury vehicles.",
-      explore: "Explore",
-      loadingVideo: "Loading video...",
-      fallbackBackground: "Fallback Background"
+      explore: "Explore"
     },
     ka: {
       ourFeaturedCars: "ჩვენი გამორჩეული მანქანები",
@@ -311,9 +310,7 @@ const LuxuryHeroFetcher = () => {
       noFeaturedCars: "გამორჩეული მანქანები მიუწვდომელია.",
       ourCars: "ჩვენი მანქანები",
       ourCarsDesc: "შეისწავლეთ ჩვენი ექსკლუზიური ძვირადღირებული მანქანების კოლექცია.",
-      explore: "შესწავლა",
-      loadingVideo: "ვიდეო იტვირთება...",
-      fallbackBackground: "სათადარიგო ფონი"
+      explore: "შესწავლა"
     }
   };
 
@@ -326,6 +323,17 @@ const LuxuryHeroFetcher = () => {
   useEffect(() => {
     fetchData(currentLocale);
   }, []); // Remove currentLocale from dependencies to prevent infinite loops
+
+  // UseEffect to handle video loading and hide loading screen when video is ready
+  useEffect(() => {
+    if (videoLoaded && videoPlaying && loading) {
+      // Additional delay to ensure smooth transition
+      setTimeout(() => {
+        setLoadingVisible(false);
+        setTimeout(() => setLoading(false), 1000);
+      }, 500);
+    }
+  }, [videoLoaded, videoPlaying, loading]);
 
   // Button navigation handlers
   const navigate = useNavigate();
@@ -406,41 +414,36 @@ const LuxuryHeroFetcher = () => {
             scrollSnapStop: isMobileDevice() ? "normal" : "always"
           }}
         >
-          {/* Video background */}
-          {/* Local video background */}
+          {/* Local video background - no fallback, video only */}
           <video
             autoPlay
             loop
             muted
             playsInline
-            preload="metadata"
-            poster={getImageUrl(heroData?.aboutUsBackground)}
+            preload="auto"
             className="absolute inset-0 w-full h-full object-cover z-0"
             style={{ pointerEvents: "none" }}
             src={LOCAL_VIDEO_URL}
-            onCanPlay={() => setVideoLoaded(true)}
-            onLoadedData={() => setVideoLoaded(true)}
-            onError={() => {
-              console.error('Video failed to load');
+            onLoadedData={() => {
+              console.log('Video loaded');
+              setVideoLoaded(true);
+            }}
+            onCanPlay={() => {
+              console.log('Video can play');
+              setVideoLoaded(true);
+            }}
+            onPlaying={() => {
+              console.log('Video is playing');
+              setVideoPlaying(true);
+            }}
+            onError={(e) => {
+              console.error('Video failed to load:', e);
               setVideoLoaded(false);
+              setVideoPlaying(false);
             }}
           />
           
-          {/* Fallback image if video fails to load */}
-          {!videoLoaded && (
-            <>
-              <img
-                src={getImageUrl(heroData?.aboutUsBackground) || logoUrl}
-                alt={t('fallbackBackground')}
-                className="absolute inset-0 w-full h-full object-cover z-0"
-                style={{ pointerEvents: "none" }}
-              />
-              {/* Gradient overlays for fallback image */}
-              <div className="absolute top-0 left-0 w-full h-1/5 z-10 pointer-events-none" style={{background: 'linear-gradient(to bottom, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.0) 100%)'}} />
-              <div className="absolute bottom-0 left-0 w-full h-1/5 z-10 pointer-events-none" style={{background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.0) 100%)'}} />
-            </>
-          )}
-          {/* Gradient overlays for video backgrounds (always present) */}
+          {/* Gradient overlays */}
           <div className="absolute top-0 left-0 w-full h-1/5 z-10 pointer-events-none" style={{background: 'linear-gradient(to bottom, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.0) 100%)'}} />
           <div className="absolute bottom-0 left-0 w-full h-1/5 z-10 pointer-events-none" style={{background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.0) 100%)'}} />
           <div className="absolute inset-0 bg-black/30 z-10 pointer-events-none" />

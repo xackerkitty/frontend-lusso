@@ -279,6 +279,9 @@ const CompanyDetailPage: React.FC = () => {
             case "luxurycars":
                 navigate("/luxurycars/");
                 break;
+            case "wfcnikelusso":
+                navigate("/wfchome");
+                break;
             // Add more cases as needed
         }
     };

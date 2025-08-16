@@ -14,18 +14,19 @@ import CarDetail from './pages/LuxuryCar/pages/CarDetail';
 import Aboutus from './pages/LuxuryCar/pages/aboutUs';
 import Contactus from './pages/LuxuryCar/pages/contactUs';
 import Cars from './pages/LuxuryCar/pages/cars';
-import WfcNikeLussoLayout from './pages/wfcnikelusso/WfcNikeLussoLayout';
-import WfcNikeLusso from './pages/wfcnikelusso/WfcNikeLusso';
-import TeamPage from './pages/wfcnikelusso/TeamPage';
-import AthleteDetailPage from './pages/wfcnikelusso/AthleteDetailPage';
-import NewsPage_new from './pages/wfcnikelusso/NewsPage_new';
-import GalleryPage from './pages/wfcnikelusso/GalleryPage';
-import FixturesPage from './pages/wfcnikelusso/FixturesPage';
+import WFCHome from './pages/wfcnikelusso/wfcnikehome'
+// import WfcNikeLussoLayout from './pages/wfcnikelusso/WfcNikeLussoLayout';
+// import WfcNikeLusso from './pages/wfcnikelusso/WfcNikeLusso';
+// import TeamPage from './pages/wfcnikelusso/TeamPage';
+// import AthleteDetailPage from './pages/wfcnikelusso/AthleteDetailPage';
+// import NewsPage_new from './pages/wfcnikelusso/NewsPage_new';
+// import GalleryPage from './pages/wfcnikelusso/GalleryPage';
+// import FixturesPage from './pages/wfcnikelusso/FixturesPage';
 import RemoveBGApp from './pages/removeBG';
 import "./style.css";
 
 // Router Helper Component - Simplified as per your original code
-const UserRoute = ({ element, path }: { element: React.ReactNode; path: string }) => {
+const UserRoute = ({ element }: { element: React.ReactNode; path: string }) => {
   return (
     // For now, we return the element directly. In a real app, you'd have a working layout.
     <>{element}</>
@@ -179,6 +180,36 @@ function LussoMainPage() {
           // Prioritize "wfc-nike-lusso" to be second
           if (a.slug === 'wfc-nike-lusso') return -1;
           if (b.slug === 'wfc-nike-lusso') return 1;
+          // Prioritize "lusso-invest" to be third
+          if (a.slug === 'lusso-invest') return -1;
+          if (b.slug === 'lusso-invest') return 1;
+          // Prioritize "blu-control" to be fourth
+          if (a.slug === 'blu-control') return -1;
+          if (b.slug === 'blu-control') return 1;
+          // Prioritize "smart-development" to be fifth
+          if (a.slug === 'smart-development') return -1;
+          if (b.slug === 'smart-development') return 1;
+          // Prioritize "lusso-construction" to be sixth
+          if (a.slug === 'lusso-construction') return -1;
+          if (b.slug === 'lusso-construction') return 1;
+          // Prioritize "lusso-dubai" to be seventh
+          if (a.slug === 'lusso-dubai') return -1;
+          if (b.slug === 'lusso-dubai') return 1;
+
+           if (a.slug === 'dubai-luxury') return -1;
+          if (b.slug === 'dubai-luxury') return 1;
+          // Prioritize "asc-dubai-rent-a-car" to be eighth
+          if (a.slug === 'asc-dubai-rent-a-car') return -1;
+          if (b.slug === 'asc-dubai-rent-a-car') return 1;
+          // Prioritize "dubai-primeblu" to be ninth
+          if (a.slug === 'dubai-primeblu') return -1;
+          if (b.slug === 'dubai-primeblu') return 1;
+          // Prioritize "lusso-germany" to be tenth
+          if (a.slug === 'lusso-germany') return -1;
+          if (b.slug === 'lusso-germany') return 1;
+          // Prioritize "blu-tourism" to be eleventh
+          if (a.slug === 'blu-tourism') return -1;
+          if (b.slug === 'blu-tourism') return 1;
           // Then sort by ID (lowest to highest)
           return a.id - b.id;
         });
@@ -375,7 +406,8 @@ function LussoMainPage() {
 type SectionType = 'nike' | 'construction' | 'smart' | 'invest' | 'blu' | 'luxury';
 
 // Common layout component for Nike and other pages - Simplified due to commented out imports
-function PageLayout({ children, section }: { children: React.ReactNode; section?: SectionType }) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function PageLayout({ children }: { children: React.ReactNode; section?: SectionType }) {
   return (
     <div className="flex flex-col min-h-screen">
       <main className="flex-grow">
@@ -395,7 +427,7 @@ function App() {
         {/* Dynamic route for individual company pages, now using ':slug' */}
         <Route path="/companies/:slug" element={<CompanyDetailPage />} />
 
-        All other routes are commented out as their components are not imported in your original code
+        {/* All other routes are commented out as their components are not imported in your original code
           <Route path="/wfcnikelusso/*" element={<WfcNikeLussoLayout />}>
           <Route path="" element={<WfcNikeLusso />} />
           <Route path="team" element={<TeamPage />} />
@@ -410,6 +442,7 @@ function App() {
 
           
         </Route>
+        */}
 
 
          <Route path="/construction" element={<UserRoute path="/construction" element={<Construction />} />} />
@@ -436,6 +469,7 @@ function App() {
         <Route path="/luxurycars/ourcars" element={<UserRoute path="/luxurycars/cars" element={<Cars />} />} />
         <Route path="/luxurycars/cardetails/:slug" element={<CarDetail />} />  
         <Route path="/removebg" element={<RemoveBGApp />} />
+        <Route path="/wfchome" element={<WFCHome />} />
       </Routes>
     </LanguageProvider>
   );

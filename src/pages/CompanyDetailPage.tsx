@@ -67,6 +67,32 @@ interface MainBanner {
     publishedAt: string;
 }
 
+interface FirstBanner {
+    id: number;
+    url: string;
+    name: string;
+    alternativeText: string | null;
+    caption: string | null;
+    width: number;
+    height: number;
+    formats: {
+        large?: { url: string; };
+        small?: { url: string; };
+        medium?: { url: string; };
+        thumbnail?: { url: string; };
+    } | null;
+    hash: string;
+    ext: string;
+    mime: string;
+    size: number;
+    previewUrl: string | null;
+    provider: string;
+    provider_metadata: any | null;
+    createdAt: string;
+    updatedAt: string;
+    publishedAt: string;
+}
+
 // Updated: ContactInfo can now include social media types
 interface ContactInfo {
     id: number;
@@ -90,6 +116,7 @@ interface Company {
     mainWebLink?: string | null;
     companyLogo: CompanyLogo | null;
     mainBanner: MainBanner | null;
+    firstBanner: FirstBanner | null;
     contactInfo: ContactInfo[];
 }
 
@@ -177,6 +204,33 @@ const CompanyDetailPage: React.FC = () => {
                         };
                     }
 
+                    let firstBannerImage: FirstBanner | null = null;
+                    if (companyItem.firstBanner && companyItem.firstBanner.url) {
+                        const banner = companyItem.firstBanner;
+                        firstBannerImage = {
+                            id: banner.id,
+                            name: banner.name,
+                            alternativeText: banner.alternativeText,
+                            caption: banner.caption,
+                            width: banner.width,
+                            height: banner.height,
+                            formats: banner.formats || null,
+                            hash: banner.hash,
+                            ext: banner.ext,
+                            mime: banner.mime,
+                            size: banner.size,
+                            previewUrl: banner.previewUrl,
+                            provider: banner.provider,
+                            provider_metadata: banner.provider_metadata,
+                            createdAt: banner.createdAt,
+                            updatedAt: banner.updatedAt,
+                            publishedAt: banner.publishedAt,
+                            url: banner.url.startsWith('http://') || banner.url.startsWith('https://')
+                                ? banner.url
+                                : `${BASE_API_URL}${banner.url}`
+                        };
+                    }
+
                     const processedContactInfo: ContactInfo[] = (companyItem.contactInfo || [])
                         .filter((info: any) => info && info.contact_detail && info.contact_type)
                         .map((info: any) => ({
@@ -201,6 +255,7 @@ const CompanyDetailPage: React.FC = () => {
                         mainWebLink: companyItem.mainWebLink || null,
                         companyLogo: companyLogo,
                         mainBanner: mainBannerImage,
+                        firstBanner: firstBannerImage,
                         contactInfo: processedContactInfo,
                     });
                 } else {
@@ -289,14 +344,26 @@ const CompanyDetailPage: React.FC = () => {
         </nav>
 
         <main className="flex flex-col md:flex-row min-h-screen md:min-h-[120vh] pt-16">
-          <div className="w-full md:w-1/2 flex items-center justify-center p-8 bg-[#0A260A] bg-opacity-90 rounded-md">
-            <div className="max-w-xl text-left mx-auto">
-              <h1 className="text-4xl sm:text-5xl font-bold mb-6 text-white rounded-md">
-                {company.mainTitle || company.companyName || "Null"}
-              </h1>
-              <p className="text-base sm:text-lg leading-relaxed mb-8 text-gray-300 rounded-md">
-                {company.mainDesc || "Null"}
-              </p>
+          <div 
+            className="w-full md:w-1/2 flex items-start justify-center pt-8 pb-2 px-8 rounded-md"
+            style={{
+              backgroundImage: company.firstBanner && company.firstBanner.url 
+                ? `url('${company.firstBanner.url}')`
+                : "url('/images/car/Artboard1.jpg')",
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              backgroundRepeat: "no-repeat"
+            }}
+          >
+            <div className="max-w-xl text-left mx-auto mt-16 space-y-12">
+              <div>
+                <h1 className="text-4xl sm:text-5xl font-bold mb-8 text-white rounded-md">
+                  {company.mainTitle || company.companyName || "Null"}
+                </h1>
+                <p className="text-base sm:text-lg leading-relaxed text-gray-300 rounded-md">
+                  {company.mainDesc || "Null"}
+                </p>
+              </div>
 
               {/* Show button only if mainWebLink is valid, not a placeholder, and not 'nothing' */}
               {company.mainWebLink &&
@@ -305,18 +372,21 @@ const CompanyDetailPage: React.FC = () => {
                 company.mainWebLink.trim() !== "" &&
                 company.mainWebLink !== "nothing" &&
                 company.buttonTxt && (
-                  <button
-                    onClick={handleDiscoverWebsite}
-                    className="border-2 border-white hover:bg-white/10  text-white font-light py-3 px-6 rounded-lg shadow-lg transition duration-300 ease-in-out transform hover:scale-105 mb-8"
-                  >
-                    {company.buttonTxt}
-                  </button>
+                  <div>
+                    <button
+                      onClick={handleDiscoverWebsite}
+                      className="border-2 border-white hover:bg-white/10  text-white font-light py-3 px-6 rounded-lg shadow-lg transition duration-300 ease-in-out transform hover:scale-105"
+                    >
+                      {company.buttonTxt}
+                    </button>
+                  </div>
                 )}
 
-              <h2 className="text-2xl sm:text-3xl font-semibold mb-4 text-white rounded-md">
-                {company.contactTitle || ""}
-              </h2>
-              <div className="space-y-3 text-gray-300">
+              <div>
+                <h2 className="text-2xl sm:text-3xl font-semibold mb-8 text-white rounded-md">
+                  {company.contactTitle || ""}
+                </h2>
+                <div className="space-y-6 text-gray-300">
                 {company.contactInfo.length > 0 ? (
                   company.contactInfo.map((contact, index) => (
                     <p
@@ -383,6 +453,7 @@ const CompanyDetailPage: React.FC = () => {
               </div>
             </div>
           </div>
+        </div>
 
           <div
             className="w-full md:w-1/2 flex items-center justify-center rounded-md"

@@ -22,6 +22,21 @@
   font-style: normal;
 }
 
+/* TBC Contractica Fonts */
+@font-face {
+  font-family: 'TBCContractica-Bold';
+  src: url('/fonts/TBCContractica-Bold.ttf') format('truetype');
+  font-weight: bold;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'TBCContractica-Medium';
+  src: url('/fonts/TBCContractica-Medium.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+}
+
 /* Tailwind Direktifleri */
 @tailwind base;
 @tailwind components;

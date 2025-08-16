@@ -322,12 +322,12 @@ const LuxuryHeroFetcher = () => {
   // Handles data fetching and initializes the AOS library when the component mounts.
   useEffect(() => {
     fetchData(currentLocale);
-  }, []); // Remove currentLocale from dependencies to prevent infinite loops
+  }, []); 
 
   // UseEffect to handle video loading and hide loading screen when video is ready
   useEffect(() => {
     if (videoLoaded && videoPlaying && loading) {
-      // Additional delay to ensure smooth transition
+      
       setTimeout(() => {
         setLoadingVisible(false);
         setTimeout(() => setLoading(false), 1000);

@@ -1,0 +1,247 @@
+.main_background{
+    position: relative;
+    width: 100%;
+    height: 70vh;
+    overflow: hidden;
+    margin-top: 130px; 
+}
+
+.main_background::before {
+    content: '';
+    position: absolute;
+    top: 0; 
+    left: 0;
+    width: 100%;
+    height: 100%; 
+    background: url('/images/wfc/DSC09638-2.jpg') no-repeat center 40%/cover;
+    animation: zoomeffect 4s ease-out;
+    z-index: 0;
+}
+
+@keyframes zoomeffect{
+    0% {
+        transform: scale(1.2);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.gradient_overlay{
+    position: absolute;
+    height: 55%;
+    bottom: 0;
+    width: 100%;
+    background: linear-gradient(to top, #0b5330, transparent);
+    z-index: 1;
+}
+
+.associated_with_bg{
+    width: 100%;
+    min-height: 10vh;
+    background-color: #0b5330;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+}
+
+.associated_content {
+    width: 100%;
+    max-width: 1000px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+    /* --- MODIFIED CODE HERE --- */
+    justify-content: center;
+    /* -------------------------- */
+}
+
+.associated_title {
+    color: aliceblue;
+    font-size: 0.7rem;
+    font-weight: 700;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.associated_logos_container {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 0.75rem;
+    flex: 1;
+}
+
+.associated_card {
+    height: 2.5rem;
+    width: auto;
+    min-width: 2.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0.25rem 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.associated_card:hover {
+    transform: scale(1.1);
+}
+
+.associated_card img {
+    height: 100%;
+    width: auto;
+    max-width: 3.5rem;
+    object-fit: contain;
+    filter: brightness(1) contrast(1);
+    transition: all 0.3s ease;
+}
+
+.associated_card:hover img {
+    filter: brightness(1.1) contrast(1.1);
+}
+
+@media (max-width: 768px) {
+    .main_background {
+        margin-top: 120px;
+        height: 60vh;
+    }
+    
+    .associated_with_bg {
+        padding: 0.75rem;
+        min-height: auto;
+    }
+    
+    .associated_content {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+    
+    .associated_title {
+        font-size: 1.1rem;
+    }
+    
+    .associated_logos_container {
+        justify-content: center;
+        gap: 1.25rem;
+        flex-wrap: wrap;
+    }
+    
+    .associated_card {
+        height: 2.25rem;
+        min-width: 2.25rem;
+        padding: 0.2rem 0.4rem;
+    }
+    
+    .associated_card img {
+        max-width: 3rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .main_background {
+        height: 50vh;
+    }
+    
+    .associated_with_bg {
+        padding: 0.5rem;
+    }
+    
+    .associated_title {
+        font-size: 1rem;
+        letter-spacing: 0.5px;
+    }
+    
+    .associated_content {
+        gap: 0.75rem;
+    }
+    
+    .associated_logos_container {
+        gap: 1rem;
+    }
+    
+    .associated_card {
+        height: 2rem;
+        min-width: 2rem;
+        padding: 0.15rem 0.3rem;
+    }
+    
+    .associated_card img {
+        max-width: 2.5rem;
+    }
+}
+
+@media (max-width: 320px) {
+    .associated_logos_container {
+        gap: 0.75rem;
+        flex-direction: column;
+    }
+    
+    .associated_card {
+        height: 1.75rem;
+        min-width: 1.75rem;
+    }
+    
+    .associated_card img {
+        max-width: 2rem;
+    }
+}
+
+.main_content{
+    width: 100%;
+    height: auto;
+    min-height: 50vh;
+    background-color: #0b5330;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 1rem 0;
+}
+
+.white_bg{
+    background-color: rgb(255, 255, 255);
+    width: 95%;
+    height: auto;
+    min-height: 30vh;
+    margin: 0 auto;
+    padding: 1rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.next_matches_container{
+    color: rgb(68, 68, 68);
+    width: 100%;
+    height: auto;
+    min-height: 50vh;
+    border-radius: 5px;
+    padding: 1rem;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    display: flex;
+}
+
+.associated_content {
+    width: 100%;
+    max-width: 1000px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+    justify-content: center; /* Centers the content horizontally */
+    flex-wrap: wrap; /* Allows items to wrap onto the next line if needed */
+}
+
+.associated_logos_container {
+    display: flex;
+    justify-content: center; /* Centers logos within their own container */
+    align-items: center;
+    gap: 0.75rem;
+    flex: 0; /* Prevents the container from growing, keeping it compact */
+}

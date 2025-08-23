@@ -22,7 +22,7 @@ interface MediaAttributes {
   caption?: string;
   width?: number;
   height?: number;
-  // Add other attributes you might receive like formats, hash, etc. if you use them
+ 
 }
 
 interface MediaDataItem {
@@ -34,7 +34,7 @@ interface MediaData {
   data: MediaDataItem | MediaDataItem[] | null;
 }
 
-// Define a specific interface for single media fields
+
 interface SingleMediaData {
   data: MediaDataItem | null;
 }

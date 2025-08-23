@@ -52,10 +52,8 @@
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: 0.5rem;
-    /* --- MODIFIED CODE HERE --- */
+    gap: 2rem;
     justify-content: center;
-    /* -------------------------- */
 }
 
 .associated_title {
@@ -71,10 +69,9 @@
 
 .associated_logos_container {
     display: flex;
-    justify-content: flex-end;
+    justify-content: center;
     align-items: center;
     gap: 0.75rem;
-    flex: 1;
 }
 
 .associated_card {
@@ -107,12 +104,12 @@
 
 @media (max-width: 768px) {
     .main_background {
-        margin-top: 120px;
-        height: 60vh;
+        margin-top: 0;
+        height: 65vh;
     }
     
     .associated_with_bg {
-        padding: 0.75rem;
+        padding: 1rem;
         min-height: auto;
     }
     
@@ -120,59 +117,63 @@
         flex-direction: column;
         gap: 1rem;
         text-align: center;
+        align-items: center;
     }
     
     .associated_title {
-        font-size: 1.1rem;
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
     }
     
     .associated_logos_container {
         justify-content: center;
-        gap: 1.25rem;
+        gap: 1.5rem;
         flex-wrap: wrap;
+        width: 100%;
     }
     
     .associated_card {
-        height: 2.25rem;
-        min-width: 2.25rem;
-        padding: 0.2rem 0.4rem;
+        height: 4rem;
+        min-width: 4rem;
+        padding: 0.5rem;
     }
     
     .associated_card img {
-        max-width: 3rem;
+        max-width: 5rem;
+        height: auto;
     }
 }
 
 @media (max-width: 480px) {
     .main_background {
-        height: 50vh;
+        margin-top: 0;
+        height: 70vh;
     }
     
     .associated_with_bg {
-        padding: 0.5rem;
-    }
-    
-    .associated_title {
-        font-size: 1rem;
-        letter-spacing: 0.5px;
+        padding: 1.5rem 0.75rem;
     }
     
     .associated_content {
-        gap: 0.75rem;
+        gap: 1.25rem;
+    }
+    
+    .associated_title {
+        font-size: 0.9rem;
     }
     
     .associated_logos_container {
-        gap: 1rem;
+        gap: 2rem;
+        justify-content: space-around;
     }
     
     .associated_card {
-        height: 2rem;
-        min-width: 2rem;
-        padding: 0.15rem 0.3rem;
+        height: 3.5rem;
+        min-width: 3.5rem;
     }
     
     .associated_card img {
-        max-width: 2.5rem;
+        max-width: 4.5rem;
     }
 }
 
@@ -225,23 +226,4 @@
     align-items: center;
     text-align: center;
     display: flex;
-}
-
-.associated_content {
-    width: 100%;
-    max-width: 1000px;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 0.5rem;
-    justify-content: center; /* Centers the content horizontally */
-    flex-wrap: wrap; /* Allows items to wrap onto the next line if needed */
-}
-
-.associated_logos_container {
-    display: flex;
-    justify-content: center; /* Centers logos within their own container */
-    align-items: center;
-    gap: 0.75rem;
-    flex: 0; /* Prevents the container from growing, keeping it compact */
 }

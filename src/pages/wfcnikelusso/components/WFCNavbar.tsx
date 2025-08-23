@@ -1,4 +1,7 @@
 import { useState } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faFacebookF, faInstagram, faTiktok } from '@fortawesome/free-brands-svg-icons';
+import { faPhone } from '@fortawesome/free-solid-svg-icons';
 import './css/wfcnavbar.css';
 import WFCLogo from './media/wfc nike lusso-01 (1).png';
 
@@ -15,24 +18,23 @@ const WFCNavbar = () => {
             <div className="top-bar">
                 <div className="top-bar-content">
                     <div className="social-links">
-                        <a href="#" className="social-link" title="Facebook">
-                            <i className="fab fa-facebook-f"></i>
+                        <a href="https://www.facebook.com/groups/584300362977796/" className="social-link" title="Facebook" target="_blank" rel="noopener noreferrer">
+                            <FontAwesomeIcon icon={faFacebookF} />
                         </a>
-                        <a href="#" className="social-link" title="Instagram">
-                            <i className="fab fa-instagram"></i>
+                        <a href="https://www.instagram.com/wfcnikelussoofficial" className="social-link" title="Instagram" target="_blank" rel="noopener noreferrer">
+                            <FontAwesomeIcon icon={faInstagram} />
                         </a>
-                        <a href="#" className="social-link" title="TikTok">
-                            <i className="fab fa-tiktok"></i>
+                        <a href="https://www.tiktok.com/@wfcnikelusso" className="social-link" title="TikTok" target="_blank" rel="noopener noreferrer">
+                            <FontAwesomeIcon icon={faTiktok} />
                         </a>
-                       
                     </div>
                     <div className="contact-info">
                         {/* <span style={{display: 'flex', alignItems: 'center'}}>
-                            <i className="fas fa-envelope" style={{marginRight: '8px', color: '#0b5330'}}></i>
+                            <FontAwesomeIcon icon={faEnvelope} style={{marginRight: '8px', color: '#0b5330'}} />
                             info@wfcnike.com
                         </span> */}
                         <span style={{display: 'flex', alignItems: 'center'}}>
-                            <i className="fas fa-phone" style={{marginRight: '8px', color: '#0b5330'}}></i>
+                            <FontAwesomeIcon icon={faPhone} style={{marginRight: '8px', color: '#0b5330'}} />
                             +995 555188888
                         </span>
                     </div>

@@ -469,7 +469,7 @@ function App() {
         <Route path="/luxurycars/ourcars" element={<UserRoute path="/luxurycars/cars" element={<Cars />} />} />
         <Route path="/luxurycars/cardetails/:slug" element={<CarDetail />} />  
         <Route path="/removebg" element={<RemoveBGApp />} />
-        <Route path="/wfchome" element={<WFCHome />} />
+        <Route path="/wfchome" element={<UserRoute path="/wfchome" element={<WFCHome />} />} />
       </Routes>
     </LanguageProvider>
   );
